@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World Particles</title>
+    <title>Hello World Particles + Info</title>
     <!-- Modern Typography from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         * { 
             margin: 0; 
@@ -23,7 +23,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer; /* Indicates it's interactive */
+            cursor: pointer;
             user-select: none;
         }
 
@@ -35,7 +35,7 @@
             z-index: 0;
             opacity: 0.5;
             animation: orb-drift 15s infinite alternate ease-in-out;
-            pointer-events: none; /* Don't block clicks */
+            pointer-events: none;
         }
         .orb-primary {
             width: 40vw; height: 40vw;
@@ -65,10 +65,55 @@
             z-index: 10;
         }
 
+        /* Info Display (Date, Time, Location) */
+        .info-container {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            z-index: 20;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideIn 1s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .info-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #94a3b8;
+            display: block;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f8fafc;
+            display: block;
+        }
+
+        .time-value {
+            font-family: monospace;
+            color: #38bdf8;
+            font-size: 1.5rem;
+        }
+
         .subtitle {
             position: absolute;
-            bottom: 15%;
-            font-size: 1.2rem;
+            bottom: 10%;
+            font-size: 1rem;
             font-weight: 300;
             color: #94a3b8;
             letter-spacing: 0.4em;
@@ -76,7 +121,7 @@
             z-index: 20;
             pointer-events: none;
             opacity: 0;
-            animation: fadeIn 2s forwards 2s;
+            animation: fadeIn 2s forwards 3s;
         }
 
         @keyframes fadeIn {
@@ -88,18 +133,54 @@
     <div class="glowing-orb orb-primary"></div>
     <div class="glowing-orb orb-secondary"></div>
     
+    <!-- Info Panel -->
+    <div class="info-container">
+        <div class="info-item">
+            <span class="info-label">Current Date</span>
+            <span class="info-value" id="current-date">Loading...</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Live Time</span>
+            <span class="info-value time-value" id="live-time">00:00:00</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Location (Timezone)</span>
+            <span class="info-value" id="location">Seoul (KST)</span>
+        </div>
+    </div>
+
     <canvas id="particle-canvas"></canvas>
-    <p class="subtitle">Click anywhere to shatter</p>
+    <p class="subtitle">Click to shatter reality</p>
 
     <script>
+        // --- Live Info Updates ---
+        function updateInfo() {
+            const now = new Date();
+            
+            // Date String
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('ko-KR', options);
+            
+            // Time String
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('live-time').textContent = `${h}:${m}:${s}`;
+            
+            // Timezone
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            document.getElementById('location').textContent = tz;
+        }
+        setInterval(updateInfo, 1000);
+        updateInfo();
+
+        // --- Particle Simulation (Same as before) ---
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         
         let textParticles = [];
         let stars = [];
         let mouse = { x: null, y: null, radius: 100 };
-        
-        // Holographic Gradient Colors
         const colors = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
 
         function resize() {
@@ -114,7 +195,6 @@
             window.resizeTimer = setTimeout(resize, 300);
         });
 
-        // Track Mouse
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
@@ -125,19 +205,14 @@
             mouse.y = null;
         });
 
-        // Click to Scatter Particles
         window.addEventListener('click', (e) => {
             textParticles.forEach(p => {
                 let dx = p.x - e.clientX;
                 let dy = p.y - e.clientY;
                 let distance = Math.sqrt(dx*dx + dy*dy);
-                
-                // Explode force inversely proportional to distance
                 let force = (canvas.width / 1.5) / (distance || 1);
-                force = Math.min(force, 100); // Cap max force
-
+                force = Math.min(force, 100);
                 let angle = Math.atan2(dy, dx);
-                
                 p.vx += Math.cos(angle) * force * (Math.random() * 2 + 1);
                 p.vy += Math.sin(angle) * force * (Math.random() * 2 + 1);
             });
@@ -145,61 +220,44 @@
 
         class TextParticle {
             constructor(x, y, color) {
-                // Initialize out of bounds for an intro fly-in effect
                 this.x = x + (Math.random() - 0.5) * window.innerWidth;
                 this.y = y + (Math.random() - 0.5) * window.innerHeight;
                 this.baseX = x;
                 this.baseY = y;
                 this.size = Math.random() * 2 + 1.5;
                 this.color = color;
-                
-                // Physics properties
                 this.vx = 0;
                 this.vy = 0;
-                this.friction = 0.88; // Deceleration rate
-                this.ease = 0.05;     // Spring-back pull rate
+                this.friction = 0.88;
+                this.ease = 0.05;
             }
-
             draw() {
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.closePath();
                 ctx.fill();
             }
-
             update() {
-                // Determine direction to original designated pixel coordinate
                 let dxBase = this.baseX - this.x;
                 let dyBase = this.baseY - this.y;
-                
-                // Pull particle towards base position (spring easing)
                 this.vx += dxBase * this.ease;
                 this.vy += dyBase * this.ease;
-
-                // Mouse repel interaction
                 if (mouse.x !== null && mouse.y !== null) {
                     let dxMouse = mouse.x - this.x;
                     let dyMouse = mouse.y - this.y;
                     let distance = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-
                     if (distance < mouse.radius) {
                         let forceDirectionX = dxMouse / distance;
                         let forceDirectionY = dyMouse / distance;
                         let force = (mouse.radius - distance) / mouse.radius;
-                        
-                        // Push away from mouse
                         this.vx -= forceDirectionX * force * 10;
                         this.vy -= forceDirectionY * force * 10;
                     }
                 }
-
-                // Apply velocity & friction to coordinate
                 this.vx *= this.friction;
                 this.vy *= this.friction;
                 this.x += this.vx;
                 this.y += this.vy;
-
                 this.draw();
             }
         }
@@ -222,52 +280,34 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-
-                // Screen Wrap
                 if (this.x > canvas.width) this.x = 0;
                 else if (this.x < 0) this.x = canvas.width;
                 if (this.y > canvas.height) this.y = 0;
                 else if (this.y < 0) this.y = canvas.height;
-                
                 this.draw();
             }
         }
 
-        // Extracts pixel matrix from canvas text to generate particles
         function initTextParticles() {
             textParticles = [];
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Dynamic Font Sizing
             let fontSize = Math.min(canvas.width / 6, 180);
             ctx.font = `900 ${fontSize}px 'Outfit', sans-serif`;
             ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            
-            // Draw dummy text onto canvas
             const text = "HELLO WORLD";
-            const textY = canvas.height / 2;
-            ctx.fillText(text, canvas.width / 2, textY);
-            
-            // Read drawn pixel data
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
             const rect = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Erase dummy text
-
-            // Grid step size (smaller = more particles = more performance hit)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             const gap = 4;
-            
             for (let y = 0; y < rect.height; y += gap) {
                 for (let x = 0; x < rect.width; x += gap) {
                     const index = (y * rect.width + x) * 4;
                     const alpha = rect.data[index + 3];
-
-                    // If pixel is visible, turn it into a particle
                     if (alpha > 128) {
                         const ratio = x / canvas.width;
-                        let colorIndex = Math.floor(ratio * colors.length);
-                        colorIndex = Math.min(colorIndex, colors.length - 1); // safe bound
-                        
+                        let colorIndex = Math.min(Math.floor(ratio * colors.length), colors.length - 1);
                         textParticles.push(new TextParticle(x, y, colors[colorIndex]));
                     }
                 }
@@ -277,22 +317,17 @@
         function initStars() {
             stars = [];
             let starCount = Math.floor((canvas.width * canvas.height) / 8000);
-            for (let i = 0; i < starCount; i++) {
-                stars.push(new Star());
-            }
+            for (let i = 0; i < starCount; i++) stars.push(new Star());
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            // Black transparent fill creates a smooth trail/motion blur
             ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
             stars.forEach(s => s.update());
             textParticles.forEach(p => p.update());
         }
 
-        // Wait for Web Font to load before measuring text width
         document.fonts.ready.then(() => {
             resize();
             animate();
