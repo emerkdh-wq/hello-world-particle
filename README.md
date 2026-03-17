@@ -30,4 +30,4 @@ A premium, high-performance "Hello World" landing page built with modern fronten
 - **v1.2**: Added real-time info panel (Date, Time, Timezone).
 
 ---
-Created with ❤️ by Antigravity AI
+Created with ❤️ by Antigravity AI + DOO
