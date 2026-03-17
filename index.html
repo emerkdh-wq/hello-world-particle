@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World!</title>
+    <!-- Modern Typography from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset & Styling */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #020617; /* Slate-950 for a deep ambient background */
+            color: #f8fafc;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: default;
+        }
+        
+        /* Interactive Background Particles */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Abstract Ambient Glowing Orbs */
+        .glowing-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            opacity: 0.5;
+            animation: orb-drift 15s infinite alternate ease-in-out;
+        }
+        
+        .orb-primary {
+            width: 40vw; 
+            height: 40vw;
+            background: rgba(99, 102, 241, 0.6); /* Indigo */
+            top: -10vh; 
+            right: -10vw;
+        }
+        
+        .orb-secondary {
+            width: 50vw; 
+            height: 50vw;
+            background: rgba(236, 72, 153, 0.4); /* Pink */
+            bottom: -20vh; 
+            left: -10vw;
+            animation-duration: 20s;
+            animation-direction: alternate-reverse;
+        }
+
+        @keyframes orb-drift {
+            0% { transform: scale(0.8) translate(0, 0); opacity: 0.4; }
+            50% { opacity: 0.7; }
+            100% { transform: scale(1.2) translate(10vw, -10vh); opacity: 0.5; }
+        }
+
+        /* Premium Glassmorphism Card Wrapper */
+        .scene {
+            perspective: 1500px;
+            z-index: 10;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 5rem 7rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.8), 
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+            text-align: center;
+            /* Base floating animation, overridden by JS on hover */
+            animation: float 6s ease-in-out infinite;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(2deg) rotateY(-2deg); }
+            50% { transform: translateY(-15px) rotateX(-2deg) rotateY(2deg); }
+        }
+
+        /* Dynamic Title */
+        .title {
+            font-size: 6rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 1rem;
+            /* Animated Gradient Text */
+            background: linear-gradient(120deg, #38bdf8, #818cf8, #c084fc, #f472b6, #38bdf8);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shine 5s linear infinite;
+            transform: translateZ(50px); /* 3D pop out effect */
+        }
+
+        @keyframes gradient-shine {
+            to { background-position: 300% center; }
+        }
+
+        /* Subtitle */
+        .subtitle {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #cbd5e1;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            transform: translateZ(30px);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .subtitle::after {
+            content: '';
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #818cf8;
+            transition: width 0.4s ease;
+        }
+        
+        .glass-card:hover .subtitle::after {
+            width: 100%;
+        }
+
+        /* Interactive Follow Cursor Glow (Attached over mouse) */
+        #mouse-glow {
+            position: fixed;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            transition: opacity 0.3s;
+            mix-blend-mode: screen;
+            opacity: 0;
+        }
+        
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            .glass-card { padding: 3rem 2rem; }
+            .title { font-size: 3.5rem; }
+            .subtitle { font-size: 1rem; letter-spacing: 0.2em; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Ambient glowing background orbs -->
+    <div class="glowing-orb orb-primary"></div>
+    <div class="glowing-orb orb-secondary"></div>
+    
+    <!-- Canvas for particle starfield -->
+    <canvas id="particle-canvas"></canvas>
+    
+    <!-- Custom glowing aura on cursor -->
+    <div id="mouse-glow"></div>
+
+    <!-- Main Content -->
+    <div class="scene">
+        <div class="glass-card" id="card">
+            <h1 class="title">HELLO WORLD</h1>
+            <p class="subtitle">Experience the Future</p>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 3D Tilt Effect on the Glass Card ---
+        const card = document.getElementById('card');
+        const scene = document.querySelector('.scene');
+        let isHovering = false;
+
+        scene.addEventListener('mouseenter', () => {
+            isHovering = true;
+            card.style.animation = 'none'; // Stop float animation when hovering
+            card.style.transition = 'transform 0.1s ease-out';
+        });
+
+        scene.addEventListener('mousemove', (e) => {
+            if (!isHovering) return;
+            const x = e.clientX - window.innerWidth / 2;
+            const y = e.clientY - window.innerHeight / 2;
+            
+            // Calculate tilt physics
+            const rotateX = -(y / 25);
+            const rotateY = (x / 25);
+            
+            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+
+        scene.addEventListener('mouseleave', () => {
+            isHovering = false;
+            card.style.transition = 'transform 0.5s ease-out';
+            card.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            // Resume float animation after delay
+            setTimeout(() => {
+                if(!isHovering) {
+                    card.style.animation = 'float 6s ease-in-out infinite';
+                    card.style.transition = 'transform 0.1s ease-out';
+                }
+            }, 500);
+        });
+
+        // --- 2. Interactive Mouse Glow Tracker ---
+        const mouseGlow = document.getElementById('mouse-glow');
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseGlow.style.opacity = '1';
+            mouseGlow.style.left = e.clientX + 'px';
+            mouseGlow.style.top = e.clientY + 'px';
+        });
+        
+        document.body.addEventListener('mouseleave', () => {
+            mouseGlow.style.opacity = '0';
+        });
+
+        // --- 3. Interactive Particle Starfield System ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let particles = [];
+        let mouse = { x: null, y: null, radius: 150 };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // Track mouse position specifically for particles
+        canvas.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        canvas.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        class Particle {
+            constructor(x, y, size, speedX, speedY) {
+                this.x = x;
+                this.y = y;
+                this.baseX = x;
+                this.baseY = y;
+                this.size = size;
+                this.speedX = speedX;
+                this.speedY = speedY;
+                // Random opacity
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            update() {
+                // Base subtle drifting
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Screen wrapping
+                if(this.x > canvas.width) this.x = 0;
+                else if(this.x < 0) this.x = canvas.width;
+                if(this.y > canvas.height) this.y = 0;
+                else if(this.y < 0) this.y = canvas.height;
+
+                // Interaction with mouse (repulse effect)
+                if (mouse.x != null && mouse.y != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < mouse.radius) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (mouse.radius - distance) / mouse.radius;
+                        const maxSpeed = 3;
+                        this.x -= forceDirectionX * force * maxSpeed;
+                        this.y -= forceDirectionY * force * maxSpeed;
+                    }
+                }
+                
+                this.draw();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            // Dynamically scale particle count based on screen size for performance
+            let particleCount = Math.floor((canvas.width * canvas.height) / 8000);
+            
+            for (let i = 0; i < particleCount; i++) {
+                let size = Math.random() * 2 + 0.5;
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                let speedX = (Math.random() - 0.5) * 0.5;
+                let speedY = (Math.random() - 0.5) * 0.5;
+                particles.push(new Particle(x, y, size, speedX, speedY));
+            }
+        }
+
+        function animateCanvas() {
+            requestAnimationFrame(animateCanvas);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+            }
+            
+            // Optional: Draw connecting lines if particles are close
+            connectParticles();
+        }
+
+        function connectParticles() {
+            for(let a = 0; a < particles.length; a++) {
+                for(let b = a; b < particles.length; b++) {
+                    let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) 
+                                 + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
+                    
+                    // Connect closer particles with a faint line
+                    if(distance < 5000) {
+                        let opacity = 1 - (distance/5000);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.1})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // Initialize and start animation
+        resizeCanvas();
+        animateCanvas();
+
+    </script>
+</body>
+</html>
