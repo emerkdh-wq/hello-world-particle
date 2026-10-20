@@ -168,6 +168,22 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .rc-life span:nth-child(odd){color:var(--ink-soft);font-family:var(--f-mono)}
 .rc-badge{font-size:11px;border:1px solid var(--ink);padding:2px 7px;border-radius:4px;display:inline-flex;gap:5px;align-items:center}
 .barcode{height:44px;margin:14px auto 4px;width:85%;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 8px,var(--ink) 8px 11px,transparent 11px 12px,var(--ink) 12px 13px,transparent 13px 16px)}
+.bio{max-width:22rem;margin:0 auto 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 18px;color:var(--fg)}
+.bio .eb{font-size:10.5px;letter-spacing:.14em;color:var(--accent);font-weight:600}
+.bio h2{font-family:var(--f-display);font-size:26px;line-height:1.15;margin:6px 0 4px;text-wrap:balance}
+.bio .who{font-size:12px;color:var(--muted)}
+.bio section{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.bio h3{margin:0 0 6px;font-size:13px;font-weight:700;display:flex;gap:7px;align-items:center}
+.bio h3 svg{color:var(--accent);width:14px}
+.bio p{margin:0;font-size:13px;line-height:1.7;color:var(--muted)}
+.bio p b{color:var(--fg);font-weight:600}
+.bio ul{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:12.5px;line-height:1.55;color:var(--muted)}
+.bio li b{color:var(--fg)}
+.loss{display:grid;grid-template-columns:6.5em 1fr 2.6em;gap:5px 8px;align-items:center;font-size:11.5px;margin-top:8px}
+.loss .t{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.loss .t i{display:block;height:100%;border-radius:99px;background:var(--danger)}
+.loss .t i.up{background:var(--benefit)}
+.loss .v{text-align:right;font-family:var(--f-mono);color:var(--fg)}
 .rc-actions{max-width:22rem;margin:16px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .toast{position:absolute;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;z-index:40;white-space:nowrap}
 </style>
@@ -363,7 +379,8 @@ function newState(name, gender){
     badges:new Set(), queue:[], cause:null, auto:false,
     stress:12, stressPeak:12, married:false, marryAt:null, marryAge:rint(27,34), marryDeclined:false, spouse:null, widowed:false,
     children:0, childBirths:[], father:rint(50,74), mother:rint(56,82), badYears:0, milestones:[],
-    hhInc:0, hhWealth:0, wealth:0, wdecile:1
+    hhInc:0, hhWealth:0, wealth:0, wdecile:1, peakIncome:0,
+    hloss:{}, hgain:0, stressLog:[], cardioLog:[], hist:{ mind:[] }, health0:0, healthMin:100, healthMinAge:0
   };
 }
 
@@ -473,7 +490,18 @@ let year = null; // 이번 해 카드 데이터
 /* =========================================================
    스트레스
    ========================================================= */
-function addStress(n){
+function hurt(k, v, floor=0){
+  S.hloss[k] = (S.hloss[k] || 0) + v;
+  S.health = clamp(S.health - v, floor, 100);
+}
+function riskFactors(){
+  const f = [];
+  if (S.smoke) f.push('흡연'); if (S.drink) f.push('고위험 음주'); if (S.upf) f.push('초가공식품');
+  if (!S.exercise && S.age >= 30) f.push('운동 부족'); if (S.stress >= 50) f.push(`높은 스트레스(${Math.round(S.stress)})`);
+  return f;
+}
+function addStress(n, why){
+  if (why && n >= 8) S.stressLog.push({ age:S.age, n, why });
   S.stress = clamp(S.stress + n, 0, 100);
   S.stressPeak = Math.max(S.stressPeak, S.stress);
   return `스트레스 ${n > 0 ? '+' : ''}${n}`;
@@ -490,7 +518,7 @@ function stressYear(){
   if (S.married) base -= 3;
   if (S.smoke) base += 2;
   S.stress = clamp(S.stress + (base - S.stress)*.25, 0, 100);
-  if (S.stress > 50) S.health -= (S.stress - 50)/40;
+  if (S.stress > 50) hurt('stress', (S.stress - 50)/40);
   if (S.stress >= 65 && !S.queue.some(q => q.id === 'mind') && R() < .45) S.queue.push(mindChoice());
 }
 function mindChoice(){
@@ -498,18 +526,21 @@ function mindChoice(){
     desc:`스트레스 지수 ${Math.round(S.stress)}. 오래 쌓인 스트레스는 고혈압·심근경색·뇌졸중 위험을 높입니다. 정신건강의학과 외래는 건강보험이 적용되고, 국가건강검진에서도 10년마다 우울증 검사를 받을 수 있습니다.`,
     options:[
       { label:'정신건강의학과 상담받기', sub:'건강보험 적용 · 본인부담 30%', cls:'primary', run:()=>{
-        const f = charge(700000, .3); S.visits += 6; S.pharmacy += 6;
+        const f = charge(700000, .3); S.visits += 6; S.pharmacy += 6; S.hist.mind.push({ age:S.age, c:'counsel' });
         line2('fa-comment-medical', `상담과 약물치료로 마음이 한결 가벼워졌습니다 · 본인부담 ${won(f.own)} · ${addStress(-25)}`, 't-green'); } },
       { label:'술·담배로 푼다', sub:'잠깐은 편하지만…', cls:'danger', run:()=>{
-        S.drink = true; S.drinkEver = true;
+        S.drink = true; S.drinkEver = true; S.hist.mind.push({ age:S.age, c:'vice' });
+        if (S.hist.drinkAt == null || S.hist.drinkStop != null){ S.hist.drinkAt = S.hist.drinkAt ?? S.age; S.hist.drinkStop = null; S.hist.drinkVice = S.age; }
         let t = '퇴근 후 매일 술을 마시게 되었습니다';
-        if (!S.smoke && R() < .4){ S.smoke = true; S.smokeEver = true; S.quitAge = null; t += '. 끊었던(혹은 안 피우던) 담배에도 손이 갔습니다'; }
+        if (!S.smoke && R() < .4){ S.smoke = true; S.smokeEver = true; S.quitAge = null; S.hist.smokeVice = S.age; if (S.hist.smokeAt == null) S.hist.smokeAt = S.age; t += '. 끊었던(혹은 안 피우던) 담배에도 손이 갔습니다'; }
         line2('fa-wine-bottle', `${t} · ${addStress(-8)}`, 't-amber'); } },
-      { label:'혼자 참는다', sub:'괜찮아지겠지', cls:'ghost', run:()=>{ S.health -= 2; line2('fa-face-sad-tear', `혼자 버티는 밤이 길어집니다 · ${addStress(4)}`); } },
+      { label:'혼자 참는다', sub:'괜찮아지겠지', cls:'ghost', run:()=>{ hurt('stress', 2); S.hist.mind.push({ age:S.age, c:'endure' }); line2('fa-face-sad-tear', `혼자 버티는 밤이 길어집니다 · ${addStress(4)}`); } },
     ]};
 }
 function ownEconomy(){ return !!(S.job || S.retired); }
 function updateWealth(){
+  if (S.health < S.healthMin){ S.healthMin = S.health; S.healthMinAge = S.age; }
+  if (S.ins !== 'military') S.peakIncome = Math.max(S.peakIncome, S.yearIncome);
   if (!ownEconomy()) return;
   if (S.job && !S.retired && S.ins !== 'military') S.wealth += S.yearIncome*(S.married ? .10 : .07);
   if (S.retired) S.wealth -= Math.max(0, 1.8e7 - S.yearIncome); // 생활비 부족분을 재산에서
@@ -518,10 +549,16 @@ function updateWealth(){
   S.wealth = Math.max(S.wealth, -3e7);
   S.wdecile = wealthDecile(S.wealth);
 }
+const HH_INCOME = [1100,2000,2900,3800,4700,5700,6800,8100,9900,14000].map(v => v*1e4);
+const incLvl = v => v >= 6e7 ? '상' : v >= 2.5e7 ? '중' : '하';
+function incomeText(){
+  if (!ownEconomy()){ const v = HH_INCOME[S.hhInc-1]; return `가구 연소득 ${won(v)} (${incLvl(v)})`; }
+  if (S.ins === 'military') return '군 복무 중 (소득 없음)';
+  return `연소득 ${won(S.yearIncome)} (${incLvl(S.yearIncome)})`;
+}
 function econLabel(){
-  const own = ownEconomy();
-  const i = own ? S.decile : S.hhInc, w = own ? S.wdecile : S.hhWealth, pre = own ? '' : '가구 ';
-  return `${pre}소득 ${lvl(i)}(${i}분위) · 재산 ${lvl(w)}(${w}분위)`;
+  const w = ownEconomy() ? S.wdecile : S.hhWealth;
+  return `${incomeText()} · 재산 ${lvl(w)}(${w}분위)`;
 }
 function workLife(){
   if (!S.job || S.retired || S.ins === 'military') return;
@@ -530,13 +567,13 @@ function workLife(){
     const r = R();
     if (r < .2){
       S.salary *= .55; S.badYears++;
-      line('fa-arrow-trend-down', `${pick(JOBS[S.job].work.concat(['경기가 얼어붙어 매출이 반토막 났습니다']))} · 소득 급감 · ${addStress(14)}`);
+      line('fa-arrow-trend-down', `${pick(JOBS[S.job].work.concat(['경기가 얼어붙어 매출이 반토막 났습니다']))} · 소득 급감 · ${addStress(14, `${JOBS[S.job].name} 수입 급감`)}`);
       if (S.badYears >= 3){
         const old = JOBS[S.job].name;
         S.badYears = 0; S.job = 'logistics'; S.ins = 'employee'; S.salary = JOBS.logistics.base*ageFactor(S.age)*.9; S.wealth *= .55;
         lifeEvent('fa-store-slash',`${old} 일을 접었습니다`,
           `적자가 이어지는 것을 견디지 못하고 사업을 정리했습니다. 빚을 갚느라 재산이 크게 줄었고, 물류센터 관리자로 재취업해 다시 직장가입자가 되었습니다. 지역가입자일 때보다 보험료 부담이 줄었습니다.`,
-          [['r', addStress(22)],['b','직장가입자 전환']]);
+          [['r', addStress(22, '폐업')],['b','직장가입자 전환']]);
       }
     } else if (r > .85){
       S.salary *= 1.3; S.badYears = 0;
@@ -546,7 +583,7 @@ function workLife(){
     }
   } else {
     const r = R();
-    if (r < .13) line('fa-fire', `${pick(JOBS[S.job].work.concat(['상사와의 갈등으로 잠을 설칩니다']))} · ${addStress(10)}`);
+    if (r < .13) line('fa-fire', `${pick(JOBS[S.job].work.concat(['상사와의 갈등으로 잠을 설칩니다']))} · ${addStress(10, `${JOBS[S.job].name} 업무 스트레스`)}`);
     else if (r < .19){ S.salary *= 1.08; line('fa-award', `승진했습니다! · ${addStress(-6)}`); }
   }
   S.yearIncome = S.salary*12;
@@ -580,23 +617,23 @@ function familyEvents(){
   });
   // 부모님
   for (const [nm, age] of [['아버지', S.father], ['어머니', S.mother]]){
-    if (a === age - 1) line('fa-hospital-user', `${nm}가 투병을 시작했습니다. 주말마다 병원에 갑니다 · ${addStress(10)}`);
+    if (a === age - 1) line('fa-hospital-user', `${nm}가 투병을 시작했습니다. 주말마다 병원에 갑니다 · ${addStress(10, `${nm}의 투병과 간병`)}`);
     if (a === age){
       const inh = S.hhWealth*S.hhWealth*rint(60, 160)*1e4/2; // 부모 두 분이 각각 절반
       S.wealth += inh; S.wdecile = wealthDecile(S.wealth);
       lifeEvent('fa-dove', `${nm}가 돌아가셨습니다`,
       `장례를 치르는 동안 슬픔과 피로가 한꺼번에 몰려왔습니다. 그나마 ${nm}의 마지막 투병비는 산정특례와 본인부담상한제 덕분에 가계를 무너뜨리지 않았습니다.`,
-      [['r', addStress(28)], ['', `상속 ${won(inh)}`]]);
+      [['r', addStress(28, `${nm}의 별세`)], ['', `상속 ${won(inh)}`]]);
     }
   }
   // 배우자
   if (S.married && S.spouse && S.spouse.alive){
-    if (a === S.spouse.deathAge - 1) line('fa-hospital-user', `배우자가 큰 병을 진단받아 간병을 시작했습니다 · ${addStress(12)}`);
+    if (a === S.spouse.deathAge - 1) line('fa-hospital-user', `배우자가 큰 병을 진단받아 간병을 시작했습니다 · ${addStress(12, '배우자 간병')}`);
     if (a === S.spouse.deathAge){
       S.spouse.alive = false; S.married = false; S.widowed = true;
       lifeEvent('fa-heart-crack','배우자를 먼저 떠나보냈습니다',
         '평생을 함께한 사람이 곁에 없습니다. 배우자를 잃은 직후 1~2년은 심혈관질환 위험이 눈에 띄게 높아집니다.',
-        [['r', addStress(35)]]);
+        [['r', addStress(35, '배우자와 사별')]]);
     }
   }
 }
@@ -622,7 +659,7 @@ function babyChoice(second){
         badge('parent', true);
         lifeEvent('fa-baby-carriage', second ? '둘째가 태어났습니다' : (F ? '엄마가 되었습니다' : '아빠가 되었습니다'),
           `${F?'':'배우자 명의로 '}국민행복카드 바우처 <b>100만원</b>을 산전검사에 썼고, 분만비 <b>${won(2600000)}</b>은 공단이 전액 부담했습니다. 아이는 영유아검진 8번을 무료로 받게 됩니다. 다만 밤잠은 포기해야 합니다.`,
-          [['g','국민행복카드'],['g','분만 본인부담 0원'],['r', addStress(8)]]); } },
+          [['g','국민행복카드'],['g','분만 본인부담 0원'],['r', addStress(8, '육아')]]); } },
       { label:'지금은 아니다', sub: second ? '한 명으로 충분해요' : '둘만의 삶 또는 다음에', cls:'ghost', run:()=>{ line2('fa-heart', second ? '지금의 가족에 집중하기로 했습니다.' : '두 사람의 삶에 집중하기로 했습니다.'); } },
     ]};
 }
@@ -697,13 +734,14 @@ function maxHealth(a){ return 100 - Math.max(0, a-25)*.45; }
 function lifestyleHealth(){
   const a = S.age;
   let d = 0;
-  if (a >= 20 && a < 40) d -= .25; else if (a >= 40 && a < 60) d -= .5; else if (a >= 60 && a < 75) d -= .85; else if (a >= 75) d -= 1.5;
-  if (S.smoke && a >= 20) d -= .45;
-  if (S.drink && a >= 20) d -= .3;
-  if (S.upf && a >= 12) d -= .15;
-  if (S.exercise) d += .3;
-  if (S.htn && !S.htn.detected) d -= .8;
-  if (S.dm && !S.dm.detected) d -= .8;
+  const loss = (k, v) => { d -= v; S.hloss[k] = (S.hloss[k] || 0) + v; };
+  if (a >= 20 && a < 40) loss('aging', .25); else if (a >= 40 && a < 60) loss('aging', .5); else if (a >= 60 && a < 75) loss('aging', .85); else if (a >= 75) loss('aging', 1.5);
+  if (S.smoke && a >= 20) loss('smoke', .45);
+  if (S.drink && a >= 20) loss('drink', .3);
+  if (S.upf && a >= 12) loss('upf', .15);
+  if (S.exercise){ d += .3; S.hgain += .3; }
+  if (S.htn && !S.htn.detected) loss('chronic', .8);
+  if (S.dm && !S.dm.detected) loss('chronic', .8);
   if (S.cancers.some(c => c.status === 'treating')) d += 3;
   if (a < 20) d += 1;
   S.health = clamp(S.health + d, 0, maxHealth(a));
@@ -725,11 +763,11 @@ function diseases(){
   const a = S.age;
   // 만성질환
   if (a >= 35){
-    if (!S.htn && R() < .014*(1 + (a-35)/10)*(S.smoke?1.2:1)*(S.drink?1.4:1)*(S.upf?1.3:1)*(S.exercise?.7:1)*(1 + S.stress/150)) S.htn = { detected:false };
-    if (!S.dm && R() < .008*(1 + (a-35)/10)*(S.upf?1.6:1)*(S.drink?1.1:1)*(S.exercise?.7:1)) S.dm = { detected:false };
+    if (!S.htn && R() < .014*(1 + (a-35)/10)*(S.smoke?1.2:1)*(S.drink?1.4:1)*(S.upf?1.3:1)*(S.exercise?.7:1)*(1 + S.stress/150)) S.htn = { detected:false, onset:a, why:riskFactors() };
+    if (!S.dm && R() < .008*(1 + (a-35)/10)*(S.upf?1.6:1)*(S.drink?1.1:1)*(S.exercise?.7:1)) S.dm = { detected:false, onset:a, why:riskFactors() };
     for (const [k, nm] of [['htn','고혈압'],['dm','당뇨병']]){
       if (S[k] && !S[k].detected && R() < .07){
-        S[k].detected = true;
+        S[k].detected = true; S[k].detAge = a; S[k].how = '증상이 나타난 뒤 병원';
         line('fa-triangle-exclamation', `두통과 갈증이 심해져 병원에 갔다가 ${nm}을 뒤늦게 발견했습니다.`);
       }
     }
@@ -738,7 +776,7 @@ function diseases(){
   for (const c of S.cancers){
     if (c.status === 'hidden'){
       if (R() < .55 && c.stage < 4) c.stage++;
-      S.health -= [0,1,3,6][c.stage-1];
+      hurt('cancer', [0,1,3,6][c.stage-1]);
       if (R() < SYMPTOM[c.stage-1]) queueDiagnosis(c, 'symptom');
     } else if (c.status === 'treating'){
       const f = charge(6000000, .05, { special:true });
@@ -754,7 +792,7 @@ function diseases(){
       }
     } else if (c.status === 'terminal'){
       const f = charge(22000000, .05, { special:true, nonCov:3000000 });
-      S.health -= 14;
+      hurt('cancer', 14);
       line('fa-bed-pulse', `${CANCERS[c.type].name} 재발·전이로 항암 치료 지속 · 본인부담 ${won(f.own)} + 비급여 ${won(3000000)}`);
       if (a >= c.deathAge && !S.dying) endOfLife(`${CANCERS[c.type].name}`);
     }
@@ -810,10 +848,11 @@ function treatCancer(c, via, palliative){
   const f = charge(total, .05, { special:true, nonCov:nc });
   c.status = 'treating';
   badge('special');
-  addStress(25);
+  addStress(25, `${C.name} 진단`);
   S.milestones.push({ age:S.age, ic:'fa-file-medical', title:`${C.name} ${c.stage}기 진단` });
-  S.health = clamp(S.health - (palliative ? 10 : 12 + c.stage*4), 1, 100);
+  hurt('cancer', palliative ? 10 : 12 + c.stage*4, 1);
   const survive = !palliative && R() < C.surv[c.stage-1];
+  c.dxAge = S.age; c.via = via; c.why = riskFactors(); c.palliative = palliative;
   if (survive){ c.cureAge = S.age + 5; }
   else { c.status = 'terminal'; c.deathAge = S.age + (c.stage === 4 ? rint(1,2) : rint(1,4)); }
   const normalOwn = total*.25;
@@ -834,17 +873,19 @@ function cardioEvent(){
   if (S.age > 75) fatal *= 1.4;
   if (R() < fatal){
     S.cause = kind;
+    S.cardioLog.push({ age:S.age, kind, fatal:true, why:riskFactors(), htnHidden: !!(S.htn && !S.htn.detected) });
     evCard('t-red','fa-heart-crack', `${kind}으로 쓰러졌습니다`,
       `골든타임 안에 병원에 도착하지 못했습니다. ${(S.htn&&!S.htn.detected)?'검진을 받지 않아 고혈압이 있는 줄 몰랐습니다.':''}`, [['r','돌연사']]);
     return;
   }
   S.cardio++;
-  addStress(18);
+  S.cardioLog.push({ age:S.age, kind, fatal:false, why:riskFactors() });
+  addStress(18, `${kind} 발병`);
   S.milestones.push({ age:S.age, ic:'fa-heart-pulse', title:`${kind} 생존` });
   const total = rint(18, 30)*1e6;
   const f = charge(total, .05, { special:true, normal:.2, nonCov:1500000 });
-  S.health = clamp(S.health - rint(15,22), 1, 100);
-  if (S.htn) S.htn.detected = true;
+  hurt('cardio', rint(15,22), 1);
+  if (S.htn && !S.htn.detected){ S.htn.detected = true; S.htn.detAge = S.age; S.htn.how = `${kind}으로 쓰러진 뒤 응급실`; }
   badge('heart', true);
   evCard('t-red','fa-heart-pulse', `${kind}, 골든타임 안에 살아났습니다`,
     `119로 이송돼 ${kind==='뇌졸중'?'혈전제거술':'스텐트 시술'}을 받았습니다. 심뇌혈관질환 산정특례로 진료비 <b>${won(total)}</b> 중 본인부담은 <b>${won(f.own)}</b>입니다.`,
@@ -867,8 +908,8 @@ function randomEvents(){
     S.queue.push({ id:'jobless', tone:'amber', icon:'fa-briefcase', title:'회사가 구조조정을 합니다',
       desc:`실직하면 직장가입자 자격을 잃습니다. 지역가입자가 되면 재산·자동차까지 반영돼 보험료가 오를 수 있어요. 퇴직 후 36개월간 직장 시절 보험료를 유지하는 '임의계속가입'이 있습니다.`,
       options:[
-        { label:'임의계속가입 신청', sub:`월 ${won(prev/12)} 유지`, cls:'primary', run:()=>{ S.jobless={ age:a+1, mode:'keep', prev }; S.wealth *= .92; addStress(20); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-blue','fa-shield','임의계속가입을 신청했습니다','내년 1년간 직장 시절 보험료를 그대로 냅니다. 재취업할 때까지 안전망이 이어집니다.',[['b','임의계속가입']]); } },
-        { label:'지역가입자로 전환', sub:`월 약 ${won(regionalMonthly(S.salary*.5))} (재산 ${lvl(S.wdecile)}(${S.wdecile}분위) 반영)`, cls:'ghost', run:()=>{ S.jobless={ age:a+1, mode:'regional' }; S.wealth *= .92; addStress(22); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-gray','fa-house','지역가입자로 전환합니다','소득이 줄었는데 집과 차 때문에 보험료가 오히려 올랐습니다.',[['w','지역가입자']]); } }
+        { label:'임의계속가입 신청', sub:`월 ${won(prev/12)} 유지`, cls:'primary', run:()=>{ S.jobless={ age:a+1, mode:'keep', prev }; S.wealth *= .92; addStress(20, '구조조정 실직'); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-blue','fa-shield','임의계속가입을 신청했습니다','내년 1년간 직장 시절 보험료를 그대로 냅니다. 재취업할 때까지 안전망이 이어집니다.',[['b','임의계속가입']]); } },
+        { label:'지역가입자로 전환', sub:`월 약 ${won(regionalMonthly(S.salary*.5))} (재산 ${lvl(S.wdecile)}(${S.wdecile}분위) 반영)`, cls:'ghost', run:()=>{ S.jobless={ age:a+1, mode:'regional' }; S.wealth *= .92; addStress(22, '구조조정 실직'); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-gray','fa-house','지역가입자로 전환합니다','소득이 줄었는데 집과 차 때문에 보험료가 오히려 올랐습니다.',[['w','지역가입자']]); } }
       ]});
   }
   if (a >= 66 && a <= 78 && !S.cataract && R() < .07){
@@ -884,9 +925,9 @@ function randomEvents(){
   }
   if (!S.rare && R() < .0005){
     S.rare = true;
-    addStress(15);
+    addStress(15, '희귀질환 진단');
     const f = charge(9000000, .1, { special:true, normal:.3 });
-    S.health = clamp(S.health - 10, 1, 100);
+    hurt('other', 10, 1);
     badge('special');
     evCard('t-violet','fa-dna','희귀질환 진단',
       `수년간 원인을 몰랐던 증상의 정체가 밝혀졌습니다. <b>희귀질환 산정특례</b>로 본인부담이 10%로 줄었습니다. 첫해 진료비 ${won(9000000)} 중 본인부담 ${won(f.own)}.`,[['g','산정특례 10%']]);
@@ -894,7 +935,7 @@ function randomEvents(){
   if (S.rare && S.alive){ charge(3000000, .1, { special:true, normal:.3 }); }
   if (a >= 75 && !S.dementia && R() < .012*Math.exp(.1*(a-75))*(S.exercise?.8:1)){
     S.dementia = true;
-    S.health = clamp(S.health - 12, 1, 100);
+    hurt('dementia', 12, 1);
     evCard('t-violet','fa-brain','치매 진단',
       `가족 이름이 가끔 생각나지 않습니다. 중증치매는 <b>산정특례(본인부담 10%)</b> 대상입니다.`,[['','중증치매 산정특례']]);
   }
@@ -905,9 +946,9 @@ function randomEvents(){
     S.queue.push({ tone:'violet', icon:'fa-house-medical', title:'혼자 일상생활이 어려워졌습니다',
       desc:'노인장기요양보험에 등급을 신청하면 방문요양·목욕(재가급여)이나 요양원(시설급여)을 이용할 수 있습니다. 보험료는 건보료와 함께 내 왔습니다.',
       options:[
-        { label:'재가급여 (집에서 방문요양)', sub:'본인부담 15%', cls:'primary', run:()=>{ S.ltc='home'; badge('ltc'); evCard('t-violet','fa-house-user','장기요양 3등급 판정 · 재가급여','요양보호사가 매일 집으로 찾아옵니다. 가족의 돌봄 부담이 크게 줄었습니다.',[['g','장기요양']]); } },
-        { label:'시설급여 (요양원 입소)', sub:'본인부담 20%', cls:'ghost', run:()=>{ S.ltc='facility'; badge('ltc'); evCard('t-violet','fa-hospital-user','장기요양 2등급 판정 · 시설급여','요양원에서 24시간 돌봄을 받습니다.',[['g','장기요양']]); } },
-        { label:'가족이 직접 돌본다', sub:'신청하지 않음', cls:'ghost', run:()=>{ evCard('t-gray','fa-people-roof','가족이 돌봄을 맡았습니다','자녀들이 번갈아 휴직을 고민하기 시작했습니다.',[['r', addStress(15)]]); S.health -= 3; } },
+        { label:'재가급여 (집에서 방문요양)', sub:'본인부담 15%', cls:'primary', run:()=>{ S.ltc='home'; S.ltcAt=S.age; badge('ltc'); evCard('t-violet','fa-house-user','장기요양 3등급 판정 · 재가급여','요양보호사가 매일 집으로 찾아옵니다. 가족의 돌봄 부담이 크게 줄었습니다.',[['g','장기요양']]); } },
+        { label:'시설급여 (요양원 입소)', sub:'본인부담 20%', cls:'ghost', run:()=>{ S.ltc='facility'; S.ltcAt=S.age; badge('ltc'); evCard('t-violet','fa-hospital-user','장기요양 2등급 판정 · 시설급여','요양원에서 24시간 돌봄을 받습니다.',[['g','장기요양']]); } },
+        { label:'가족이 직접 돌본다', sub:'신청하지 않음', cls:'ghost', run:()=>{ evCard('t-gray','fa-people-roof','가족이 돌봄을 맡았습니다','자녀들이 번갈아 휴직을 고민하기 시작했습니다.',[['r', addStress(15, '돌봄 공백')]]); hurt('other', 3); } },
       ]});
   }
   if (S.ltc){
@@ -945,7 +986,7 @@ function scheduled(){
     Q.push({ tone:'red', icon:'fa-smoking', title:'친구가 담배를 권합니다',
       desc:'흡연자는 폐암 위험이 10배 이상, 심근경색·뇌졸중 위험이 2배 이상 높습니다.',
       options:[
-        { label:'한 대 피워 본다', sub:'흡연 시작', cls:'danger', run:()=>{ S.smoke=true; S.smokeEver=true; line2('fa-smoking','그렇게 하루 한 갑이 되었습니다.'); } },
+        { label:'한 대 피워 본다', sub:'흡연 시작', cls:'danger', run:()=>{ S.smoke=true; S.smokeEver=true; S.hist.smokeAt=S.age; line2('fa-smoking','그렇게 하루 한 갑이 되었습니다.'); } },
         { label:'정중하게 거절한다', sub:'비흡연', cls:'primary', run:()=>{ line2('fa-ban-smoking','담배는 평생 입에 대지 않기로 했습니다.'); } },
       ]});
     if (S.path === 'work') Q.push(jobChoice('work'));
@@ -955,7 +996,7 @@ function scheduled(){
     Q.push({ tone:'amber', icon:'fa-wine-bottle', title:'성인이 되었습니다. 술자리는?',
       desc:'고위험 음주(남성 7잔·여성 5잔 이상을 주 2회 이상)는 간암, 위암, 고혈압 위험을 높입니다.',
       options:[
-        { label:'회식·술자리는 끝까지', sub:'고위험 음주', cls:'danger', run:()=>{ S.drink=true; S.drinkEver=true; line2('fa-wine-bottle','주 3회 이상 술자리가 이어집니다.'); } },
+        { label:'회식·술자리는 끝까지', sub:'고위험 음주', cls:'danger', run:()=>{ S.drink=true; S.drinkEver=true; S.hist.drinkAt=S.age; line2('fa-wine-bottle','주 3회 이상 술자리가 이어집니다.'); } },
         { label:'적당히, 또는 마시지 않는다', sub:'절주', cls:'primary', run:()=>{ line2('fa-mug-hot','술은 기분 좋을 만큼만 마십니다.'); } },
       ]});
   }
@@ -967,7 +1008,7 @@ function scheduled(){
   if (a === 45 && S.drink) Q.push({ tone:'amber', icon:'fa-wine-bottle', title:'간 수치가 경계선입니다',
     desc:'검진 결과 간 수치(GGT)가 높습니다. 이대로 마시면 간경변과 간암으로 이어질 수 있습니다.',
     options:[
-      { label:'술을 줄인다', sub:'절주 시작', cls:'primary', run:()=>{ S.drink=false; line2('fa-mug-hot','술자리를 한 달에 두 번으로 줄였습니다.'); } },
+      { label:'술을 줄인다', sub:'절주 시작', cls:'primary', run:()=>{ S.drink=false; S.hist.drinkStop=S.age; line2('fa-mug-hot','술자리를 한 달에 두 번으로 줄였습니다.'); } },
       { label:'인생은 한 번뿐', sub:'계속 마신다', cls:'danger', run:()=>{ line2('fa-wine-bottle','오늘도 2차까지 갔습니다.'); } },
     ]});
   if (a >= 40 && a <= 84 && a % 2 === 0) Q.push(nationalCheck());
@@ -980,7 +1021,7 @@ function scheduled(){
       desc:'만 65세 이상은 평생 2개까지 임플란트에 건강보험이 적용됩니다. 1개 약 120만원.',
       options:[
         { label:'임플란트 2개 심기', sub:'본인부담 30%', cls:'primary', run:()=>{ const f = charge(2400000, .3); badge('implant'); evCard('t-cyan','fa-tooth','임플란트 2개 시술',`진료비 <b>${won(2400000)}</b> 중 본인부담 <b>${won(f.own)}</b>. 다시 고기를 씹을 수 있습니다.`,[['g',`공단 ${won(f.pub)}`]]); } },
-        { label:'그냥 참고 산다', sub:'치료 안 함', cls:'ghost', run:()=>{ S.health -= 2; line2('fa-face-frown','부드러운 음식만 먹게 되었습니다.'); } },
+        { label:'그냥 참고 산다', sub:'치료 안 함', cls:'ghost', run:()=>{ hurt('other', 2); line2('fa-face-frown','부드러운 음식만 먹게 되었습니다.'); } },
       ]});
   }
   if ((a === 60 || a === 75) && !S.directive) queueDirective(false);
@@ -1003,9 +1044,9 @@ function jobChoice(path, rerolled){
   if (!picks.some(k => JOBS[k].type === 'employee')) picks[0] = Object.keys(JOBS).find(k => JOBS[k].path === path && JOBS[k].type === 'employee');
   const sub = k => {
     const j = JOBS[k];
-    if (j.type === 'regional'){ const lo = clamp(Math.ceil(j.lo*1e4*.8/7e5),1,10), hi = clamp(Math.ceil(j.hi*1e4*.8/7e5),1,10); return `소득 ${lvl(lo)}~${lvl(hi)} (${lo}~${hi}분위, 들쭉날쭉) · 지역가입자`; }
-    const d = clamp(Math.ceil(j.base*.8/7e5),1,10);
-    return `초봉 월 ${won(j.base*.8)} · 소득 ${lvl(d)}(${d}분위) · 직장가입자`;
+    if (j.type === 'regional'){ const lo = j.lo*1e4*.8*12, hi = j.hi*1e4*.8*12; return `연소득 ${won(lo)}~${won(hi)} (${incLvl(lo)}~${incLvl(hi)}, 들쭉날쭉) · 지역가입자`; }
+    const v = j.base*.8*12;
+    return `초봉 연 ${won(v)} (${incLvl(v)}) · 직장가입자`;
   };
   const opts = picks.map((k, i) => ({ label:JOBS[k].name, sub:sub(k), cls: i === 0 ? 'primary' : 'ghost', run:()=>{
       const j = JOBS[k];
@@ -1013,9 +1054,9 @@ function jobChoice(path, rerolled){
       S.wealth = (S.hhWealth - 1)*300*1e4; S.wdecile = wealthDecile(S.wealth);
       updateIncome(); payPremiumDelta();
       S.milestones.push({ age:S.age, ic:j.ic, title:`${j.name} 일을 시작` });
-      evCard('t-blue', j.ic, `${j.name}(으)로 사회생활 시작`,
+      evCard('t-blue', j.ic, `${ro(j.name)} 사회생활 시작`,
         `이제 ${j.type==='employee'?'직장가입자로 월급에서 건강보험료가 원천징수되고, 회사가 같은 금액을 함께 냅니다':'지역가입자로 소득과 재산에 따라 보험료가 매겨지고, 전액을 직접 냅니다'}. 내가 낸 보험료가 누군가의 수술비가 되고, 언젠가 내 치료비가 됩니다.`,
-        [['b', j.type==='employee'?'직장가입자':'지역가입자'],['', `소득 ${lvl(S.decile)}(${S.decile}분위)`],['', `재산 ${lvl(S.wdecile)}(${S.wdecile}분위)`]]);
+        [['b', j.type==='employee'?'직장가입자':'지역가입자'],['', `연소득 ${won(S.yearIncome)} (${incLvl(S.yearIncome)})`],['', `재산 ${lvl(S.wdecile)}(${S.wdecile}분위)`]]);
     }}));
   if (!rerolled) opts.push({ label:'다른 채용 공고 보기', sub:'한 번만 다시 볼 수 있어요', cls:'ghost', run:()=>{ S.queue.unshift(jobChoice(path, true)); } });
   return { tone:'blue', icon:'fa-id-card', title: path === 'work' ? '어떤 일을 시작할까요?' : '졸업! 첫 직장을 고르세요',
@@ -1065,7 +1106,7 @@ function nationalCheck(){
 function screenDetect(){
   const a = S.age, found = [];
   for (const [k, nm, med] of [['htn','고혈압','혈압약'],['dm','당뇨병','혈당약']]){
-    if (S[k] && !S[k].detected && R() < .95){ S[k].detected = true; found.push(`${nm} (${med} 처방, 꾸준히 관리 시작)`); }
+    if (S[k] && !S[k].detected && R() < .95){ S[k].detected = true; S[k].detAge = a; S[k].how = '건강검진'; found.push(`${nm} (${med} 처방, 꾸준히 관리 시작)`); }
   }
   let cancerFound = false;
   for (const c of S.cancers){
@@ -1086,7 +1127,7 @@ function exerciseChoice(){
   return { tone:'green', icon:'fa-person-running', title: S.age >= 50 ? '의사가 운동을 권합니다' : '헬스장 3개월 할인 전단지를 받았습니다',
     desc:'주 150분 이상 중강도 운동은 심뇌혈관질환 위험을 20~30% 낮추고 치매 위험도 줄입니다.',
     options:[
-      { label:'주 3회 운동한다', sub:'걷기·근력 운동', cls:'primary', run:()=>{ S.exercise = true; S.health = clamp(S.health + 3, 0, maxHealth(S.age)); line2('fa-person-running','운동이 습관이 되었습니다. 몸이 가볍습니다.'); } },
+      { label:'주 3회 운동한다', sub:'걷기·근력 운동', cls:'primary', run:()=>{ S.exercise = true; S.hist.exAt = S.age; S.health = clamp(S.health + 3, 0, maxHealth(S.age)); line2('fa-person-running','운동이 습관이 되었습니다. 몸이 가볍습니다.'); } },
       { label:'운동은 귀찮다', sub:'소파와 한 몸', cls:'ghost', run:()=>{ line2('fa-couch','오늘도 넷플릭스와 함께합니다.'); } },
     ]};
 }
@@ -1151,7 +1192,7 @@ function mortality(){
   if (a < 1) q = .0025;
   if (R() < q){
     if (a >= 65 && R() < .6) endOfLife(pick(['노환','폐렴','심부전']));
-    else S.cause = a < 45 ? '불의의 사고' : a < 70 ? pick(['심장마비','불의의 사고']) : pick(['심장마비','노환으로 잠든 채']);
+    else S.cause = a < 45 ? '불의의 사고' : a < 70 ? pick(['심장마비','불의의 사고']) : pick(['심장마비','노환 (잠든 채 영면)']);
   }
 }
 function endOfLife(cause){
@@ -1177,7 +1218,7 @@ function endOfLife(cause){
 function die(cause){
   S.alive = false; stopAuto(true);
   settleYear(true);
-  evCard('t-gray','fa-dove', `${S.name}, 향년 ${Math.max(0,S.age)}세`, `${START_YEAR + S.age}년, ${cause}(으)로 생을 마쳤습니다.`, [['', cause]]);
+  evCard('t-gray','fa-dove', `${S.name}, 향년 ${Math.max(0,S.age)}세 · ${lifeStory().verdict}`, `${START_YEAR + S.age}년, ${ro(cause)} 생을 마쳤습니다. 영수증 화면에서 일생 정리를 볼 수 있습니다.`, [['', cause]]);
   renderHUD(); renderDock();
   setTimeout(showEnding, 900);
 }
@@ -1206,6 +1247,7 @@ function renderYear(b, prem){
     <p class="flavor">${b.flavor}</p>
     <div class="use"><span>${icon('fa-hospital')} 병의원 <b class="num">${b.visits}</b>일</span><span>${icon('fa-prescription-bottle-medical')} 약국 <b class="num">${b.ph}</b>일</span></div>
     ${b.mil ? '' : `<dl class="ledger">
+      ${ownEconomy() && S.yearIncome > 0 ? `<dt>올해 연소득</dt><dd class="num">${won(S.yearIncome)} (${incLvl(S.yearIncome)})</dd>` : ''}
       <dt>올해 기본 진료비</dt><dd class="num">${won(b.cost)}</dd>
       <dt>공단 부담</dt><dd class="num g">+${won(b.pub)}</dd>
       <dt>본인 부담</dt><dd class="num">${won(b.own)}</dd>
@@ -1319,6 +1361,130 @@ function toast(msg){
 /* =========================================================
    엔딩 영수증
    ========================================================= */
+function josa(w, a, b){ const c = w.charCodeAt(w.length-1) - 0xAC00; return (c >= 0 && c <= 11171 && c % 28) ? a : b; }
+function ro(w){ const c = w.replace(/[)\s]+$/,'').charCodeAt(w.replace(/[)\s]+$/,'').length-1) - 0xAC00; return w + ((c >= 0 && c <= 11171 && c % 28 && c % 28 !== 8) ? '으로' : '로'); }
+const LOSS_NAMES = { aging:'노화', smoke:'흡연', drink:'음주', upf:'초가공식품', chronic:'방치한 만성질환', stress:'스트레스', cancer:'암', cardio:'심뇌혈관질환', dementia:'치매', other:'기타 질환' };
+function lifeStory(){
+  const n = S.name, A = Math.max(0, S.age), eun = josa(n,'은','는');
+  const cancers = S.cancers.filter(c => c.dxAge != null), hidden = S.cancers.filter(c => c.status === 'hidden');
+  const fatalCancer = cancers.find(c => c.status === 'terminal');
+  const fatalCardio = S.cardioLog.find(c => c.fatal);
+  const screenSaved = cancers.some(c => c.via === 'screen' && c.status === 'cured');
+  // 한 줄 평
+  let verdict = A >= 83 ? '천수를 누린 삶' : '평범하지만 단단했던 삶';
+  if (A >= 95) verdict = '건강하게 장수한 삶';
+  else if (A < 45) verdict = '너무 일찍 저문 삶';
+  if (S.stressPeak >= 80 && A >= 45) verdict = '고단했지만 끝까지 버텨낸 삶';
+  if (screenSaved) verdict = '검진이 살린 삶';
+  if (fatalCancer && fatalCancer.via !== 'screen' && S.checkSkips > 0) verdict = '너무 늦게 찾아낸 병';
+  if (fatalCardio && fatalCardio.htnHidden) verdict = '모르고 지나친 고혈압';
+  if (fatalCardio && S.stressPeak >= 70) verdict = '스트레스에 무너진 심장';
+  if (S.smokeEver && S.quitAge == null && ((fatalCancer && fatalCancer.type === 'lung') || fatalCardio)) verdict = '담배가 앗아간 삶';
+
+  const sec = [];
+  // 1. 인생 궤적
+  const hhV = HH_INCOME[S.hhInc-1];
+  let t = `${START_YEAR}년, 연소득 ${won(hhV)}(${incLvl(hhV)})인 가정의 ${S.gender==='F'?'딸':'아들'}로 태어났습니다.`;
+  if (A < 19) t += ` 그러나 ${A}세, 어른이 되기도 전에 세상을 떠났습니다.`;
+  else {
+    const jobs = S.milestones.filter(m => m.title.endsWith('일을 시작'));
+    if (jobs.length) t += ` ${S.path === 'college' ? '대학을 졸업하고' : '고등학교를 마치자마자'} ${jobs[0].age}세에 <b>${ro(jobs[0].title.replace(' 일을 시작',''))}</b> 일을 시작했습니다.`;
+    const ev = [];
+    const closed = S.milestones.find(m => m.title.includes('일을 접었습니다'));
+    if (closed) ev.push([closed.age, `${closed.age}세에 사업을 접고 물류센터 관리자로 다시 일어섰습니다.`]);
+    const laid = S.milestones.find(m => m.title.includes('실직'));
+    if (laid) ev.push([laid.age, `${laid.age}세에는 구조조정으로 직장을 잃기도 했습니다.`]);
+    if (S.marryAt != null) ev.push([S.marryAt, `${S.marryAt}세에 결혼해 ${S.children ? `자녀 ${S.children}명을 키웠습니다` : '아이 없이 둘이서 살았습니다'}.`]);
+    else if (A >= 35) ev.push([999, '평생 혼자의 삶을 살았습니다.']);
+    if (S.widowed) ev.push([S.spouse.deathAge, `${S.spouse.deathAge}세에 배우자를 먼저 떠나보냈습니다.`]);
+    if (S.retired) ev.push([60, '60세에 은퇴했습니다.']);
+    t += ev.sort((x, y) => x[0] - y[0]).map(x => ' ' + x[1]).join('');
+    if (S.peakIncome) t += ` 가장 많이 벌던 해의 연소득은 <b>${won(S.peakIncome)}(${incLvl(S.peakIncome)})</b>, 마지막 재산은 <b>${lvl(S.wdecile)}(${S.wdecile}분위)</b>였습니다.`;
+  }
+  sec.push({ ic:'fa-route', h:'어떤 인생을 살았나', p:t });
+
+  // 2. 건강과 생활습관
+  const losses = Object.entries(S.hloss).filter(([,v]) => v >= .5).sort((a,b) => b[1]-a[1]);
+  const top = losses.slice(0,3).map(([k,v]) => `${LOSS_NAMES[k]}(-${Math.round(v)})`);
+  let h = `체력은 태어날 때 <b>${Math.round(S.health0)}</b>에서 ${A}세에 <b>${Math.round(clamp(S.health,0,100))}</b>까지 내려왔습니다.`;
+  if (top.length) h += ` 체력을 가장 많이 깎은 것은 ${top.join(', ')} 순이었습니다.`;
+  const habits = [];
+  const hs = S.hist;
+  if (hs.smokeAt != null){
+    if (S.quitAge != null && !S.smoke) habits.push(`${hs.smokeAt}세에 시작한 담배를 ${S.quitAge}세에 금연치료로 끊었습니다(${S.quitAge - hs.smokeAt}년 흡연).`);
+    else habits.push(`${hs.smokeAt}세에 ${hs.smokeVice === hs.smokeAt ? '스트레스를 못 이겨 ' : ''}시작한 담배를 끝내 끊지 못했습니다(${A - hs.smokeAt}년 흡연). 흡연은 폐암 위험을 크게, 심근경색·뇌졸중 위험을 2배로 올렸습니다.`);
+  } else if (A >= 20) habits.push('담배는 평생 입에 대지 않았습니다.');
+  if (hs.drinkAt != null) habits.push(hs.drinkStop ? `${hs.drinkAt}세부터 이어진 잦은 술자리를 ${hs.drinkStop}세에 줄였습니다.` : `${hs.drinkVice ? `${hs.drinkVice}세부터 스트레스를 술로 풀었고` : `${hs.drinkAt}세부터 고위험 음주가 이어졌고`}, 간과 혈관이 그 대가를 치렀습니다.`);
+  if (S.upf) habits.push('10대에 길든 짜고 단 초가공식품 입맛이 평생 따라다녔습니다.');
+  if (hs.exAt != null) habits.push(`${hs.exAt}세부터 꾸준히 운동해 체력을 <b>+${Math.round(S.hgain)}</b>만큼 지켜냈습니다.`);
+  else if (A >= 30) habits.push('운동은 평생 멀리했습니다.');
+  sec.push({ ic:'fa-heart-pulse', h:'무엇이 건강을 좌우했나', p:h, list:habits, losses });
+
+  // 3. 스트레스
+  const groups = {};
+  for (const e of S.stressLog){ const g = groups[e.why] || (groups[e.why] = { why:e.why, sum:0, cnt:0, first:e.age, last:e.age }); g.sum += e.n; g.cnt++; g.last = e.age; }
+  const sl = Object.values(groups).sort((a,b) => b.sum - a.sum);
+  let st;
+  if (!sl.length) st = '큰 굴곡 없이 비교적 평온한 삶이었습니다.';
+  else {
+    st = `스트레스 지수는 최고 <b>${Math.round(S.stressPeak)}</b>까지 올랐습니다. 마음을 가장 크게 흔든 것은 ` +
+      sl.slice(0,3).map(g => g.cnt > 1 ? `<b>${g.why}</b>(${g.first}~${g.last}세에 ${g.cnt}번, +${g.sum})` : `<b>${g.first}세 ${g.why}</b>(+${g.sum})`).join(', ') + ' 순이었습니다.';
+  }
+  const mind = S.hist.mind;
+  if (mind.some(m => m.c === 'counsel')) st += ' 한계에 이르렀을 땐 정신건강의학과 상담으로 마음을 돌봤습니다.';
+  if (mind.some(m => m.c === 'vice')) st += ' 스트레스를 술·담배로 풀었고, 그 습관이 다시 몸을 해쳤습니다.';
+  if (mind.some(m => m.c === 'endure') && !mind.some(m => m.c === 'counsel')) st += ' 힘들 때 도움을 청하지 않고 혼자 참았습니다.';
+  if ((S.hloss.stress || 0) >= 3) st += ` 오래 쌓인 스트레스는 체력을 <b>-${Math.round(S.hloss.stress)}</b> 깎고 혈관질환 위험을 높였습니다.`;
+  sec.push({ ic:'fa-cloud-rain', h:'스트레스는 어디서 왔나', p:st });
+
+  // 4. 질병과 검진
+  const dx = [];
+  const fx = w => w && w.length ? ` 당시 위험요인: ${w.join(', ')}.` : '';
+  for (const [k, nm] of [['htn','고혈압'],['dm','당뇨병']]){
+    const c = S[k]; if (!c) continue;
+    dx.push(c.detected ? `<b>${nm}</b>: ${c.onset}세 무렵 생겨 ${c.detAge}세에 ${c.how}에서 발견, ${c.how === '건강검진' ? '일찍 약으로 관리했습니다' : `${c.detAge - c.onset}년이나 모른 채 지냈습니다`}.${fx(c.why)}`
+                       : `<b>${nm}</b>: ${c.onset}세 무렵부터 있었지만 끝내 몰랐습니다.${fx(c.why)}`);
+  }
+  for (const c of cancers){
+    const C = CANCERS[c.type];
+    const how = c.via === 'screen' ? '국가검진에서 증상 없이 발견' : '증상이 나타난 뒤에야 발견';
+    const out = c.status === 'cured' ? '5년을 이겨내 완치되었습니다' : c.status === 'terminal' ? '끝내 이겨내지 못했습니다' : '치료를 이어가던 중이었습니다';
+    dx.push(`<b>${C.name} ${c.stage}기</b> (${c.dxAge}세): ${how}, ${out}.${fx(c.why)}`);
+  }
+  for (const h2 of hidden) dx.push(`<b>${CANCERS[h2.type].name}</b>: ${h2.onset}세 무렵 몸속에 생겨 ${h2.stage}기까지 자랐지만 끝내 발견되지 않았습니다.`);
+  for (const c of S.cardioLog) dx.push(`<b>${c.kind}</b> (${c.age}세): ${c.fatal ? '골든타임을 놓쳐 돌연사했습니다' : '119 덕분에 살아났습니다'}.${fx(c.why)}${c.htnHidden ? ' 고혈압이 있는 줄 몰랐습니다.' : ''}`);
+  if (S.dementia) dx.push('<b>치매</b>: 노년에 기억이 흐려지기 시작했습니다.');
+  if (S.rare) dx.push('<b>희귀질환</b>: 원인을 몰라 헤매다 진단받고 산정특례로 치료했습니다.');
+  let dp = `건강검진은 <b>${S.checkups}번</b> 받고 <b>${S.checkSkips}번</b> 건너뛰었습니다.`;
+  if (screenSaved) dp += ' 증상 없을 때 받은 검진이 생명을 지켰습니다.';
+  else if (cancers.some(c => c.via !== 'screen' && c.stage >= 3) && S.checkSkips) dp += ' 건너뛴 검진이 늦은 발견으로 이어졌습니다.';
+  if (!dx.length) dp += ' 큰 병 없이 살았습니다.';
+  sec.push({ ic:'fa-stethoscope', h:'병은 어떻게 찾아왔나', p:dp, list:dx });
+
+  // 5. 마지막
+  let e = `${A}세, <b>${ro(S.cause)}</b> 생을 마쳤습니다.`;
+  if (fatalCancer) e += ` ${fatalCancer.dxAge}세 진단 후 ${A - fatalCancer.dxAge}년을 투병했습니다.`;
+  if (S.cause === '다발성 장기부전') e += ` 노화와 ${top.slice(1).join(', ') || '병'}이 겹치며 체력이 바닥났습니다.`;
+  if (S.ltc) e += ` 마지막 ${Math.max(1, S.age - S.ltcAt)}년은 장기요양 ${S.ltc === 'home' ? '방문요양' : '요양원'}의 돌봄을 받았습니다.`;
+  if (S.hospice) e += ' 호스피스 병동에서 가족과 작별 인사를 나눴습니다.';
+  if (S.directive) e += ' 미리 써 둔 사전연명의료의향서 덕분에 가족이 어려운 결정을 대신하지 않아도 됐습니다.';
+  const helps = [['산정특례', S.specialSaved], ['본인부담상한제', S.capRefund], ['장기요양보험', S.ltcBenefit], ['재난적의료비 지원', S.catastrophic]].sort((a,b) => b[1]-a[1]);
+  e += ` 평생 건강보험료 <b>${won(S.paid)}</b>을 내고 <b>${won(S.benefit)}</b>의 혜택을 받았습니다${helps[0][1] > 1e6 ? `. 가장 든든했던 제도는 <b>${helps[0][0]}</b>${josa(helps[0][0],'이었','였')}습니다(${won(helps[0][1])} 절감)` : ''}.`;
+  sec.push({ ic:'fa-dove', h:'마지막 장면', p:e });
+  return { verdict, sec };
+}
+function storyHtml(){
+  const L = lifeStory();
+  const max = Math.max(1, ...Object.values(S.hloss), S.hgain);
+  return `<article class="bio" aria-label="일생 정리">
+    <div class="eb">${S.name}의 일생 · ${START_YEAR}–${START_YEAR + Math.max(0,S.age)}</div>
+    <h2>${L.verdict}</h2>
+    <div class="who">${S.gender==='F'?'여성':'남성'} · 향년 ${Math.max(0,S.age)}세 · ${S.job ? JOBS[S.job].name : '직업 없음'}</div>
+    ${L.sec.map(x => `<section><h3>${icon(x.ic)}${x.h}</h3><p>${x.p}</p>
+      ${x.losses && (x.losses.length || S.hgain) ? `<div class="loss">${x.losses.map(([k,v]) => `<span>${LOSS_NAMES[k]}</span><span class="t"><i style="width:${v/max*100}%"></i></span><span class="v">-${Math.round(v)}</span>`).join('')}${S.hgain >= .5 ? `<span>운동</span><span class="t"><i class="up" style="width:${S.hgain/max*100}%"></i></span><span class="v">+${Math.round(S.hgain)}</span>` : ''}</div>` : ''}
+      ${x.list && x.list.length ? `<ul>${x.list.map(li => `<li>${li}</li>`).join('')}</ul>` : ''}</section>`).join('')}
+  </article>`;
+}
 function showEnding(){
   const m = $('#endModal');
   const ratio = S.paid > 0 ? Math.round(S.benefit / S.paid * 100) : null;
@@ -1328,6 +1494,7 @@ function showEnding(){
   const now = new Date();
   const lifeLeft = S.age >= 83 ? '대한민국 기대수명(83.5세)보다 오래 살았습니다.' : `대한민국 기대수명(83.5세)보다 ${Math.round(83.5 - Math.max(0,S.age))}년 일찍 떠났습니다.`;
   m.innerHTML = `
+    ${storyHtml()}
     <div class="receipt" role="dialog" aria-label="인생 영수증">
       <div class="rc-c">
         <p class="rc-title">인생 영수증</p>
@@ -1404,6 +1571,7 @@ $('#btnStart').onclick = () => {
   const nm = pick(SURN) + pick(NAMES[g]);
   stopAuto(true);
   S = newState(nm, g);
+  S.health0 = S.health;
   S.hhInc = rint(1,10); S.hhWealth = clamp(S.hhInc + rint(-2,2), 1, 10); S.decile = S.hhInc;
   shown.paid = 0; shown.ben = 0;
   feed.innerHTML = '';
