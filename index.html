@@ -100,6 +100,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
 /* Feed */
 .feed{flex:1 1 0;min-height:0;overflow-y:auto;padding-block:14px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+/* 이번 해에 새로 생긴 카드 강조, 지난 카드는 살짝 흐리게 */
+.card.fresh{border-color:color-mix(in srgb, var(--accent) 60%, var(--line));box-shadow:0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent), 0 6px 18px -10px color-mix(in srgb, var(--accent) 70%, transparent)}
+.card.fresh.ev{border-left-width:3px}
+.feed .card:not(.fresh){opacity:.62;transition:opacity .4s}
+.feed .card:not(.fresh):hover{opacity:1}
+.new-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.08em;color:var(--bg);background:var(--accent);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px}
+.card:not(.fresh) .new-tag{display:none}
+/* 상단 값이 바뀌면 잠깐 반짝임 */
+@keyframes hl{0%{background:color-mix(in srgb, var(--warn) 42%, transparent)}100%{background:transparent}}
+.hl{animation:hl 1.8s ease-out;border-radius:4px}
+@media (prefers-reduced-motion:reduce){.hl{animation:none;outline:1px solid var(--warn)}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;animation:drop .35s ease both;min-width:0}
 @keyframes drop{from{transform:translateY(-8px);opacity:.2}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.card{animation:none}.bar>i{transition:none}}
@@ -834,6 +845,7 @@ function babyChoice(second){
 }
 function advance(){
   if (!S.alive || S.queue.length || S.dying) return;
+  unfresh();
   settleYear(false);
   S.age++;
   const a = S.age;
@@ -1401,8 +1413,12 @@ function die(cause){
 const feed = $('#feed');
 function prepend(html){
   feed.insertAdjacentHTML('afterbegin', html);
+  const el = feed.firstElementChild;
+  if (el && el.classList.contains('card')) el.classList.add('fresh');
   feed.scrollTop = 0;
 }
+// 새 해가 시작되면 지난 카드의 강조를 끔
+function unfresh(){ feed.querySelectorAll('.card.fresh').forEach(c => c.classList.remove('fresh')); }
 function chipsHtml(chips){ return chips && chips.length ? `<div class="chips">${chips.map(([c,t]) => `<span class="chip ${c}">${t}</span>`).join('')}</div>` : ''; }
 function evCard(tone, ic, title, body, chips){
   prepend(`<article class="card ev ${tone}"><div class="ic">${icon(ic)}</div><div style="min-width:0"><h3>${title}</h3>${body?`<p>${body}</p>`:''}${chipsHtml(chips)}</div></article>`);
@@ -1415,7 +1431,7 @@ function renderYear(b, prem){
   const a = S.age;
   const lines = year.lines.map(([ic,t]) => `<li>${icon(ic)}<span>${t}</span></li>`).join('');
   prepend(`<article class="card">
-    <div class="yr-head"><span class="a">${a}세</span><span class="y">${START_YEAR + a}년</span><span class="stage">${b.stage}</span></div>
+    <div class="yr-head"><span class="a">${a}세</span><span class="y">${START_YEAR + a}년</span><span class="new-tag">NEW</span><span class="stage">${b.stage}</span></div>
     <p class="flavor">${b.flavor}</p>
     <div class="use"><span>${icon('fa-hospital')} 병의원 <b class="num">${b.visits}</b>일</span><span>${icon('fa-prescription-bottle-medical')} 약국 <b class="num">${b.ph}</b>일</span></div>
     ${b.mil ? '' : `<dl class="ledger">
@@ -1487,6 +1503,21 @@ function renderHUD(){
   $('#hVisits').textContent = S.visits.toLocaleString('ko-KR');
   $('#hPharm').textContent = S.pharmacy.toLocaleString('ko-KR');
   $('#hRatio').textContent = S.paid > 0 ? `${Math.round(S.benefit / S.paid * 100).toLocaleString('ko-KR')}%` : '-';
+  flashChanged();
+}
+// 지난번과 값이 달라진 상단 항목만 반짝이게
+const HL_IDS = ['hJob','hInc','hWealth','hFam','hDis','hHealth','hVital','hStress','hMood','hVisits','hPharm','hRatio'];
+let hudPrev = null;
+function flash(el){ if (!el) return; el.classList.remove('hl'); void el.offsetWidth; el.classList.add('hl'); }
+function flashChanged(){
+  const now = {}; HL_IDS.forEach(id => now[id] = $('#'+id).textContent);
+  now.paid = Math.round(S.paid); now.ben = Math.round(S.benefit);
+  if (hudPrev){
+    HL_IDS.forEach(id => { if (now[id] !== hudPrev[id]) flash($('#'+id)); });
+    if (now.paid !== hudPrev.paid) flash($('#hPaid').closest('.mbox'));
+    if (now.ben !== hudPrev.ben) flash($('#hBen').closest('.mbox'));
+  }
+  hudPrev = now;
 }
 
 const dock = $('#dock');
@@ -1886,6 +1917,7 @@ $('#btnStart').onclick = () => {
   S.father = rint(70,88) - S.fGap; S.mother = rint(74,93) - S.mGap; // 내 나이 기준 부모님 별세 시점
   shown.paid = 0; shown.ben = 0;
   feed.innerHTML = '';
+  hudPrev = null;
   $('#startScreen').hidden = true;
   // 임신 단계
   charge(1000000, 0); S.visits += 12;
