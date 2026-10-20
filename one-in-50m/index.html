@@ -177,7 +177,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   <header class="hud" id="hud">
     <div class="hud-top">
       <div class="hud-age"><span id="hAge">태아</span><small id="hYear">2026년</small></div>
-      <div class="hud-who"><b id="hName">-</b><br><span id="hJob">피부양자</span></div>
+      <div class="hud-who"><b id="hName">-</b><br><span id="hJob">피부양자</span><br><span id="hEcon">-</span></div>
     </div>
     <div class="gauge">
       <span class="lbl">체력</span>
@@ -251,15 +251,46 @@ const START_YEAR = 2026;
 // 본인부담상한제 소득분위별 상한액 (2025년 기준 근사, 요양병원 120일 이하)
 const CAPS = [890000,1100000,1100000,1700000,1700000,3130000,3130000,4230000,5260000,8260000];
 
+// base: 월급(원, 직장가입자) / lo~hi: 월 소득 범위(만원, 지역가입자) / stress: 직무 스트레스 가산
 const JOBS = {
-  sme_work: { name:'중소기업 생산직', base:2700000, type:'employee' },
-  tech:     { name:'기술직 (현장 엔지니어)', base:3300000, type:'employee' },
-  shop:     { name:'자영업 (가게 운영)', base:0, type:'regional' },
-  big:      { name:'대기업 사무직', base:5200000, type:'employee' },
-  gov:      { name:'공무원', base:3800000, type:'employee' },
-  sme:      { name:'중소기업 사무직', base:2900000, type:'employee' },
-  startup:  { name:'창업 (1인 사업자)', base:0, type:'regional' },
+  // 고졸·전문 기술
+  factory:   { name:'자동차 부품 생산직', path:'work', type:'employee', base:3000000, stress:4, ic:'fa-industry', work:['주야 2교대 근무가 이어졌습니다','생산 라인 증설로 특근이 늘었습니다'] },
+  electric:  { name:'전기기사', path:'work', type:'employee', base:3400000, stress:4, ic:'fa-bolt', work:['한여름 정전 복구에 밤을 새웠습니다','현장 안전 점검이 몰렸습니다'] },
+  cook:      { name:'호텔 조리사', path:'work', type:'employee', base:2700000, stress:6, ic:'fa-kitchen-set', work:['연회 시즌이라 하루 14시간 주방에 섰습니다','손목과 허리 통증이 심해졌습니다'] },
+  nurseaid:  { name:'간호조무사', path:'work', type:'employee', base:2500000, stress:5, ic:'fa-user-nurse', work:['환자 보호자의 폭언에 시달렸습니다','야간 근무가 계속됐습니다'] },
+  logistics: { name:'물류센터 관리자', path:'work', type:'employee', base:2900000, stress:5, ic:'fa-boxes-stacked', work:['명절 물량 폭주로 새벽 퇴근이 이어졌습니다'] },
+  nco:       { name:'부사관 (직업군인)', path:'work', type:'employee', base:3300000, stress:5, ic:'fa-person-military-rifle', work:['장기 훈련으로 집에 못 들어갔습니다','근무지 이동으로 이사를 했습니다'] },
+  mechanic:  { name:'자동차 정비사', path:'work', type:'employee', base:3100000, stress:4, ic:'fa-screwdriver-wrench', work:['수리 예약이 밀려 점심을 거릅니다'] },
+  hair:      { name:'헤어 디자이너', path:'work', type:'regional', lo:180, hi:620, stress:6, ic:'fa-scissors', work:['단골이 다른 미용실로 옮겼습니다'] },
+  delivery:  { name:'택배기사 (개인사업자)', path:'work', type:'regional', lo:280, hi:520, stress:8, ic:'fa-truck-fast', work:['하루 300개 배송에 무릎이 나갔습니다'] },
+  cvs:       { name:'편의점 점주', path:'work', type:'regional', lo:180, hi:500, stress:8, ic:'fa-store', work:['아르바이트생이 그만둬 직접 밤을 지켰습니다'] },
+  cafe:      { name:'카페 사장', path:'work', type:'regional', lo:150, hi:600, stress:7, ic:'fa-mug-saucer', work:['길 건너에 대형 프랜차이즈가 생겼습니다'] },
+  // 대졸
+  designer:  { name:'그래픽 디자이너', path:'college', type:'employee', base:3100000, stress:6, ic:'fa-pen-nib', work:['클라이언트가 시안을 열 번째 갈아엎었습니다','마감 전날 밤샘 작업을 했습니다'] },
+  sales:     { name:'제약회사 영업사원', path:'college', type:'employee', base:4300000, stress:8, ic:'fa-handshake', work:['분기 실적 압박이 극심했습니다','접대 술자리가 일주일 내내 이어졌습니다'] },
+  dev:       { name:'소프트웨어 개발자', path:'college', type:'employee', base:4800000, stress:6, ic:'fa-laptop-code', work:['서비스 장애로 새벽에 호출됐습니다','출시 직전 크런치 모드에 들어갔습니다'] },
+  nurse:     { name:'대학병원 간호사', path:'college', type:'employee', base:3900000, stress:9, ic:'fa-user-nurse', work:['3교대 근무로 생체 리듬이 무너졌습니다','중환자실 인력 부족으로 연속 근무를 했습니다'] },
+  teacher:   { name:'초등학교 교사', path:'college', type:'employee', base:3600000, stress:5, ic:'fa-chalkboard-user', work:['학부모 민원이 이어졌습니다','담임 업무와 행정 업무가 겹쳤습니다'] },
+  civil:     { name:'구청 행정공무원', path:'college', type:'employee', base:3400000, stress:4, ic:'fa-landmark', work:['민원 창구에서 하루 종일 항의를 받았습니다','재난 대응으로 비상 근무를 했습니다'] },
+  account:   { name:'회계사', path:'college', type:'employee', base:5600000, stress:7, ic:'fa-calculator', work:['감사 시즌이라 석 달간 주말이 없었습니다'] },
+  bank:      { name:'은행원', path:'college', type:'employee', base:5200000, stress:6, ic:'fa-building-columns', work:['펀드 판매 목표가 내려왔습니다','지점 통폐합 소식에 불안합니다'] },
+  marketer:  { name:'마케터', path:'college', type:'employee', base:3600000, stress:6, ic:'fa-bullhorn', work:['캠페인 성과가 저조해 보고서를 다시 썼습니다'] },
+  reporter:  { name:'방송사 기자', path:'college', type:'employee', base:4000000, stress:8, ic:'fa-microphone', work:['선거 기간이라 매일 밤 마감에 쫓겼습니다'] },
+  research:  { name:'반도체 연구원', path:'college', type:'employee', base:5000000, stress:6, ic:'fa-microchip', work:['신제품 양산 일정이 당겨졌습니다'] },
+  social:    { name:'사회복지사', path:'college', type:'employee', base:2700000, stress:6, ic:'fa-hands-holding-child', work:['위기가정 사례가 한꺼번에 몰렸습니다'] },
+  pharm:     { name:'약사 (병원 약제부)', path:'college', type:'employee', base:5800000, stress:5, ic:'fa-prescription-bottle-medical', work:['조제 대기 환자가 끝없이 밀려왔습니다'] },
+  architect: { name:'건축설계사', path:'college', type:'employee', base:3400000, stress:7, ic:'fa-compass-drafting', work:['현상설계 공모 마감으로 사무실에서 잤습니다'] },
+  crew:      { name:'항공 승무원', path:'college', type:'employee', base:4000000, stress:6, ic:'fa-plane', work:['장거리 비행으로 시차 적응이 안 됩니다'] },
+  doctor:    { name:'내과 전문의 (봉직의)', path:'college', type:'employee', base:9500000, stress:8, ic:'fa-user-doctor', work:['외래 환자 하루 80명을 봤습니다','당직이 이어졌습니다'] },
+  lawyer:    { name:'변호사 (로펌)', path:'college', type:'employee', base:7500000, stress:8, ic:'fa-scale-balanced', work:['대형 소송 준비로 새벽 퇴근이 이어졌습니다'] },
+  youtuber:  { name:'유튜버 (1인 크리에이터)', path:'college', type:'regional', lo:120, hi:900, stress:7, ic:'fa-video', work:['알고리즘이 바뀌어 조회수가 반토막 났습니다'] },
+  mall:      { name:'온라인 쇼핑몰 창업', path:'college', type:'regional', lo:150, hi:800, stress:8, ic:'fa-cart-shopping', work:['재고가 쌓여 창고 비용이 불어났습니다'] },
+  translator:{ name:'프리랜서 번역가', path:'college', type:'regional', lo:200, hi:480, stress:5, ic:'fa-language', work:['단가가 깎이고 일감이 줄었습니다'] },
 };
+// 순자산 10분위 경계(만원, 가계금융복지조사 근사)
+const WEALTH_CUTS = [1500, 4500, 9000, 14000, 20000, 28000, 38000, 52000, 80000];
+const wealthDecile = w => 1 + WEALTH_CUTS.filter(t => w >= t*1e4).length;
+const lvl = d => d >= 8 ? '상' : d >= 4 ? '중' : '하';
 
 const CANCERS = {
   thyroid: { name:'갑상선암', w:12, surv:[1,.99,.97,.75], cost:.45, screen:()=>false },
@@ -331,7 +362,8 @@ function newState(name, gender){
     ltc:null, ltcAsked:false, directive:false, hospice:false,
     badges:new Set(), queue:[], cause:null, auto:false,
     stress:12, stressPeak:12, married:false, marryAt:null, marryAge:rint(27,34), marryDeclined:false, spouse:null, widowed:false,
-    children:0, childBirths:[], father:rint(50,74), mother:rint(56,82), badYears:0, milestones:[]
+    children:0, childBirths:[], father:rint(50,74), mother:rint(56,82), badYears:0, milestones:[],
+    hhInc:0, hhWealth:0, wealth:0, wdecile:1
   };
 }
 
@@ -372,11 +404,17 @@ function updateIncome(){
     return;
   }
   const j = JOBS[S.job];
-  if (j.type === 'regional') S.salary = rint(220, 680)*1e4*ageFactor(a);
+  if (j.type === 'regional') S.salary = rint(j.lo, j.hi)*1e4*ageFactor(a);
   else S.salary = j.base*ageFactor(a)*(.98 + R()*.04);
   if (S.jobless && S.jobless.age === a) S.salary *= .5;
   S.yearIncome = S.salary*12;
   S.decile = clamp(Math.ceil(S.salary/700000), 1, 10);
+}
+// 지역가입자 월 보험료: 소득분 + 재산분(재산 분위 반영, 기본공제 1억 근사)
+function regionalMonthly(monthlyIncome){
+  const incomePart = monthlyIncome*RATE*.75;
+  const propPart = Math.max(0, S.wdecile - 2)*18000;
+  return (incomePart + propPart)*(1+LTC_RATE);
 }
 function payPremium(){
   const a = S.age;
@@ -385,16 +423,15 @@ function payPremium(){
   else if (S.ins === 'dependent'){ note = S.retired ? '자녀의 피부양자: 보험료 0원' : '부모님 건강보험의 피부양자로 보장'; }
   else if (S.jobless && S.jobless.age === a){
     if (S.jobless.mode === 'keep'){ mine = S.jobless.prev; note = '임의계속가입: 직장 시절 보험료 유지'; }
-    else { mine = 190000*12; note = '지역가입자 전환: 재산·자동차 반영'; }
+    else { mine = (regionalMonthly(S.salary*.5) )*12; note = `지역가입자 전환: 재산 ${lvl(S.wdecile)}(${S.wdecile}분위) 반영 · 월 ${won(mine/12)}`; }
   }
   else if (S.ins === 'employee'){
     mine = S.salary*12*RATE/2*(1+LTC_RATE); employer = mine;
     note = `직장가입자 · 월 ${won(mine/12)} (회사도 같은 금액 부담)`;
   }
   else if (S.ins === 'regional'){
-    if (S.retired) mine = (5 + S.decile*1.3)*1e4*12*(1+LTC_RATE);
-    else mine = S.salary*12*RATE*.75*(1+LTC_RATE);
-    note = `지역가입자 · 월 ${won(mine/12)}`;
+    mine = regionalMonthly(S.retired ? S.yearIncome/12 : S.salary)*12;
+    note = `지역가입자 · 월 ${won(mine/12)} (소득분 + 재산 ${lvl(S.wdecile)}(${S.wdecile}분위)분)`;
   }
   S.paid += mine; S.employerPaid += employer; S.yearPrem = mine;
   return { mine, note };
@@ -448,7 +485,7 @@ function mood(v){
 function stressYear(){
   const a = S.age;
   let base = a < 15 ? 8 : 18;
-  if (S.job && !S.retired && S.ins !== 'military') base += JOBS[S.job].type === 'regional' ? 7 : 4;
+  if (S.job && !S.retired && S.ins !== 'military') base += JOBS[S.job].stress;
   if (S.exercise) base -= 5;
   if (S.married) base -= 3;
   if (S.smoke) base += 2;
@@ -471,6 +508,21 @@ function mindChoice(){
       { label:'혼자 참는다', sub:'괜찮아지겠지', cls:'ghost', run:()=>{ S.health -= 2; line2('fa-face-sad-tear', `혼자 버티는 밤이 길어집니다 · ${addStress(4)}`); } },
     ]};
 }
+function ownEconomy(){ return !!(S.job || S.retired); }
+function updateWealth(){
+  if (!ownEconomy()) return;
+  if (S.job && !S.retired && S.ins !== 'military') S.wealth += S.yearIncome*(S.married ? .10 : .07);
+  if (S.retired) S.wealth -= Math.max(0, 1.8e7 - S.yearIncome); // 생활비 부족분을 재산에서
+  S.wealth *= S.wealth > 0 ? 1.012 : 1;              // 자산 가치 상승(물가 차감)
+  S.wealth -= (S.yearOOP + S.yearNonCov)*.5;          // 의료비 지출
+  S.wealth = Math.max(S.wealth, -3e7);
+  S.wdecile = wealthDecile(S.wealth);
+}
+function econLabel(){
+  const own = ownEconomy();
+  const i = own ? S.decile : S.hhInc, w = own ? S.wdecile : S.hhWealth, pre = own ? '' : '가구 ';
+  return `${pre}소득 ${lvl(i)}(${i}분위) · 재산 ${lvl(w)}(${w}분위)`;
+}
 function workLife(){
   if (!S.job || S.retired || S.ins === 'military') return;
   if (S.jobless && S.jobless.age === S.age) return;
@@ -478,20 +530,23 @@ function workLife(){
     const r = R();
     if (r < .2){
       S.salary *= .55; S.badYears++;
-      line('fa-arrow-trend-down', `경기가 얼어붙어 매출이 반토막 났습니다 · ${addStress(14)}`);
+      line('fa-arrow-trend-down', `${pick(JOBS[S.job].work.concat(['경기가 얼어붙어 매출이 반토막 났습니다']))} · 소득 급감 · ${addStress(14)}`);
       if (S.badYears >= 3){
-        S.badYears = 0; S.job = 'sme'; S.ins = 'employee'; S.salary = JOBS.sme.base*ageFactor(S.age)*.9;
-        lifeEvent('fa-store-slash','가게를 폐업했습니다',
-          '3년째 적자를 견디지 못하고 문을 닫았습니다. 중소기업에 재취업해 다시 직장가입자가 되었습니다. 지역가입자일 때보다 보험료 부담이 줄었습니다.',
+        const old = JOBS[S.job].name;
+        S.badYears = 0; S.job = 'logistics'; S.ins = 'employee'; S.salary = JOBS.logistics.base*ageFactor(S.age)*.9; S.wealth *= .55;
+        lifeEvent('fa-store-slash',`${old} 일을 접었습니다`,
+          `적자가 이어지는 것을 견디지 못하고 사업을 정리했습니다. 빚을 갚느라 재산이 크게 줄었고, 물류센터 관리자로 재취업해 다시 직장가입자가 되었습니다. 지역가입자일 때보다 보험료 부담이 줄었습니다.`,
           [['r', addStress(22)],['b','직장가입자 전환']]);
       }
     } else if (r > .85){
       S.salary *= 1.3; S.badYears = 0;
-      line('fa-arrow-trend-up', `가게가 입소문을 타 손님이 늘었습니다 · ${addStress(-6)}`);
+      line('fa-arrow-trend-up', `일이 잘 풀려 수입이 크게 늘었습니다 · ${addStress(-6)}`);
+    } else if (S.badYears > 0){
+      S.badYears--;
     }
   } else {
     const r = R();
-    if (r < .13) line('fa-fire', `${pick(['야근과 주말 출근이 이어졌습니다','상사와의 갈등으로 잠을 설칩니다','실적 압박이 심해졌습니다','부서 이동으로 일이 두 배가 됐습니다'])} · ${addStress(10)}`);
+    if (r < .13) line('fa-fire', `${pick(JOBS[S.job].work.concat(['상사와의 갈등으로 잠을 설칩니다']))} · ${addStress(10)}`);
     else if (r < .19){ S.salary *= 1.08; line('fa-award', `승진했습니다! · ${addStress(-6)}`); }
   }
   S.yearIncome = S.salary*12;
@@ -526,9 +581,13 @@ function familyEvents(){
   // 부모님
   for (const [nm, age] of [['아버지', S.father], ['어머니', S.mother]]){
     if (a === age - 1) line('fa-hospital-user', `${nm}가 투병을 시작했습니다. 주말마다 병원에 갑니다 · ${addStress(10)}`);
-    if (a === age) lifeEvent('fa-dove', `${nm}가 돌아가셨습니다`,
+    if (a === age){
+      const inh = S.hhWealth*S.hhWealth*rint(60, 160)*1e4/2; // 부모 두 분이 각각 절반
+      S.wealth += inh; S.wdecile = wealthDecile(S.wealth);
+      lifeEvent('fa-dove', `${nm}가 돌아가셨습니다`,
       `장례를 치르는 동안 슬픔과 피로가 한꺼번에 몰려왔습니다. 그나마 ${nm}의 마지막 투병비는 산정특례와 본인부담상한제 덕분에 가계를 무너뜨리지 않았습니다.`,
-      [['r', addStress(28)]]);
+      [['r', addStress(28)], ['', `상속 ${won(inh)}`]]);
+    }
   }
   // 배우자
   if (S.married && S.spouse && S.spouse.alive){
@@ -547,6 +606,7 @@ function marryChoice(){
     options:[
       { label:'결혼한다', sub:'둘이서 함께', cls:'primary', run:()=>{
         S.married = true; S.marryAt = S.age; S.spouse = { alive:true, deathAge: S.age + rint(36, 62) };
+        S.wealth += rint(1000, 5000)*1e4; S.wdecile = wealthDecile(S.wealth);
         lifeEvent('fa-ring','결혼했습니다','결혼 준비로 정신없었지만 든든한 내 편이 생겼습니다. 이제 건강검진 결과도 함께 챙깁니다.',[['g', addStress(-6)],['','배우자 피부양자 가능']]); } },
       { label:'혼자의 삶을 택한다', sub:'비혼', cls:'ghost', run:()=>{ S.marryDeclined = true; line2('fa-user', '나 자신에게 집중하는 삶을 택했습니다.'); } },
     ]};
@@ -589,6 +649,7 @@ function advance(){
   if (!S.dying && !S.cause) mortality();
   if (S.cause && !S.dying) S.queue = [];
   if (S.dying) S.queue = S.queue.filter(q => q.id === 'eol' || q.id === 'directive');
+  updateWealth();
 
   renderYear(base, prem);
   renderHUD();
@@ -806,8 +867,8 @@ function randomEvents(){
     S.queue.push({ id:'jobless', tone:'amber', icon:'fa-briefcase', title:'회사가 구조조정을 합니다',
       desc:`실직하면 직장가입자 자격을 잃습니다. 지역가입자가 되면 재산·자동차까지 반영돼 보험료가 오를 수 있어요. 퇴직 후 36개월간 직장 시절 보험료를 유지하는 '임의계속가입'이 있습니다.`,
       options:[
-        { label:'임의계속가입 신청', sub:`월 ${won(prev/12)} 유지`, cls:'primary', run:()=>{ S.jobless={ age:a+1, mode:'keep', prev }; addStress(20); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-blue','fa-shield','임의계속가입을 신청했습니다','내년 1년간 직장 시절 보험료를 그대로 냅니다. 재취업할 때까지 안전망이 이어집니다.',[['b','임의계속가입']]); } },
-        { label:'지역가입자로 전환', sub:'월 약 19만원 (재산 반영)', cls:'ghost', run:()=>{ S.jobless={ age:a+1, mode:'regional' }; addStress(22); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-gray','fa-house','지역가입자로 전환합니다','소득이 줄었는데 집과 차 때문에 보험료가 오히려 올랐습니다.',[['w','지역가입자']]); } }
+        { label:'임의계속가입 신청', sub:`월 ${won(prev/12)} 유지`, cls:'primary', run:()=>{ S.jobless={ age:a+1, mode:'keep', prev }; S.wealth *= .92; addStress(20); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-blue','fa-shield','임의계속가입을 신청했습니다','내년 1년간 직장 시절 보험료를 그대로 냅니다. 재취업할 때까지 안전망이 이어집니다.',[['b','임의계속가입']]); } },
+        { label:'지역가입자로 전환', sub:`월 약 ${won(regionalMonthly(S.salary*.5))} (재산 ${lvl(S.wdecile)}(${S.wdecile}분위) 반영)`, cls:'ghost', run:()=>{ S.jobless={ age:a+1, mode:'regional' }; S.wealth *= .92; addStress(22); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-gray','fa-house','지역가입자로 전환합니다','소득이 줄었는데 집과 차 때문에 보험료가 오히려 올랐습니다.',[['w','지역가입자']]); } }
       ]});
   }
   if (a >= 66 && a <= 78 && !S.cataract && R() < .07){
@@ -935,21 +996,31 @@ function infantCheck(){
       { label:'바빠서 건너뛴다', sub:'다음에…', cls:'ghost', run:()=>{ S.infantSkipped = true; line2('fa-clock','이번 검진은 놓쳤습니다.'); } },
     ]};
 }
-function jobChoice(path){
-  const opts = path === 'work'
-    ? [['sme_work','fa-industry','4분위 · 직장가입자'],['tech','fa-screwdriver-wrench','5분위 · 직장가입자'],['shop','fa-store','소득 변동 · 지역가입자']]
-    : [['big','fa-building','8분위 · 직장가입자'],['gov','fa-landmark','6분위 · 직장가입자'],['sme','fa-briefcase','4분위 · 직장가입자'],['startup','fa-rocket','소득 변동 · 지역가입자']];
-  return { tone:'blue', icon:'fa-id-card', title:'첫 직장을 고르세요',
-    desc:'직장가입자는 보험료를 회사와 반씩 나눠 냅니다. 자영업자는 지역가입자로 보험료 전액을 직접 냅니다.',
-    options: opts.map(([k, ic, sub]) => ({ label:JOBS[k].name, sub, cls: k==='big'||k==='sme_work' ? 'primary' : 'ghost', run:()=>{
-      S.job = k; S.ins = (S.ins === 'military') ? 'military' : JOBS[k].type; S.preMil = JOBS[k].type;
-      updateIncome(); payPremiumDelta();
-      S.milestones.push({ age:S.age, ic, title:`${JOBS[k].name} 입사` });
-      evCard('t-blue', ic, `${JOBS[k].name}으로 사회생활 시작`,
-        `이제 ${JOBS[k].type==='employee'?'직장가입자로 월급에서 건강보험료가 원천징수됩니다':'지역가입자로 소득·재산에 따라 보험료가 매겨집니다'}. 내가 낸 보험료가 누군가의 수술비가 되고, 언젠가 내 치료비가 됩니다.`,
-        [['b', JOBS[k].type==='employee'?'직장가입자':'지역가입자'],['', `${S.decile}분위`]]);
-    }}))
+function jobChoice(path, rerolled){
+  const pool = Object.keys(JOBS).filter(k => JOBS[k].path === path);
+  const picks = [];
+  while (picks.length < 4 && pool.length) picks.push(pool.splice(Math.floor(R()*pool.length), 1)[0]);
+  if (!picks.some(k => JOBS[k].type === 'employee')) picks[0] = Object.keys(JOBS).find(k => JOBS[k].path === path && JOBS[k].type === 'employee');
+  const sub = k => {
+    const j = JOBS[k];
+    if (j.type === 'regional'){ const lo = clamp(Math.ceil(j.lo*1e4*.8/7e5),1,10), hi = clamp(Math.ceil(j.hi*1e4*.8/7e5),1,10); return `소득 ${lvl(lo)}~${lvl(hi)} (${lo}~${hi}분위, 들쭉날쭉) · 지역가입자`; }
+    const d = clamp(Math.ceil(j.base*.8/7e5),1,10);
+    return `초봉 월 ${won(j.base*.8)} · 소득 ${lvl(d)}(${d}분위) · 직장가입자`;
   };
+  const opts = picks.map((k, i) => ({ label:JOBS[k].name, sub:sub(k), cls: i === 0 ? 'primary' : 'ghost', run:()=>{
+      const j = JOBS[k];
+      S.job = k; S.ins = (S.ins === 'military') ? 'military' : j.type; S.preMil = j.type;
+      S.wealth = (S.hhWealth - 1)*300*1e4; S.wdecile = wealthDecile(S.wealth);
+      updateIncome(); payPremiumDelta();
+      S.milestones.push({ age:S.age, ic:j.ic, title:`${j.name} 일을 시작` });
+      evCard('t-blue', j.ic, `${j.name}(으)로 사회생활 시작`,
+        `이제 ${j.type==='employee'?'직장가입자로 월급에서 건강보험료가 원천징수되고, 회사가 같은 금액을 함께 냅니다':'지역가입자로 소득과 재산에 따라 보험료가 매겨지고, 전액을 직접 냅니다'}. 내가 낸 보험료가 누군가의 수술비가 되고, 언젠가 내 치료비가 됩니다.`,
+        [['b', j.type==='employee'?'직장가입자':'지역가입자'],['', `소득 ${lvl(S.decile)}(${S.decile}분위)`],['', `재산 ${lvl(S.wdecile)}(${S.wdecile}분위)`]]);
+    }}));
+  if (!rerolled) opts.push({ label:'다른 채용 공고 보기', sub:'한 번만 다시 볼 수 있어요', cls:'ghost', run:()=>{ S.queue.unshift(jobChoice(path, true)); } });
+  return { tone:'blue', icon:'fa-id-card', title: path === 'work' ? '어떤 일을 시작할까요?' : '졸업! 첫 직장을 고르세요',
+    desc:'직장가입자는 보험료를 회사와 반씩 나눠 냅니다. 자영업·프리랜서는 지역가입자로 소득과 재산에 따라 보험료 전액을 직접 냅니다.',
+    options: opts };
 }
 // 취업한 해의 보험료 반영 (선택이 연산 뒤에 일어나므로 보정)
 function payPremiumDelta(){
@@ -1043,10 +1114,13 @@ function queueDirective(urgent){
     ]});
 }
 function retire(){
-  S.retired = true; const prevDecile = S.decile; S.decile = clamp(prevDecile - 2, 1, 10);
+  S.retired = true; const prevDecile = S.decile; S.decile = clamp(prevDecile - 3, 1, 10);
   lifeEvent('fa-umbrella-beach', S.job && JOBS[S.job].type === 'regional' ? '가게를 정리하고 은퇴했습니다' : '정년퇴직했습니다',
     '긴 사회생활을 마쳤습니다. 출근 부담은 사라졌지만 소득이 줄고, 직장가입자 자격도 함께 끝납니다.', [['g', addStress(-8)]]);
-  if (S.hasChild && R() < .7){
+  if (S.hasChild && S.wdecile >= 9){
+    S.ins = 'regional';
+    evCard('t-blue','fa-house','피부양자가 될 수 없습니다',`재산이 ${lvl(S.wdecile)}(${S.wdecile}분위)로 피부양자 재산 기준(재산세 과표 9억원 초과 등)을 넘습니다. 지역가입자로 보험료를 직접 냅니다.`,[['b','지역가입자'],['', `재산 ${S.wdecile}분위`]]);
+  } else if (S.hasChild){
     S.queue.push({ tone:'blue', icon:'fa-umbrella', title:'은퇴했습니다. 보험료는 어떻게 할까요?',
       desc:'연소득 2천만원·재산 기준 이하라면 자녀 건강보험의 피부양자로 등록할 수 있습니다. 2022년부터 피부양자 요건이 강화되었습니다.',
       options:[
@@ -1161,7 +1235,7 @@ function vitality(h){
 function insLabel(){
   if (S.ins === 'military') return '군 복무 (급여정지)';
   if (S.retired) return S.ins === 'dependent' ? '은퇴 · 피부양자' : '은퇴 · 지역가입자';
-  if (S.job) return `${JOBS[S.job].name} · ${S.decile}분위`;
+  if (S.job) return `${JOBS[S.job].name} · ${S.ins === 'employee' ? '직장' : '지역'}가입자`;
   if (S.age < 0) return '엄마 뱃속';
   return S.path === 'college' && S.age >= 19 ? '대학생 · 피부양자' : '학생 · 피부양자';
 }
@@ -1171,6 +1245,7 @@ function renderHUD(){
   $('#hYear').textContent = S.age < 0 ? `${START_YEAR}년 · 임신 중` : `${START_YEAR + S.age}년 · ${S.age}년째`;
   $('#hName').textContent = `${S.name} (${S.gender === 'F' ? '여' : '남'})`;
   $('#hJob').textContent = insLabel();
+  $('#hEcon').textContent = S.age < 0 ? '' : econLabel();
   $('#hHealth').textContent = h;
   $('#hVital').textContent = S.alive ? vitality(h) : '영면';
   const bar = $('#hBar');
@@ -1264,6 +1339,8 @@ function showEnding(){
       <div class="rc-row"><span>향년</span><span>${Math.max(0,S.age)}세</span></div>
       <div class="rc-row"><span>사인</span><span>${S.cause || '-'}</span></div>
       <div class="rc-row"><span>최종 자격</span><span>${insLabel()}</span></div>
+      <div class="rc-row"><span>직업</span><span>${S.job ? JOBS[S.job].name : '-'}</span></div>
+      <div class="rc-row"><span>소득 · 재산</span><span>${econLabel()}</span></div>
       <hr class="rc-hr">
       <div class="rc-row"><span>평생 총 진료비</span><span class="num">${fullWon(S.totalCost)}</span></div>
       <div class="rc-row"><span>  ㄴ 본인 부담 (비급여 포함)</span><span class="num">${fullWon(S.oop)}</span></div>
@@ -1327,6 +1404,7 @@ $('#btnStart').onclick = () => {
   const nm = pick(SURN) + pick(NAMES[g]);
   stopAuto(true);
   S = newState(nm, g);
+  S.hhInc = rint(1,10); S.hhWealth = clamp(S.hhInc + rint(-2,2), 1, 10); S.decile = S.hhInc;
   shown.paid = 0; shown.ben = 0;
   feed.innerHTML = '';
   $('#startScreen').hidden = true;
