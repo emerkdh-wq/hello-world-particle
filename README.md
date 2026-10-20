@@ -31,3 +31,7 @@ A premium, high-performance "Hello World" landing page built with modern fronten
 
 ---
 Created with ❤️ by Antigravity AI + DOO
+
+## 5천만분의 1 — 대한민국 인생 & 건강보험 시뮬레이터
+
+[`one-in-50m/index.html`](one-in-50m/index.html) — 태어나서 임종까지 1년씩 살아 보며 건강보험 혜택(산정특례, 본인부담상한제, 국가검진, 장기요양 등)을 체감하는 단일 HTML 웹 앱입니다. 브라우저로 파일을 열거나 GitHub Pages에서 `/one-in-50m/` 경로로 접속하면 됩니다.
