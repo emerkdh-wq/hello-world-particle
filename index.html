@@ -70,7 +70,7 @@ button{font-family:inherit}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 
-#app{height:100%;max-width:30rem;margin:0 auto;display:flex;flex-direction:column;position:relative;background:var(--bg)}
+#app{height:100%;height:100dvh;max-width:30rem;margin:0 auto;display:flex;flex-direction:column;position:relative;background:var(--bg)}
 @media (min-width:31rem){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 
 /* HUD */
@@ -95,10 +95,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .mbox .k{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .mbox .v{font-size:16px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mbox.paid .v{color:var(--paid)} .mbox.ben .v{color:var(--benefit)}
-.ratio{margin-top:6px;font-size:11px;color:var(--faint);display:flex;justify-content:space-between;gap:8px}
+.ratio{margin-top:6px;font-size:11px;color:var(--faint);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px}
+.ratio .fold-btn{order:3}
 
 /* Feed */
-.feed{flex:1;overflow-y:auto;padding-block:14px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.feed{flex:1 1 0;min-height:0;overflow-y:auto;padding-block:14px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;animation:drop .35s ease both;min-width:0}
 @keyframes drop{from{transform:translateY(-8px);opacity:.2}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.card{animation:none}.bar>i{transition:none}}
@@ -135,7 +136,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .ev .eb{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--pink);font-weight:600;margin-bottom:2px}
 
 /* Dock */
-.dock{flex:none;background:var(--surface);border-top:1px solid var(--line);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.dock{flex:0 0 auto;max-height:62%;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border-top:1px solid var(--line);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .row{display:flex;gap:8px}
 .btn{border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:12px;padding:13px 14px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s ease,filter .15s}
 .btn:active{transform:scale(.98)}
@@ -153,6 +154,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .choice-head p{margin:3px 0 0;font-size:12.5px;color:var(--muted);line-height:1.5}
 .opts{display:flex;flex-direction:column;gap:8px}
 .opts .btn{flex-direction:column;align-items:stretch;text-align:left;padding:11px 14px;font-size:14px}
+/* 짧은 화면: 상단 상세를 접고 선택지를 촘촘하게 */
+#app.fold .hud-info{display:none}
+.fold-btn{margin-left:auto;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:1px 8px;white-space:nowrap}
+.fold-btn svg{width:9px}
+@media (max-height:760px){
+  .hud{padding-block:9px}
+  .hud-age{font-size:26px}
+  .gauge{margin-top:7px}
+  .money{margin-top:7px} .mbox{padding:6px 9px} .mbox .v{font-size:15px}
+  .opts{gap:6px} .opts .btn{padding:8px 12px;font-size:13.5px} .opts .btn .sub{font-size:10.5px}
+  .choice-head{margin-bottom:8px} .choice-head p{font-size:12px;line-height:1.45}
+  .dock{padding-block:10px calc(10px + env(safe-area-inset-bottom,0px))}
+}
 
 /* Start screen */
 .overlay{position:absolute;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;overflow-y:auto}
@@ -275,7 +289,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료</div><div class="v num" id="hPaid">0원</div></div>
       <div class="mbox ben"><div class="k"><i class="fa-solid fa-shield-heart"></i>누적 공단부담 혜택</div><div class="v num" id="hBen">0원</div></div>
     </div>
-    <div class="ratio"><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnFinHud">재정</button> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
+    <div class="ratio"><button class="fold-btn" id="btnFold" aria-expanded="true" title="가족·소득·질병 정보 접기"><i class="fa-solid fa-chevron-up"></i> 접기</button><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnFinHud">재정</button> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
   </header>
 
   <main class="feed" id="feed" aria-live="polite"></main>
@@ -1931,6 +1945,18 @@ function renderStd(){
 renderStd();
 $('#btnSrcHud').onclick = showSources;
 $('#btnFinHud').onclick = showFinance;
+// 상단 상세 정보 접기: 화면이 짧으면 처음부터 접어 둠, 선택은 이 브라우저에만 기억
+function setFold(f){
+  $('#app').classList.toggle('fold', f);
+  const b = $('#btnFold');
+  b.setAttribute('aria-expanded', String(!f));
+  b.innerHTML = f ? `${icon('fa-chevron-down')} 상세` : `${icon('fa-chevron-up')} 접기`;
+  try { localStorage.setItem('o50m-fold', f ? '1' : '0'); } catch(e){}
+}
+let foldPref = null;
+try { foldPref = localStorage.getItem('o50m-fold'); } catch(e){}
+setFold(foldPref ? foldPref === '1' : innerHeight < 760);
+$('#btnFold').onclick = () => setFold(!$('#app').classList.contains('fold'));
 addEventListener('resize', () => { if (!$('#startScreen').hidden) drawDots(); });
 drawDots();
 dock.innerHTML = '';
