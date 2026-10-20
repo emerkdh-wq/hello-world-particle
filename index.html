@@ -65,7 +65,7 @@ canvas,img{display:block;max-width:100%}
 a{color:inherit}
 html,body{height:100%}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+body{margin:0;word-break:keep-all;overflow-wrap:break-word;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
 button{font-family:inherit}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
@@ -221,6 +221,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .loss .t i{display:block;height:100%;border-radius:99px;background:var(--danger)}
 .loss .t i.up{background:var(--benefit)}
 .loss .v{text-align:right;font-family:var(--f-mono);color:var(--fg)}
+.fbar{display:flex;height:26px;border-radius:7px;overflow:hidden;margin-top:8px;background:var(--surface-2)}
+.fbar i{display:block;height:100%;min-width:2px}
+.fleg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.fleg span{display:inline-flex;align-items:center;gap:5px}
+.fleg span::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--c)}
+.frow{display:grid;grid-template-columns:5.6em 1fr auto;gap:8px;align-items:center;font-size:12px;margin-top:6px}
+.frow .t{height:12px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.frow .t i{display:block;height:100%}
+.frow .v{font-variant-numeric:tabular-nums;color:var(--fg);font-weight:600;white-space:nowrap}
+.fyears{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.fyears div{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:11px;color:var(--muted)}
+.fyears b{display:block;font-size:14px;color:var(--fg);font-variant-numeric:tabular-nums}
+.fyears .neg b{color:var(--danger)} .fyears .pos b{color:var(--benefit)}
 .srclink{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
 .src-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;font-variant-numeric:tabular-nums}
 .src-table th,.src-table td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right}
@@ -262,7 +275,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료</div><div class="v num" id="hPaid">0원</div></div>
       <div class="mbox ben"><div class="k"><i class="fa-solid fa-shield-heart"></i>누적 공단부담 혜택</div><div class="v num" id="hBen">0원</div></div>
     </div>
-    <div class="ratio"><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
+    <div class="ratio"><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnFinHud">재정</button> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
   </header>
 
   <main class="feed" id="feed" aria-live="polite"></main>
@@ -1641,6 +1654,77 @@ function storyHtml(){
       ${x.list && x.list.length ? `<ul>${x.list.map(li => `<li>${li}</li>`).join('')}</ul>` : ''}</section>`).join('')}
   </article>`;
 }
+// 정부지원(국고+건강증진기금): 최근 실제 지원액은 보험료 수입의 약 14% 수준
+const GOV_SHARE = 0.14;
+function showFinance(){
+  const m = $('#srcModal');
+  const L = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+  const seg = (v, max, c) => `<i style="width:${Math.max(0, v)/max*100}%;background:${c}"></i>`;
+  // 1. 내 인생 장부
+  let mine = '';
+  if (S && S.age >= 0 && S.paid > 0){
+    const me = S.paid, co = S.employerPaid, gov = (me + co)*GOV_SHARE, ben = S.benefit;
+    const inSum = me + co + gov, gap = ben - inSum, max = Math.max(ben, inSum);
+    mine = `<section><h3>${icon('fa-user')}${S.name}의 건강보험 장부${S.alive ? ` (${S.age}세 현재)` : ''}</h3>
+      <p>영수증의 수혜율은 <b>내가 낸 돈</b>만 센 값입니다. 실제로 내 몫으로 건강보험에 들어간 돈을 모두 더하면 이렇습니다.</p>
+      <div class="frow"><span>들어간 돈</span><span class="fbar" style="height:14px;margin:0">${seg(me,max,'var(--paid)')}${seg(co,max,'var(--accent)')}${seg(gov,max,'var(--violet)')}</span><span class="v">${won(inSum)}</span></div>
+      <div class="frow"><span>받은 혜택</span><span class="fbar" style="height:14px;margin:0">${seg(ben,max,'var(--benefit)')}</span><span class="v">${won(ben)}</span></div>
+      <div class="fleg"><span style="--c:var(--paid)">내 보험료 ${won(me)}</span><span style="--c:var(--accent)">회사 부담 ${won(co)}</span><span style="--c:var(--violet)">정부 지원 몫(추정) ${won(gov)}</span></div>
+      <p style="margin-top:8px">${gap > 0
+        ? `그래도 <b>${won(gap)}</b>이 남습니다. 이 차액은 건강하거나 소득이 많아 <b>낸 만큼 쓰지 않은 다른 가입자들</b>, 그리고 앞으로 보험료를 낼 <b>다음 세대</b>가 채웁니다.`
+        : `받은 것보다 <b>${won(-gap)}</b> 더 들어갔습니다. 이 돈은 지금 큰 병과 싸우는 다른 누군가의 치료비가 되었습니다. 이것이 사회보험입니다.`}</p>
+    </section>`;
+  } else {
+    mine = `<section><h3>${icon('fa-user')}내 건강보험 장부</h3><p>게임을 진행하면 여기에 내가 낸 보험료, 회사와 정부가 보탠 몫, 받은 혜택이 비교되어 나옵니다.</p></section>`;
+  }
+  m.innerHTML = `<article class="bio" aria-label="건강보험 재정 이야기">
+    <div class="eb">5천만분의 1 · 건강보험 재정 이야기</div>
+    <h2>어떻게 낸 돈보다 더 받을 수 있을까</h2>
+    <div class="who">게임 속 대부분의 인생이 "남는 장사"로 끝나는 이유와, 그 돈이 어디서 오는지.</div>
+    ${mine}
+    <section><h3>${icon('fa-coins')}건강보험의 돈은 세 군데서 옵니다</h3>
+      <ul>
+        <li><b>① 내 보험료</b>: 직장가입자는 월급의 3.595%, 지역가입자는 소득·재산 기준 전액</li>
+        <li><b>② 회사 부담분</b>: 직장가입자 보험료와 똑같은 금액을 회사가 한 번 더 냅니다</li>
+        <li><b>③ 정부 지원</b>: 세금(일반회계)과 담배 부담금(건강증진기금). 2024년 <b>12조 2천억원</b>. 법은 예상 보험료 수입의 20%를 정해 두었지만 실제로는 14% 안팎이었습니다</li>
+      </ul></section>
+    <section><h3>${icon('fa-people-arrows')}그래도 남는 차액은 누가 낼까</h3>
+      <p>보험료는 <b>소득</b>에 비례하고, 병원비는 <b>아픈 만큼</b> 나갑니다. 고소득자·건강한 사람·일찍 떠난 사람은 낸 것보다 덜 쓰고, 저소득자·큰 병을 앓은 사람·오래 산 사람은 더 씁니다. 이렇게 서로 위험을 나누는 것이 사회보험입니다.</p>
+      <p style="margin-top:6px">또 건강보험은 해마다 <b>그해 걷은 돈으로 그해 진료비를 내는</b> 방식입니다. 지금 일하는 세대가 지금 아픈 노인 세대를 받치고, 지금의 청년은 나중에 다음 세대의 보험료로 보장받습니다.</p></section>
+    <section><h3>${icon('fa-person-cane')}고령화: 내는 사람은 줄고 쓰는 사람은 늘고</h3>
+      <div class="frow"><span>인구 비중</span><span class="t"><i style="width:18.9%;background:var(--warn)"></i></span><span class="v">65세+ 18.9%</span></div>
+      <div class="frow"><span>진료비 비중</span><span class="t"><i style="width:45%;background:var(--danger)"></i></span><span class="v">65세+ 45%</span></div>
+      <p style="margin-top:8px">2024년 65세 이상 진료비는 <b>52조 1,935억원</b>으로 전체의 약 45%입니다. 노인 1인당 진료비는 전체 평균의 두 배가 넘습니다. 게임에서도 70대부터 혜택이 급격히 쌓이는 것을 볼 수 있습니다.</p></section>
+    <section><h3>${icon('fa-chart-line')}재정은 지금 어떤가</h3>
+      <div class="fyears">
+        <div class="pos">2024 당기수지<b>+1.7조</b></div>
+        <div class="pos">2025 당기수지<b>+0.5조</b></div>
+        <div class="neg">2026 전망<b>적자</b></div>
+        <div>누적 준비금<b>30.2조</b></div>
+      </div>
+      <p style="margin-top:8px">2025년 총수입 <b>102.9조원</b>, 총지출 <b>102.4조원</b>으로 5년 연속 흑자였지만, 흑자 폭이 1년 새 71% 줄었습니다. 국회예산정책처는 준비금이 <b>2028년</b>(의료개혁 영향 반영)에서 <b>2031년</b> 사이에 바닥날 수 있다고 전망했습니다.</p></section>
+    <section><h3>${icon('fa-screwdriver-wrench')}유지하려면</h3>
+      <ul>
+        <li><b>보험료율 조정</b>: 현재 7.19%, 법정 상한 8%. 2027년도 보험료율은 동결됐습니다</li>
+        <li><b>정부 지원 확대</b>: 법에 정한 20%를 실제로 채우기</li>
+        <li><b>의료 이용 관리</b>: 1인당 외래진료 연 17.9회로 OECD 평균의 약 3배</li>
+        <li><b>부과 기반 확대</b>: 금융·임대 등 다른 소득과 피부양자 기준 정비</li>
+      </ul>
+      <p style="margin-top:6px">게임 속 "남는 장사"는 지금의 제도와 지금의 젊은 세대 덕분입니다. 건강보험을 지키는 가장 쉬운 방법은 검진을 챙기고 생활습관을 관리해 크게 아프지 않는 것입니다.</p></section>
+    <section><h3>${icon('fa-book')}출처</h3>
+      <p>${L('https://www.fnnews.com/news/202601281027338966','2025년 건강보험 재정 결과 (파이낸셜뉴스)')}<br>
+      ${L('https://www.segye.com/newsView/20260128516583','흑자 규모 1년 새 71% 감소 (세계일보)')}<br>
+      ${L('https://mobile.newsis.com/view/NISX20250107_0003023333','2024년도 현금수지 (뉴시스)')}<br>
+      ${L('https://dailypharm.com/user/news/9843','국회예산정책처 재정 전망 (데일리팜)')}<br>
+      ${L('https://www.metroseoul.co.kr/article/20260909500198','2027년도 보험료율 동결 (메트로신문)')}<br>
+      ${L('https://medigatenews.com/news/1685979552','국고지원 20% 기준과 실제 비율 (메디게이트뉴스)')}<br>
+      ${L('https://www.medipana.com/news/articleView.html?idxno=402890','2024 건강보험통계연보: 노인 진료비 (메디파나뉴스)')}</p>
+      <p style="margin-top:6px">정부 지원 몫은 보험료 수입의 14%로 단순 추정한 값입니다.</p></section>
+    <div class="rc-actions" style="grid-template-columns:1fr"><button class="btn primary" id="btnSrcClose">닫기</button></div>
+  </article>`;
+  m.hidden = false; m.scrollTop = 0;
+  $('#btnSrcClose').onclick = () => { m.hidden = true; };
+}
 function showSources(){
   const m = $('#srcModal');
   const OK = '<span class="tag ok">공식 통계</span>', EST = '<span class="tag est">추정</span>';
@@ -1751,6 +1835,7 @@ function showEnding(){
     <div class="rc-actions">
       <button class="btn" id="btnShare">${icon('fa-share-nodes')}공유하기</button>
       <button class="btn primary" id="btnReplay">${icon('fa-rotate-right')}다시 태어나기</button>
+      <button class="btn blue" id="btnFinEnd" style="grid-column:1/-1">${icon('fa-scale-balanced')}어떻게 낸 돈보다 더 받을까? · 재정 이야기</button>
       <button class="btn ghost" id="btnSrcEnd" style="font-size:13px">통계 출처</button>
       <button class="btn ghost" id="btnClose" style="font-size:13px">타임라인 다시 보기</button>
     </div>`;
@@ -1759,6 +1844,7 @@ function showEnding(){
   $('#btnClose').onclick = () => { m.hidden = true; };
   $('#btnShare').onclick = share;
   $('#btnSrcEnd').onclick = showSources;
+  $('#btnFinEnd').onclick = showFinance;
   if (S.age >= 83 || S.badges.has('survivor')) fire();
 }
 async function share(){
@@ -1816,7 +1902,7 @@ function renderStd(){
   const man = v => Math.round(v/1e4).toLocaleString('ko-KR') + '만원';
   const old = HIRA_AGE.find(r => r.min === 75);
   const g = (title, rows) => `<h4>${title}</h4><dl>${rows.map(([k, y, v, sub]) => `<dt>${k}${y ? `<small>${y}</small>` : ''}</dt><dd>${v}${sub ? `<small>${sub}</small>` : ''}</dd>`).join('')}</dl>`;
-  $('#stdPanel').innerHTML = `<div class="std-head"><b>이 게임에 적용된 기준</b><button class="srclink" id="btnSrcStart">자세한 출처</button></div>`
+  $('#stdPanel').innerHTML = `<div class="std-head"><b>이 게임에 적용된 기준</b><span><button class="srclink" id="btnFinStart">재정 이야기</button> · <button class="srclink" id="btnSrcStart">출처</button></span></div>`
     + g('보험료', [
         ['건강보험료율', '2026', pct(RATE), `직장가입자 본인 ${pct(RATE/2)} · 회사 ${pct(RATE/2)}`],
         ['장기요양보험료율', '2026', `건보료의 ${pct(LTC_RATE)}`, `소득 대비 ${pct(RATE*LTC_RATE)}`],
@@ -1840,9 +1926,11 @@ function renderStd(){
         ['암 5년 상대생존율', '2018~22', '국한 92.1%', '국소 75.1% · 원격 27.1%'],
       ]);
   $('#btnSrcStart').onclick = showSources;
+  $('#btnFinStart').onclick = showFinance;
 }
 renderStd();
 $('#btnSrcHud').onclick = showSources;
+$('#btnFinHud').onclick = showFinance;
 addEventListener('resize', () => { if (!$('#startScreen').hidden) drawDots(); });
 drawDots();
 dock.innerHTML = '';
