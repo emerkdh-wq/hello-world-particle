@@ -730,13 +730,47 @@ function diseaseText(){
   if (S.ltc) d.push(`장기요양 ${S.ltc === 'home' ? '재가' : '시설'}급여 이용`);
   return d;
 }
+// 가족 사인: 나이가 많을수록 노환·폐렴·치매 비중이 커지도록
+function familyCause(age){
+  const sudden = ['급성 심근경색', '뇌졸중', '불의의 사고'];
+  const ill = age < 70 ? ['폐암', '위암', '대장암', '간암', '췌장암', '유방암', '뇌졸중 후유증']
+                       : ['폐암', '대장암', '폐렴', '심부전', '치매 합병증', '노환', '뇌졸중 후유증'];
+  if (R() < (age < 70 ? .3 : .18)){ const c = pick(sudden); return { name: c === '불의의 사고' && age >= 75 ? '낙상 사고' : c, sudden:true }; }
+  return { name: pick(ill), sudden:false };
+}
+const PARENT_JOBS = {
+  low:  ['건설 노동자', '식당 운영', '택시 기사', '농업', '공장 생산직', '청소 노동자', '시장 상인'],
+  mid:  ['회사원', '공무원', '교사', '자영업', '간호사', '은행원', '버스 기사'],
+  high: ['의사', '대기업 회사원', '변호사', '대학 교수', '중견기업 대표', '약사'],
+};
+function parentJob(isMother){
+  if (isMother && R() < .35) return '전업주부';
+  return pick(PARENT_JOBS[S.hhInc <= 3 ? 'low' : S.hhInc <= 7 ? 'mid' : 'high']);
+}
+function randomJobName(){ return pick(Object.values(JOBS)).name.replace(/ \(.+\)$/, ''); }
+// 나이에 따른 가족 구성원의 현재 하는 일
+function workLabel(age, job, retireAge = 62){
+  if (job === '전업주부') return '전업주부';
+  return age >= retireAge ? `은퇴 (전 ${job})` : job;
+}
+function childLabel(age, i){
+  const c = S.childJobs[i];
+  if (age < 1) return '영아';
+  if (age < 4) return '어린이집';
+  if (age < 7) return '유치원생';
+  if (age < 13) return '초등학생';
+  if (age < 16) return '중학생';
+  if (age < 19) return '고등학생';
+  if (age < c.startAge) return c.college ? '대학생' : '취업 준비';
+  return workLabel(age, c.job);
+}
 function familyText(){
   if (S.age < 0) return '';
   const a = S.age, f = [];
-  if (S.spouse) f.push(S.spouse.alive ? `배우자 ${a + S.spouse.gap}세` : '배우자 사별');
-  S.childBirths.forEach((cb, i) => f.push(`${['첫째','둘째','셋째'][i]} ${a - cb}세`));
-  if (a < S.father) f.push(`아버지 ${a + S.fGap}세`);
-  if (a < S.mother) f.push(`어머니 ${a + S.mGap}세`);
+  if (S.spouse) f.push(S.spouse.alive ? `배우자 ${a + S.spouse.gap}세 ${workLabel(a + S.spouse.gap, S.spouse.job)}` : `배우자 사별 (${S.spouse.cause.name})`);
+  S.childBirths.forEach((cb, i) => f.push(`${['첫째','둘째','셋째'][i]} ${a - cb}세 ${childLabel(a - cb, i)}`));
+  if (a < S.father) f.push(`아버지 ${a + S.fGap}세 ${workLabel(a + S.fGap, S.fJob, 65)}`);
+  if (a < S.mother) f.push(`어머니 ${a + S.mGap}세 ${workLabel(a + S.mGap, S.mJob, 65)}`);
   return f.length ? f.join(' · ') : '가족 없음 (혼자)';
 }
 function workLife(){
@@ -796,23 +830,27 @@ function familyEvents(){
     if (a === cb + 32 && i === 0) lifeEvent('fa-baby', '손주가 태어났습니다', '자녀의 국민행복카드로 산전 진료비를, 분만비는 공단이 부담했습니다. 이제 할머니·할아버지입니다.', [['g', addStress(-5)]]);
   });
   // 부모님
-  for (const [nm, age] of [['아버지', S.father], ['어머니', S.mother]]){
-    if (a === age - 1) line('fa-hospital-user', `${nm}가 투병을 시작했습니다. 주말마다 병원에 갑니다 · ${addStress(10, `${nm}의 투병과 간병`)}`);
+  for (const [nm, age, key, gap] of [['아버지', S.father, 'fCause', S.fGap], ['어머니', S.mother, 'mCause', S.mGap]]){
+    if (!S[key]) S[key] = familyCause(age + gap);
+    const cz = S[key];
+    if (a === age - 1 && !cz.sudden) line('fa-hospital-user', `${nm}가 ${cz.name} 진단을 받고 투병을 시작했습니다. 주말마다 병원에 갑니다 · ${addStress(10, `${nm}의 투병과 간병`)}`);
     if (a === age){
       const inh = S.hhWealth*S.hhWealth*rint(60, 160)*1e4/2; // 부모 두 분이 각각 절반
       S.wealth += inh; S.wdecile = wealthDecile(S.wealth);
-      lifeEvent('fa-dove', `${nm}가 돌아가셨습니다`,
-      `장례를 치르는 동안 슬픔과 피로가 한꺼번에 몰려왔습니다. 그나마 ${nm}의 마지막 투병비는 산정특례와 본인부담상한제 덕분에 가계를 무너뜨리지 않았습니다.`,
+      lifeEvent('fa-dove', `${nm}가 ${ro(cz.name)} 돌아가셨습니다`,
+      `향년 ${age + gap}세. ${cz.sudden ? `갑작스러운 ${cz.name}${josa(cz.name,'이라','라')} 작별 인사도 하지 못했습니다.` : `1년 남짓 ${cz.name}${josa(cz.name,'과','와')} 싸우셨습니다. 투병비는 산정특례와 본인부담상한제 덕분에 가계를 무너뜨리지 않았습니다.`} 장례를 치르는 동안 슬픔과 피로가 한꺼번에 몰려왔습니다.`,
       [['r', addStress(28, `${nm}의 별세`)], ['', `상속 ${won(inh)}`]]);
     }
   }
   // 배우자
   if (S.married && S.spouse && S.spouse.alive){
-    if (a === S.spouse.deathAge - 1) line('fa-hospital-user', `배우자가 큰 병을 진단받아 간병을 시작했습니다 · ${addStress(12, '배우자 간병')}`);
-    if (a === S.spouse.deathAge){
-      S.spouse.alive = false; S.married = false; S.widowed = true;
-      lifeEvent('fa-heart-crack','배우자를 먼저 떠나보냈습니다',
-        '평생을 함께한 사람이 곁에 없습니다. 배우자를 잃은 직후 1~2년은 심혈관질환 위험이 눈에 띄게 높아집니다.',
+    const sp = S.spouse, spAge = a + sp.gap;
+    if (!sp.cause) sp.cause = familyCause(sp.deathAge + sp.gap);
+    if (a === sp.deathAge - 1 && !sp.cause.sudden) line('fa-hospital-user', `배우자가 ${sp.cause.name} 진단을 받아 간병을 시작했습니다 · ${addStress(12, '배우자 간병')}`);
+    if (a === sp.deathAge){
+      sp.alive = false; S.married = false; S.widowed = true;
+      lifeEvent('fa-heart-crack',`배우자가 ${ro(sp.cause.name)} 세상을 떠났습니다`,
+        `향년 ${spAge}세. ${sp.cause.sudden ? `아침까지 함께였던 사람이 ${ro(sp.cause.name)} 갑자기 떠났습니다.` : `1년 가까이 ${sp.cause.name}${josa(sp.cause.name,'과','와')} 싸우는 배우자를 곁에서 간병했습니다.`} 평생을 함께한 사람이 곁에 없습니다. 배우자를 잃은 직후 1~2년은 심혈관질환 위험이 눈에 띄게 높아집니다.`,
         [['r', addStress(35, '배우자와 사별')]]);
     }
   }
@@ -822,7 +860,7 @@ function marryChoice(){
     desc:'결혼하면 배우자에게 소득이 없을 때 내 건강보험의 피부양자로 등록할 수 있고, 맞벌이라면 각자 직장가입자로 보험료를 냅니다. 든든한 내 편은 스트레스도 덜어 줍니다.',
     options:[
       { label:'결혼한다', sub:'둘이서 함께', cls:'primary', run:()=>{
-        S.married = true; S.marryAt = S.age; S.spouse = { alive:true, deathAge: S.age + rint(36, 62), gap: rint(-3, 4) };
+        S.married = true; S.marryAt = S.age; S.spouse = { alive:true, deathAge: S.age + rint(36, 62), gap: rint(-3, 4), job: R() < .15 ? '전업주부' : randomJobName() };
         S.wealth += rint(1000, 5000)*1e4; S.wdecile = wealthDecile(S.wealth);
         lifeEvent('fa-ring','결혼했습니다','결혼 준비로 정신없었지만 든든한 내 편이 생겼습니다. 이제 건강검진 결과도 함께 챙깁니다.',[['g', addStress(-6)],['','배우자 피부양자 가능']]); } },
       { label:'혼자의 삶을 택한다', sub:'비혼', cls:'ghost', run:()=>{ S.marryDeclined = true; line2('fa-user', '나 자신에게 집중하는 삶을 택했습니다.'); } },
@@ -834,7 +872,7 @@ function babyChoice(second){
     desc:'임신이 확인되면 국민행복카드로 임신·출산 진료비 100만원(다태아 140만원)을 지원받고, 자연분만 입원비는 본인부담 0원입니다. 육아는 기쁘지만 고되기도 합니다.',
     options:[
       { label: second ? '둘째를 맞이한다' : '새 가족을 맞이한다', sub:'임신·출산 진료비 지원', cls:'primary', run:()=>{
-        S.hasChild = true; S.children++; S.childBirths.push(S.age);
+        S.hasChild = true; S.children++; S.childBirths.push(S.age); S.childJobs.push({ job: randomJobName(), college: R() < .7, startAge: rint(20, 27) });
         charge(1000000, 0); charge(2600000, 0); if (F) S.visits += 14;
         badge('parent', true);
         lifeEvent('fa-baby-carriage', second ? '둘째가 태어났습니다' : (F ? '엄마가 되었습니다' : '아빠가 되었습니다'),
@@ -1486,7 +1524,7 @@ function renderHUD(){
   const dz = S.age < 0 ? [] : diseaseText();
   $('#hDis').textContent = dz.length ? dz.join(' · ') : '진단받은 질병 없음';
   $('#hDisRow').classList.toggle('sick', dz.length > 0);
-  $('#hFam').textContent = S.age < 0 ? `아버지 ${S.fGap}세 · 어머니 ${S.mGap}세` : familyText();
+  $('#hFam').textContent = S.age < 0 ? `아버지 ${S.fGap}세 ${S.fJob} · 어머니 ${S.mGap}세 ${S.mJob}` : familyText();
   $('#hHealth').textContent = h;
   $('#hVital').textContent = S.alive ? vitality(h) : '영면';
   const bar = $('#hBar');
@@ -1610,7 +1648,7 @@ function lifeStory(){
     if (laid) ev.push([laid.age, `${laid.age}세에는 구조조정으로 직장을 잃기도 했습니다.`]);
     if (S.marryAt != null) ev.push([S.marryAt, `${S.marryAt}세에 결혼해 ${S.children ? `자녀 ${S.children}명을 키웠습니다` : '아이 없이 둘이서 살았습니다'}.`]);
     else if (A >= 35) ev.push([999, '평생 혼자의 삶을 살았습니다.']);
-    if (S.widowed) ev.push([S.spouse.deathAge, `${S.spouse.deathAge}세에 배우자를 먼저 떠나보냈습니다.`]);
+    if (S.widowed) ev.push([S.spouse.deathAge, `${S.spouse.deathAge}세에 배우자를 ${ro(S.spouse.cause.name)} 먼저 떠나보냈습니다.`]);
     if (S.retired) ev.push([60, '60세에 은퇴했습니다.']);
     t += ev.sort((x, y) => x[0] - y[0]).map(x => ' ' + x[1]).join('');
     if (S.peakIncome) t += ` 가장 많이 벌던 해의 연소득은 <b>${won(S.peakIncome)}(${incLvl(S.peakIncome)})</b>, 마지막 재산은 <b>${won(S.wealth)} (${S.wealth < 0 ? '하, 빚' : wealthLvl(S.wealth)})</b>이었습니다.`;
@@ -1914,6 +1952,7 @@ $('#btnStart').onclick = () => {
   S.health0 = S.health;
   S.hhInc = rint(1,10); S.hhWealth = clamp(S.hhInc + rint(-2,2), 1, 10); S.decile = S.hhInc;
   S.fGap = rint(28,36); S.mGap = rint(26,34);
+  S.fJob = parentJob(false); S.mJob = parentJob(true); S.childJobs = [];
   S.father = rint(70,88) - S.fGap; S.mother = rint(74,93) - S.mGap; // 내 나이 기준 부모님 별세 시점
   shown.paid = 0; shown.ben = 0;
   feed.innerHTML = '';
@@ -1983,12 +2022,15 @@ function setFold(f){
   const b = $('#btnFold');
   b.setAttribute('aria-expanded', String(!f));
   b.innerHTML = f ? `${icon('fa-chevron-down')} 상세` : `${icon('fa-chevron-up')} 접기`;
-  try { localStorage.setItem('o50m-fold', f ? '1' : '0'); } catch(e){}
 }
 let foldPref = null;
-try { foldPref = localStorage.getItem('o50m-fold'); } catch(e){}
-setFold(foldPref ? foldPref === '1' : innerHeight < 760);
-$('#btnFold').onclick = () => setFold(!$('#app').classList.contains('fold'));
+try { foldPref = localStorage.getItem('o50m-fold2'); } catch(e){}
+setFold(foldPref === '1'); // 기본은 상세 펼침
+$('#btnFold').onclick = () => {
+  const f = !$('#app').classList.contains('fold');
+  setFold(f);
+  try { localStorage.setItem('o50m-fold2', f ? '1' : '0'); } catch(e){}
+};
 addEventListener('resize', () => { if (!$('#startScreen').hidden) drawDots(); });
 drawDots();
 dock.innerHTML = '';
