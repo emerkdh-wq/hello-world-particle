@@ -188,6 +188,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .loss .t i{display:block;height:100%;border-radius:99px;background:var(--danger)}
 .loss .t i.up{background:var(--benefit)}
 .loss .v{text-align:right;font-family:var(--f-mono);color:var(--fg)}
+.srclink{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
+.src-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;font-variant-numeric:tabular-nums}
+.src-table th,.src-table td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right}
+.src-table th:first-child,.src-table td:first-child{text-align:left}
+.src-table th{color:var(--muted);font-weight:600}
+.src-wrap{overflow-x:auto}
+.bio a{color:var(--accent);word-break:break-all}
+.tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;vertical-align:1px}
+.tag.ok{background:color-mix(in srgb, var(--benefit) 18%, transparent);color:var(--benefit)}
+.tag.est{background:color-mix(in srgb, var(--warn) 18%, transparent);color:var(--warn)}
 .rc-actions{max-width:22rem;margin:16px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .toast{position:absolute;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;z-index:40;white-space:nowrap}
 </style>
@@ -219,7 +229,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료</div><div class="v num" id="hPaid">0원</div></div>
       <div class="mbox ben"><div class="k"><i class="fa-solid fa-shield-heart"></i>누적 공단부담 혜택</div><div class="v num" id="hBen">0원</div></div>
     </div>
-    <div class="ratio"><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b></span></div>
+    <div class="ratio"><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
   </header>
 
   <main class="feed" id="feed" aria-live="polite"></main>
@@ -233,23 +243,26 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <h1 class="logo">5천만분의<br><em>1</em></h1>
       <p class="lede">엄마 뱃속에서 임종까지. 감기로 소아과를 드나들던 시절부터 검진, 큰 병, 요양까지, 건강보험이 한 사람의 삶을 얼마나 받쳐 주는지 1년씩 살아 보며 확인합니다.</p>
       <div class="facts">
-        <div><b>9단계</b>연령별 의료이용 통계</div>
+        <div><b>19구간</b>심평원 연령별 진료통계</div>
         <div><b>4대 중증</b>산정특례 5~10%</div>
         <div><b>2026</b>건보료율 7.19%</div>
       </div>
       <p class="lede" style="font-size:12.5px">이름과 성별은 태어날 때 운명처럼 정해집니다.</p>
+      <button class="btn ghost" id="btnSrcStart" style="flex:none;font-size:13px;padding:10px"><i class="fa-solid fa-book"></i>통계 출처 보기</button>
       <button class="btn primary" id="btnStart" style="flex:none"><i class="fa-solid fa-baby"></i>태어나기</button>
     </div>
   </section>
 
   <section class="modal" id="endModal" hidden></section>
+  <section class="modal" id="srcModal" hidden></section>
 </div>
 
 <script>
 /* =========================================================
    데이터
    ========================================================= */
-const BASELINE_STATS = [
+// 생애주기 이름과 한 줄 묘사 (통계 수치는 HIRA_AGE 사용)
+const LIFE_STAGES = [
   // minAge, maxAge, 연간방문일수(외래+입원), 연간약국방문일수, 연간총진료비(원), 공단부담률
   { min: 0,  max: 9,   visits: 28, pharmacy: 20, totalCost: 1450000, coverageRate: 0.85, stage:'영유아기',
     flavor:['감기와 중이염으로 소아과 단골이 되었습니다.','수족구병으로 일주일 어린이집을 쉬었습니다.','장염으로 수액을 맞고 왔습니다.','모세기관지염으로 밤새 열이 났습니다.','아토피 피부염 연고를 처방받았습니다.'] },
@@ -270,6 +283,39 @@ const BASELINE_STATS = [
   { min: 80, max: 100, visits: 68, pharmacy: 45, totalCost: 9800000, coverageRate: 0.82, stage:'초고령기',
     flavor:['요양병원 입원 치료를 받았습니다.','기력이 떨어져 수액과 영양 치료를 받았습니다.','욕창 관리와 재활 치료를 받았습니다.','감기가 폐렴으로 번져 한동안 입원했습니다.'] }
 ];
+
+// 심평원 보건의료빅데이터개방시스템 「연령별 건강보험 적용대상자 1인당 진료현황」
+// (2025년 1~12월 심사결정분, 적용대상자 1인당) · days = 1인당 진료일수(입원+내원), cost = 1인당 진료비(공단+본인부담)
+const HIRA_AGE = [
+  { min:0,  max:0,   days:28.38, cost:5485956 },
+  { min:1,  max:4,   days:33.32, cost:1758408 },
+  { min:5,  max:9,   days:21.62, cost:1291113 },
+  { min:10, max:14,  days:13.54, cost:933368 },
+  { min:15, max:19,  days:11.47, cost:815178 },
+  { min:20, max:24,  days:9.25,  cost:820365 },
+  { min:25, max:29,  days:10.17, cost:967177 },
+  { min:30, max:34,  days:11.93, cost:1279006 },
+  { min:35, max:39,  days:13.23, cost:1439468 },
+  { min:40, max:44,  days:13.95, cost:1534457 },
+  { min:45, max:49,  days:14.73, cost:1660284 },
+  { min:50, max:54,  days:17.45, cost:2000000, est:true }, // 진료비는 45~49세·55~59세 사이 보간
+  { min:55, max:59,  days:19.54, cost:2370000 },
+  { min:60, max:64,  days:24.28, cost:3110000 },
+  { min:65, max:69,  days:31.33, cost:4127892 },
+  { min:70, max:74,  days:37.54, cost:4985815 },
+  { min:75, max:79,  days:44.83, cost:6177702 },
+  { min:80, max:84,  days:51.98, cost:7372335 },
+  { min:85, max:120, days:55.44, cost:7825693 },
+];
+const HIRA_AVG = { days:20.71, cost:2421608 };
+// 평균 진료비에는 암·심뇌혈관 같은 중증질환 진료비가 섞여 있어, 이 게임은 그 부분을 별도 사건으로 계산하고
+// 기본 진료비는 평균의 80%만 반영합니다(추정).
+const BASE_SHARE = 0.8;
+// 약국 방문일수: 연령별 공식 수치를 찾지 못해 병의원 진료일수의 65%로 추정
+const PHARM_RATIO = 0.65;
+// 공단부담률: 2024년 전체 1인당 급여비 187만6천원 ÷ 1인당 진료비 약 226만원 ≈ 83%. 연령별 차이는 본인부담 경감 제도로 추정
+function coverageRate(a){ return a < 1 ? .92 : a < 5 ? .88 : a < 15 ? .8 : a < 40 ? .76 : a < 65 ? .79 : .85; }
+const LIFE_EXP = { all:83.7, M:80.8, F:86.6 }; // 2024년 생명표
 
 const RATE = 0.0719;      // 2026 건강보험료율
 const LTC_RATE = 0.1314;  // 2026 장기요양보험료율 (건보료 대비)
@@ -319,16 +365,17 @@ const wealthDecile = w => 1 + WEALTH_CUTS.filter(t => w >= t*1e4).length;
 const lvl = d => d >= 8 ? '상' : d >= 4 ? '중' : '하';
 
 const CANCERS = {
-  thyroid: { name:'갑상선암', w:12, surv:[1,.99,.97,.75], cost:.45, screen:()=>false },
-  colon:   { name:'대장암', w:12, surv:[.95,.88,.73,.2], cost:1, screen:a=>a>=50, test:'분변잠혈검사 → 대장내시경' },
-  lung:    { name:'폐암', w:8, surv:[.8,.6,.35,.1], cost:1.25, screen:a=>S.smokeEver&&a>=54&&a<=74, test:'저선량 흉부 CT' },
-  stomach: { name:'위암', w:11, surv:[.97,.85,.6,.07], cost:1, screen:a=>a>=40, test:'위내시경' },
+  thyroid: { name:'갑상선암', w:12, surv:[1,1,.99,.6], cost:.45, screen:()=>false },
+  colon:   { name:'대장암', w:12, surv:[.94,.88,.83,.2], cost:1, screen:a=>a>=50, test:'분변잠혈검사 → 대장내시경' },
+  lung:    { name:'폐암', w:8, surv:[.8,.65,.5,.13], cost:1.25, screen:a=>S.smokeEver&&a>=54&&a<=74, test:'저선량 흉부 CT' },
+  stomach: { name:'위암', w:11, surv:[.97,.8,.62,.075], cost:1, screen:a=>a>=40, test:'위내시경' },
   breast:  { name:'유방암', w:12, sex:'F', surv:[.99,.93,.8,.4], cost:1, screen:a=>a>=40, test:'유방촬영술' },
-  prostate:{ name:'전립선암', w:9, sex:'M', surv:[1,.99,.95,.45], cost:.8, screen:()=>false },
-  liver:   { name:'간암', w:7, surv:[.6,.45,.2,.03], cost:1.2, screen:a=>a>=40&&S.drinkEver, test:'간 초음파 + 혈액검사' },
-  pancreas:{ name:'췌장암', w:3, surv:[.45,.25,.1,.02], cost:1.3, screen:()=>false },
+  prostate:{ name:'전립선암', w:9, sex:'M', surv:[1,1,1,.51], cost:.8, screen:()=>false },
+  liver:   { name:'간암', w:7, surv:[.62,.44,.25,.035], cost:1.2, screen:a=>a>=40&&S.drinkEver, test:'간 초음파 + 혈액검사' },
+  pancreas:{ name:'췌장암', w:3, surv:[.47,.35,.23,.026], cost:1.3, screen:()=>false },
   cervix:  { name:'자궁경부암', w:3, sex:'F', surv:[.93,.75,.5,.2], cost:.8, screen:a=>a>=20, test:'자궁경부세포검사' },
 };
+// 병기 → 요약병기: 1기=국한, 2기=국한과 국소의 중간, 3기=국소, 4기=원격 (국가암등록통계 5년 상대생존율)
 const STAGE_COST = [18000000, 32000000, 52000000, 75000000];
 const SYMPTOM = [.04, .14, .5, .9];
 
@@ -784,16 +831,17 @@ function birth(){
 }
 
 function baseline(){
-  const b = BASELINE_STATS.find(r => S.age >= r.min && S.age <= r.max) || BASELINE_STATS[BASELINE_STATS.length-1];
-  let visits = Math.round(b.visits*(.7 + R()*.6)), ph = Math.round(b.pharmacy*(.7 + R()*.6));
-  let cost = b.totalCost*(.75 + R()*.5);
+  const b = LIFE_STAGES.find(r => S.age >= r.min && S.age <= r.max) || LIFE_STAGES[LIFE_STAGES.length-1];
+  const h = HIRA_AGE.find(r => S.age >= r.min && S.age <= r.max) || HIRA_AGE[HIRA_AGE.length-1];
+  let visits = Math.round(h.days*(.7 + R()*.6)), ph = Math.round(h.days*PHARM_RATIO*(.7 + R()*.6));
+  let cost = h.cost*BASE_SHARE*(.75 + R()*.5);
   if (S.htn && S.htn.detected){ cost += 420000; visits += 4; ph += 12; }
   if (S.dm && S.dm.detected){ cost += 650000; visits += 4; ph += 12; }
   if (S.smoke && S.age >= 30) cost *= 1.1;
   if (S.health < 50) cost *= 1.25;
   S.visits += visits; S.pharmacy += ph;
   if (S.ins === 'military') return { visits, ph, cost:0, pub:0, own:0, stage:b.stage, flavor:'군 병원과 의무대에서 진료를 받았습니다. 비용은 국방부가 부담합니다.', mil:true };
-  const c = charge(cost, 1 - b.coverageRate);
+  const c = charge(cost, 1 - coverageRate(S.age));
   return { visits, ph, cost, pub:c.pub, own:c.own, stage:b.stage, flavor:pick(b.flavor) };
 }
 
@@ -866,7 +914,7 @@ function diseases(){
   }
   const active = S.cancers.some(c => c.status !== 'cured');
   if (a >= 30 && !active){
-    const p = .0012*Math.exp(.075*(a-40))*riskMult('cancer')*(S.gender==='F'?.9:1);
+    const p = .0014*Math.exp(.075*(a-40))*riskMult('cancer')*(S.gender==='F'?.78:1.15);
     if (R() < p){
       const types = Object.entries(CANCERS).filter(([,v]) => !v.sex || v.sex === S.gender);
       let tot = 0;
@@ -1248,8 +1296,8 @@ function retire(){
 function mortality(){
   const a = S.age;
   if (S.health <= 0){ endOfLife('다발성 장기부전'); return; }
-  let q = .85e-5*Math.exp(.1*a);
-  q *= S.gender === 'M' ? 1.2 : .75;
+  let q = .72e-5*Math.exp(.1*a);
+  q *= S.gender === 'M' ? 1.15 : .55;
   if (S.health < 50) q *= 1 + (50 - S.health)/12;
   if (S.smoke) q *= 2; else if (S.quitAge != null) q *= 1.25;
   if (S.drink) q *= 1.4;
@@ -1564,6 +1612,55 @@ function storyHtml(){
       ${x.list && x.list.length ? `<ul>${x.list.map(li => `<li>${li}</li>`).join('')}</ul>` : ''}</section>`).join('')}
   </article>`;
 }
+function showSources(){
+  const m = $('#srcModal');
+  const OK = '<span class="tag ok">공식 통계</span>', EST = '<span class="tag est">추정</span>';
+  const L = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+  const rows = HIRA_AGE.map(r => `<tr><td>${r.max >= 120 ? '85세 이상' : r.min === r.max ? r.min+'세' : r.min+'~'+r.max+'세'}</td><td>${r.days.toFixed(2)}일</td><td>${Math.round(r.cost).toLocaleString('ko-KR')}원${r.est ? ' *' : ''}</td></tr>`).join('');
+  m.innerHTML = `<article class="bio" aria-label="통계 출처">
+    <div class="eb">5천만분의 1 · 데이터 출처</div>
+    <h2>이 게임의 숫자는 어디서 왔나</h2>
+    <div class="who">공식 통계를 그대로 쓴 값과, 자료가 없어 추정한 값을 구분했습니다.</div>
+    <section><h3>${icon('fa-hospital')}연령별 기본 의료이용 ${OK}</h3>
+      <p>매년 쌓이는 병의원 진료일수와 진료비는 건강보험심사평가원 「연령별 건강보험 적용대상자 1인당 진료현황」(2025년 1~12월 심사결정분)을 씁니다. 해마다 ±25~30% 무작위로 흔듭니다.</p>
+      <div class="src-wrap"><table class="src-table"><thead><tr><th>연령</th><th>1인당 진료일수</th><th>1인당 진료비</th></tr></thead><tbody>${rows}
+      <tr><td><b>전체</b></td><td>${HIRA_AVG.days}일</td><td>${HIRA_AVG.cost.toLocaleString('ko-KR')}원</td></tr></tbody></table></div>
+      <ul>
+        <li>* 50~54세 진료비는 검색으로 확인하지 못해 앞뒤 연령대 사이 값으로 채웠습니다. ${EST}</li>
+        <li>55~59세 237만원, 60~64세 311만원은 반올림된 값입니다.</li>
+        <li>평균 진료비에는 암·심뇌혈관질환 진료비가 들어 있어, 이 게임은 기본 진료비를 평균의 80%만 반영하고 중증질환은 따로 계산합니다. ${EST}</li>
+        <li>약국 방문일수는 연령별 공식 수치를 찾지 못해 병의원 진료일수의 65%로 잡았습니다. ${EST}</li>
+        <li>공단부담률: 2024년 1인당 급여비 187만6천원 ÷ 1인당 진료비 약 226만원 ≈ 83% ${OK}, 연령별 차이(영유아·노인 경감) ${EST}</li>
+        <li>참고: 2024년 1인당 외래진료 17.9회, 75~79세 40.8회로 최다, 20~24세 8.7회로 최소 ${OK}</li>
+      </ul>
+      <p style="margin-top:6px">${L('https://opendata.hira.or.kr/op/opc/olapHthInsRvStatInfoTab19.do?docNo=03-035','심평원 보건의료빅데이터개방시스템 · 연령별 1인당 진료현황')}<br>${L('https://www.medipana.com/news/articleView.html?idxno=402890','2024 건강보험통계연보 보도 (1인당 급여비)')}<br>${L('https://www.kpanews.co.kr/news/articleView.html?idxno=532136','2024 의료서비스 이용현황 보도 (외래 17.9회)')}</p></section>
+    <section><h3>${icon('fa-ribbon')}암 ${OK}</h3>
+      <ul>
+        <li>기대수명까지 살 때 암에 걸릴 확률: 남성 37.7%, 여성 34.8% (2022년 국가암등록통계). 게임의 연령별 발생률은 이 값에 맞춰 조정했습니다. ${EST}</li>
+        <li>병기별 5년 상대생존율(2018~2022 진단): 전체 국한 92.1%·국소 75.1%·원격 27.1%. 위암 97.4/62.0/7.5, 폐암 79.8/50.4/12.9, 간암 62.3/25.4/3.5, 췌장암 46.6/22.9/2.6, 대장암 국한 94.0, 유방암 국한 99.1 (%)</li>
+        <li>대장암·갑상선암·전립선암의 국소·원격 값은 2019~2023 진단 기준(국가암정보센터)을 썼습니다.</li>
+        <li>게임의 1기=국한, 3기=국소, 4기=원격, 2기=국한과 국소의 중간으로 대응시켰습니다. 유방암·자궁경부암의 국소·원격 값은 찾지 못해 추정했습니다. ${EST}</li>
+      </ul>
+      <p style="margin-top:6px">${L('https://www.cancer.go.kr/download.do?uuid=48ec0d0b-2eb1-4dd8-bd8e-dd9dc629473a.pdf','2022년 국가암등록통계 주요 결과 (PDF)')}<br>${L('https://www.mohw.go.kr/board.es?mid=a10503010100&bid=0027&act=view&list_no=1484074','보건복지부 보도자료 (2024.12.26)')}<br>${L('https://cancer.go.kr/lay1/S1T648C652/contents.do','국가암정보센터 · 요약병기별 생존율')}</p></section>
+    <section><h3>${icon('fa-hourglass-half')}기대수명 ${OK}</h3>
+      <p>2024년 생명표: 전체 83.7세, 남성 80.8세, 여성 86.6세. 사망률 곡선은 이 값에 맞춰 조정했고, 흡연·음주·스트레스에 따른 가중치는 역학 연구의 일반적 범위로 정했습니다. ${EST}</p>
+      <p style="margin-top:6px">${L('https://v.daum.net/v/20251203140047593','2024년 생명표 보도 (국가데이터처)')}</p></section>
+    <section><h3>${icon('fa-receipt')}보험료와 제도 ${OK}</h3>
+      <ul>
+        <li>2026년 건강보험료율 7.19%(직장가입자 본인 3.595%), 장기요양보험료율 0.9448%(건보료의 13.14%)</li>
+        <li>지역가입자는 소득과 재산(주택·토지 등)에 부과하며, 자동차는 2024년 2월부터 부과하지 않습니다. 게임의 재산분 계산식은 단순화한 것입니다. ${EST}</li>
+        <li>본인부담상한액(2025): 1분위 89만원 ~ 10분위 826만원 ${OK}. 중간 분위 값은 근사치 ${EST}</li>
+        <li>국민행복카드 100만원(다태아 140만원), 자연분만 본인부담 0원, 산정특례 본인부담 암·심뇌혈관 5%·희귀질환·중증치매 10%, 65세 이상 임플란트 30%, 장기요양 재가 15%·시설 20%</li>
+        <li>건강보험 보장률(비급여 포함) 2024년 64.9%. 게임의 비급여는 중증질환에만 따로 붙입니다. ${EST}</li>
+      </ul>
+      <p style="margin-top:6px">${L('https://www.kmpnews.co.kr/news/articleView.html?idxno=68875','2024 건강보험환자 진료비 실태조사 (보장률 64.9%)')}</p></section>
+    <section><h3>${icon('fa-flask')}게임을 위해 정한 값 ${EST}</h3>
+      <p>심뇌혈관질환·고혈압·당뇨 발생률, 스트레스 효과, 직업별 소득, 재산 분위 경계, 저축률, 가족 사건 시점은 공식 통계가 아니라 그럴듯한 범위에서 정하고 수백 번 모의 실행으로 맞춘 값입니다. 교육용 시뮬레이션으로만 봐 주세요.</p></section>
+    <div class="rc-actions" style="grid-template-columns:1fr"><button class="btn primary" id="btnSrcClose">닫기</button></div>
+  </article>`;
+  m.hidden = false; m.scrollTop = 0;
+  $('#btnSrcClose').onclick = () => { m.hidden = true; };
+}
 function showEnding(){
   const m = $('#endModal');
   const ratio = S.paid > 0 ? Math.round(S.benefit / S.paid * 100) : null;
@@ -1571,7 +1668,8 @@ function showEnding(){
   const total = S.paid + S.employerPaid;
   const badges = [...S.badges].map(k => `<span class="rc-badge">${icon(BADGES[k].icon)}${BADGES[k].label}</span>`).join('') || '<span style="font-size:11px;color:var(--ink-soft)">획득한 뱃지가 없습니다</span>';
   const now = new Date();
-  const lifeLeft = S.age >= 83 ? '대한민국 기대수명(83.5세)보다 오래 살았습니다.' : `대한민국 기대수명(83.5세)보다 ${Math.round(83.5 - Math.max(0,S.age))}년 일찍 떠났습니다.`;
+  const le = LIFE_EXP[S.gender];
+  const lifeLeft = S.age >= le ? `${S.gender==='F'?'여성':'남성'} 기대수명(${le}세)보다 ${Math.round(S.age - le)}년 더 살았습니다.` : `${S.gender==='F'?'여성':'남성'} 기대수명(${le}세)보다 ${Math.round(le - Math.max(0,S.age))}년 일찍 떠났습니다.`;
   m.innerHTML = `
     ${storyHtml()}
     <div class="receipt" role="dialog" aria-label="인생 영수증">
@@ -1624,12 +1722,14 @@ function showEnding(){
     <div class="rc-actions">
       <button class="btn" id="btnShare">${icon('fa-share-nodes')}공유하기</button>
       <button class="btn primary" id="btnReplay">${icon('fa-rotate-right')}다시 태어나기</button>
-      <button class="btn ghost" id="btnClose" style="grid-column:1/-1;font-size:13px">타임라인 다시 보기</button>
+      <button class="btn ghost" id="btnSrcEnd" style="font-size:13px">통계 출처</button>
+      <button class="btn ghost" id="btnClose" style="font-size:13px">타임라인 다시 보기</button>
     </div>`;
   m.hidden = false; m.scrollTop = 0;
   $('#btnReplay').onclick = () => { m.hidden = true; $('#startScreen').hidden = false; drawDots(); };
   $('#btnClose').onclick = () => { m.hidden = true; };
   $('#btnShare').onclick = share;
+  $('#btnSrcEnd').onclick = showSources;
   if (S.age >= 83 || S.badges.has('survivor')) fire();
 }
 async function share(){
@@ -1682,6 +1782,8 @@ function drawDots(){
   ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI*2); ctx.fill();
   ctx.globalAlpha = .25; ctx.beginPath(); ctx.arc(px, py, 12, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1;
 }
+$('#btnSrcStart').onclick = showSources;
+$('#btnSrcHud').onclick = showSources;
 addEventListener('resize', () => { if (!$('#startScreen').hidden) drawDots(); });
 drawDots();
 dock.innerHTML = '';
