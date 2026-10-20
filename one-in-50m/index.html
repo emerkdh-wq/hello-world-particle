@@ -445,7 +445,7 @@ function payPremium(){
   const a = S.age;
   let mine = 0, employer = 0, note = '';
   if (S.ins === 'military'){ note = '군 복무 중: 건강보험 급여정지, 보험료 면제'; }
-  else if (S.ins === 'dependent'){ note = S.retired ? '자녀의 피부양자: 보험료 0원' : '부모님 건강보험의 피부양자로 보장'; }
+  else if (S.ins === 'dependent'){ note = S.retired ? '자녀의 피부양자: 보험료 0원' : a < 19 ? '미성년자는 건강보험료를 내지 않습니다 · 부모님 건강보험의 피부양자로 보장' : '부모님 건강보험의 피부양자로 보장 · 보험료 0원'; }
   else if (S.jobless && S.jobless.age === a){
     if (S.jobless.mode === 'keep'){ mine = S.jobless.prev; note = '임의계속가입: 직장 시절 보험료 유지'; }
     else { mine = (regionalMonthly(S.salary*.5) )*12; note = `지역가입자 전환: 소득 + ${wealthText()} 반영 · 월 ${won(mine/12)}`; }
@@ -1023,6 +1023,7 @@ function scheduled(){
       { label:'탄산·라면·과자가 최고', sub:'초가공식품 위주', cls:'ghost', run:()=>{ S.upf = true; line2('fa-burger','입맛이 짜고 달게 길들여졌습니다.'); } },
       { label:'집밥과 물, 과일로', sub:'건강한 식습관', cls:'primary', run:()=>{ S.upf = false; line2('fa-carrot','건강한 식습관이 몸에 배었습니다.'); } },
     ]});
+  if (a === 19 && !S.job) line('fa-id-card', '만 19세 성인이 되었습니다. 미성년자일 때는 보험료가 없었지만, 이제 소득이 생기면 내 이름으로 건강보험료를 냅니다.');
   if (a === 18) Q.push({ tone:'blue', icon:'fa-graduation-cap', title:'고3, 진로를 정할 때입니다',
     desc:'대학에 가면 졸업 때까지 부모님의 피부양자로 남고, 바로 취업하면 내 이름으로 건강보험료를 내기 시작합니다.',
     options:[
@@ -1327,7 +1328,12 @@ function insLabel(){
   if (isJobless()) return `실직 중 · ${S.jobless.mode === 'keep' ? '임의계속가입' : '지역가입자'}`;
   if (S.job) return `${JOBS[S.job].name} · ${S.ins === 'employee' ? '직장' : '지역'}가입자`;
   if (S.age < 0) return '엄마 뱃속';
-  return S.path === 'college' && S.age >= 19 ? '대학생 · 피부양자' : '학생 · 피부양자';
+  const a = S.age;
+  if (a <= 6) return '영유아 · 부모님 피부양자';
+  if (a <= 12) return '초등학생 · 부모님 피부양자';
+  if (a <= 15) return '중학생 · 부모님 피부양자';
+  if (a <= 18) return '고등학생 · 부모님 피부양자';
+  return S.path === 'college' ? '대학생 · 부모님 피부양자' : '취업 준비 · 부모님 피부양자';
 }
 function renderHUD(){
   const h = clamp(Math.round(S.health), 0, 100);
@@ -1633,8 +1639,8 @@ $('#btnStart').onclick = () => {
   charge(1000000, 0); S.visits += 12;
   badge('happy');
   evCard('t-cyan','fa-credit-card',`${g === 'F' ? '딸' : '아들'}, ${nm}의 삶이 엄마 뱃속에서 시작됩니다`,
-    `임신이 확인되자 엄마는 <b>국민행복카드</b>로 임신·출산 진료비 <b>100만원</b>을 지원받았습니다. 초음파와 산전검사에도 건강보험이 적용됩니다. 건강보험은 태어나기 전부터 당신을 지키고 있습니다.`,
-    [['g','국민행복카드 100만원'],['','산전검사 12회'],['', g === 'F' ? '여아' : '남아']]);
+    `임신이 확인되자 엄마는 <b>국민행복카드</b>로 임신·출산 진료비 <b>100만원</b>을 지원받았습니다. 초음파와 산전검사에도 건강보험이 적용됩니다. 건강보험은 태어나기 전부터 당신을 지키고 있습니다. 태어나면 부모님 건강보험의 피부양자로 등록되고, 미성년자인 동안에는 <b>보험료를 한 푼도 내지 않습니다</b>.`,
+    [['g','국민행복카드 100만원'],['','산전검사 12회'],['b','미성년자 보험료 0원'],['', g === 'F' ? '여아' : '남아']]);
   toast(`${nm} (${g === 'F' ? '여' : '남'})로 태어날 운명입니다`);
   renderHUD(); renderDock();
 };
