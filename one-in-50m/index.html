@@ -55,6 +55,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hud-age small{font-family:var(--f-body);font-size:12px;color:var(--muted);font-weight:500;margin-left:6px}
 .hud-who{font-size:12px;color:var(--muted);text-align:right;line-height:1.45;min-width:0}
 .hud-who b{color:var(--fg);font-weight:600}
+.hud-info{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:11.5px;color:var(--muted);line-height:1.45}
+.hud-info li{display:flex;gap:7px;align-items:baseline;min-width:0}
+.hud-info li svg{flex:none;width:11px;color:var(--faint)}
 .gauge{margin-top:10px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px}
 .gauge .lbl{color:var(--muted);letter-spacing:.04em;width:4.4em}
 .gauge+.gauge{margin-top:6px}
@@ -193,8 +196,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   <header class="hud" id="hud">
     <div class="hud-top">
       <div class="hud-age"><span id="hAge">태아</span><small id="hYear">2026년</small></div>
-      <div class="hud-who"><b id="hName">-</b><br><span id="hJob">피부양자</span><br><span id="hEcon">-</span></div>
+      <div class="hud-who"><b id="hName">-</b><br><span id="hJob">피부양자</span></div>
     </div>
+    <ul class="hud-info">
+      <li><i class="fa-solid fa-coins"></i><span id="hInc">-</span></li>
+      <li><i class="fa-solid fa-house"></i><span id="hWealth">-</span></li>
+      <li><i class="fa-solid fa-people-group"></i><span id="hFam">-</span></li>
+    </ul>
     <div class="gauge">
       <span class="lbl">체력</span>
       <div class="bar" role="progressbar" aria-label="체력" aria-valuemin="0" aria-valuemax="100" id="hBarWrap"><i id="hBar" style="width:90%"></i></div>
@@ -440,7 +448,7 @@ function payPremium(){
   else if (S.ins === 'dependent'){ note = S.retired ? '자녀의 피부양자: 보험료 0원' : '부모님 건강보험의 피부양자로 보장'; }
   else if (S.jobless && S.jobless.age === a){
     if (S.jobless.mode === 'keep'){ mine = S.jobless.prev; note = '임의계속가입: 직장 시절 보험료 유지'; }
-    else { mine = (regionalMonthly(S.salary*.5) )*12; note = `지역가입자 전환: 재산 ${lvl(S.wdecile)}(${S.wdecile}분위) 반영 · 월 ${won(mine/12)}`; }
+    else { mine = (regionalMonthly(S.salary*.5) )*12; note = `지역가입자 전환: 소득 + ${wealthText()} 반영 · 월 ${won(mine/12)}`; }
   }
   else if (S.ins === 'employee'){
     mine = S.salary*12*RATE/2*(1+LTC_RATE); employer = mine;
@@ -448,7 +456,7 @@ function payPremium(){
   }
   else if (S.ins === 'regional'){
     mine = regionalMonthly(S.retired ? S.yearIncome/12 : S.salary)*12;
-    note = `지역가입자 · 월 ${won(mine/12)} (소득분 + 재산 ${lvl(S.wdecile)}(${S.wdecile}분위)분)`;
+    note = `지역가입자 · 월 ${won(mine/12)} (소득분 + 재산분 · ${wealthText()})`;
   }
   S.paid += mine; S.employerPaid += employer; S.yearPrem = mine;
   return { mine, note };
@@ -542,7 +550,9 @@ function updateWealth(){
   if (S.health < S.healthMin){ S.healthMin = S.health; S.healthMinAge = S.age; }
   if (S.ins !== 'military') S.peakIncome = Math.max(S.peakIncome, S.yearIncome);
   if (!ownEconomy()) return;
-  if (S.job && !S.retired && S.ins !== 'military') S.wealth += S.yearIncome*(S.married ? .10 : .07);
+  const P = S.incomeParts || {};
+  const earned = (P['근로소득'] || 0) + (P['사업소득'] || 0);
+  S.wealth += earned*(S.married ? .075 : .05);
   if (S.retired) S.wealth -= Math.max(0, 1.8e7 - S.yearIncome); // 생활비 부족분을 재산에서
   S.wealth *= S.wealth > 0 ? 1.012 : 1;              // 자산 가치 상승(물가 차감)
   S.wealth -= (S.yearOOP + S.yearNonCov)*.5;          // 의료비 지출
@@ -551,18 +561,54 @@ function updateWealth(){
 }
 const HH_INCOME = [1100,2000,2900,3800,4700,5700,6800,8100,9900,14000].map(v => v*1e4);
 const incLvl = v => v >= 6e7 ? '상' : v >= 2.5e7 ? '중' : '하';
+const HH_WEALTH = [800,3000,6500,11500,17000,24000,33000,45000,65000,120000].map(v => v*1e4);
+const isJobless = () => !!(S.jobless && S.age >= S.jobless.from && S.age <= S.jobless.age);
+// 소득 구성: 근로·사업·연금·실업급여·금융(이자·배당)·임대
+function finalizeIncome(){
+  const P = {};
+  if (S.job && !S.retired && S.ins !== 'military'){
+    const v = S.salary*12;
+    if (S.jobless && S.jobless.age === S.age) P['실업급여'] = v;
+    else P[JOBS[S.job].type === 'employee' ? '근로소득' : '사업소득'] = v;
+  }
+  if (S.retired) P['연금소득'] = (900 + S.decile*160)*1e4;
+  if (ownEconomy() && S.wealth > 0){
+    P['금융소득'] = S.wealth*.02;
+    if (S.wealth > 5e8) P['임대소득'] = (S.wealth - 5e8)*.03;
+  }
+  S.incomeParts = P;
+  S.yearIncome = Object.values(P).reduce((x, y) => x + y, 0);
+}
+function mainIncome(){
+  const e = Object.entries(S.incomeParts || {}).sort((a,b) => b[1]-a[1])[0];
+  return e && e[1] > 0 ? e[0] : null;
+}
 function incomeText(){
   if (!ownEconomy()){ const v = HH_INCOME[S.hhInc-1]; return `가구 연소득 ${won(v)} (${incLvl(v)})`; }
   if (S.ins === 'military') return '군 복무 중 (소득 없음)';
-  return `연소득 ${won(S.yearIncome)} (${incLvl(S.yearIncome)})`;
+  const m = mainIncome();
+  return `연소득 ${won(S.yearIncome)} (${incLvl(S.yearIncome)})${m ? ` · ${m} 위주` : ''}`;
 }
-function econLabel(){
-  const w = ownEconomy() ? S.wdecile : S.hhWealth;
-  return `${incomeText()} · 재산 ${lvl(w)}(${w}분위)`;
+const wealthLvl = w => lvl(wealthDecile(w));
+function wealthText(w){
+  if (w == null) w = ownEconomy() ? S.wealth : HH_WEALTH[S.hhWealth-1];
+  const pre = ownEconomy() ? '' : '가구 ';
+  return w < 0 ? `${pre}재산 ${won(w)} (하, 빚)` : `${pre}재산 ${won(w)} (${wealthLvl(w)})`;
+}
+function econLabel(){ return `${incomeText()} · ${wealthText()}`; }
+function familyText(){
+  if (S.age < 0) return '';
+  const a = S.age, f = [];
+  if (S.spouse) f.push(S.spouse.alive ? `배우자 ${a + S.spouse.gap}세` : '배우자 사별');
+  S.childBirths.forEach((cb, i) => f.push(`${['첫째','둘째','셋째'][i]} ${a - cb}세`));
+  if (a < S.father) f.push(`아버지 ${a + S.fGap}세`);
+  if (a < S.mother) f.push(`어머니 ${a + S.mGap}세`);
+  return f.length ? f.join(' · ') : '가족 없음 (혼자)';
 }
 function workLife(){
   if (!S.job || S.retired || S.ins === 'military') return;
-  if (S.jobless && S.jobless.age === S.age) return;
+  if (S.jobless && S.jobless.age === S.age){ line('fa-briefcase', '실직 상태로 1년을 보냈습니다. 실업급여로 버티며 구직 활동을 합니다.'); return; }
+  if (S.jobless && S.jobless.age + 1 === S.age) line('fa-briefcase', `${ro(JOBS[S.job].name)} 재취업했습니다 · ${addStress(-6)}`);
   if (JOBS[S.job].type === 'regional'){
     const r = R();
     if (r < .2){
@@ -642,7 +688,7 @@ function marryChoice(){
     desc:'결혼하면 배우자에게 소득이 없을 때 내 건강보험의 피부양자로 등록할 수 있고, 맞벌이라면 각자 직장가입자로 보험료를 냅니다. 든든한 내 편은 스트레스도 덜어 줍니다.',
     options:[
       { label:'결혼한다', sub:'둘이서 함께', cls:'primary', run:()=>{
-        S.married = true; S.marryAt = S.age; S.spouse = { alive:true, deathAge: S.age + rint(36, 62) };
+        S.married = true; S.marryAt = S.age; S.spouse = { alive:true, deathAge: S.age + rint(36, 62), gap: rint(-3, 4) };
         S.wealth += rint(1000, 5000)*1e4; S.wdecile = wealthDecile(S.wealth);
         lifeEvent('fa-ring','결혼했습니다','결혼 준비로 정신없었지만 든든한 내 편이 생겼습니다. 이제 건강검진 결과도 함께 챙깁니다.',[['g', addStress(-6)],['','배우자 피부양자 가능']]); } },
       { label:'혼자의 삶을 택한다', sub:'비혼', cls:'ghost', run:()=>{ S.marryDeclined = true; line2('fa-user', '나 자신에게 집중하는 삶을 택했습니다.'); } },
@@ -676,6 +722,7 @@ function advance(){
 
   updateIncome();
   workLife();
+  finalizeIncome();
   const base = baseline();
   const prem = payPremium();
   lifestyleHealth();
@@ -906,10 +953,10 @@ function randomEvents(){
   if (a >= 35 && a <= 55 && S.ins === 'employee' && !S.jobless && !S.queue.some(q=>q.id==='jobless') && R() < .025){
     const prev = S.salary*12*RATE/2*(1+LTC_RATE);
     S.queue.push({ id:'jobless', tone:'amber', icon:'fa-briefcase', title:'회사가 구조조정을 합니다',
-      desc:`실직하면 직장가입자 자격을 잃습니다. 지역가입자가 되면 재산·자동차까지 반영돼 보험료가 오를 수 있어요. 퇴직 후 36개월간 직장 시절 보험료를 유지하는 '임의계속가입'이 있습니다.`,
+      desc:`실직하면 직장가입자 자격을 잃습니다. 지역가입자가 되면 소득뿐 아니라 재산(주택·토지 등)까지 반영돼 보험료가 오를 수 있어요. 2024년 2월부터 자동차는 보험료 부과 대상에서 빠졌습니다. 퇴직 후 36개월간 직장 시절 보험료를 유지하는 '임의계속가입'이 있습니다.`,
       options:[
-        { label:'임의계속가입 신청', sub:`월 ${won(prev/12)} 유지`, cls:'primary', run:()=>{ S.jobless={ age:a+1, mode:'keep', prev }; S.wealth *= .92; addStress(20, '구조조정 실직'); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-blue','fa-shield','임의계속가입을 신청했습니다','내년 1년간 직장 시절 보험료를 그대로 냅니다. 재취업할 때까지 안전망이 이어집니다.',[['b','임의계속가입']]); } },
-        { label:'지역가입자로 전환', sub:`월 약 ${won(regionalMonthly(S.salary*.5))} (재산 ${lvl(S.wdecile)}(${S.wdecile}분위) 반영)`, cls:'ghost', run:()=>{ S.jobless={ age:a+1, mode:'regional' }; S.wealth *= .92; addStress(22, '구조조정 실직'); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-gray','fa-house','지역가입자로 전환합니다','소득이 줄었는데 집과 차 때문에 보험료가 오히려 올랐습니다.',[['w','지역가입자']]); } }
+        { label:'임의계속가입 신청', sub:`월 ${won(prev/12)} 유지`, cls:'primary', run:()=>{ S.jobless={ from:a, age:a+1, mode:'keep', prev }; S.wealth *= .92; addStress(20, '구조조정 실직'); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-blue','fa-shield','임의계속가입을 신청했습니다','내년 1년간 직장 시절 보험료를 그대로 냅니다. 재취업할 때까지 안전망이 이어집니다.',[['b','임의계속가입']]); } },
+        { label:'지역가입자로 전환', sub:`월 약 ${won(regionalMonthly(S.salary*.5))} (${wealthText()} 반영)`, cls:'ghost', run:()=>{ S.jobless={ from:a, age:a+1, mode:'regional' }; S.wealth *= .92; addStress(22, '구조조정 실직'); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-gray','fa-house','지역가입자로 전환합니다','소득은 줄었는데 집(재산)에도 보험료가 매겨져 부담이 크게 줄지 않았습니다.',[['w','지역가입자']]); } }
       ]});
   }
   if (a >= 66 && a <= 78 && !S.cataract && R() < .07){
@@ -1052,11 +1099,11 @@ function jobChoice(path, rerolled){
       const j = JOBS[k];
       S.job = k; S.ins = (S.ins === 'military') ? 'military' : j.type; S.preMil = j.type;
       S.wealth = (S.hhWealth - 1)*300*1e4; S.wdecile = wealthDecile(S.wealth);
-      updateIncome(); payPremiumDelta();
+      updateIncome(); finalizeIncome(); payPremiumDelta();
       S.milestones.push({ age:S.age, ic:j.ic, title:`${j.name} 일을 시작` });
       evCard('t-blue', j.ic, `${ro(j.name)} 사회생활 시작`,
         `이제 ${j.type==='employee'?'직장가입자로 월급에서 건강보험료가 원천징수되고, 회사가 같은 금액을 함께 냅니다':'지역가입자로 소득과 재산에 따라 보험료가 매겨지고, 전액을 직접 냅니다'}. 내가 낸 보험료가 누군가의 수술비가 되고, 언젠가 내 치료비가 됩니다.`,
-        [['b', j.type==='employee'?'직장가입자':'지역가입자'],['', `연소득 ${won(S.yearIncome)} (${incLvl(S.yearIncome)})`],['', `재산 ${lvl(S.wdecile)}(${S.wdecile}분위)`]]);
+        [['b', j.type==='employee'?'직장가입자':'지역가입자'],['', `연소득 ${won(S.yearIncome)} (${incLvl(S.yearIncome)})`],['', wealthText()]]);
     }}));
   if (!rerolled) opts.push({ label:'다른 채용 공고 보기', sub:'한 번만 다시 볼 수 있어요', cls:'ghost', run:()=>{ S.queue.unshift(jobChoice(path, true)); } });
   return { tone:'blue', icon:'fa-id-card', title: path === 'work' ? '어떤 일을 시작할까요?' : '졸업! 첫 직장을 고르세요',
@@ -1160,7 +1207,7 @@ function retire(){
     '긴 사회생활을 마쳤습니다. 출근 부담은 사라졌지만 소득이 줄고, 직장가입자 자격도 함께 끝납니다.', [['g', addStress(-8)]]);
   if (S.hasChild && S.wdecile >= 9){
     S.ins = 'regional';
-    evCard('t-blue','fa-house','피부양자가 될 수 없습니다',`재산이 ${lvl(S.wdecile)}(${S.wdecile}분위)로 피부양자 재산 기준(재산세 과표 9억원 초과 등)을 넘습니다. 지역가입자로 보험료를 직접 냅니다.`,[['b','지역가입자'],['', `재산 ${S.wdecile}분위`]]);
+    evCard('t-blue','fa-house','피부양자가 될 수 없습니다',`${wealthText()}으로 피부양자 재산 기준(재산세 과표 9억원 초과 등)을 넘습니다. 지역가입자로 보험료를 직접 냅니다.`,[['b','지역가입자'],['', wealthText()]]);
   } else if (S.hasChild){
     S.queue.push({ tone:'blue', icon:'fa-umbrella', title:'은퇴했습니다. 보험료는 어떻게 할까요?',
       desc:'연소득 2천만원·재산 기준 이하라면 자녀 건강보험의 피부양자로 등록할 수 있습니다. 2022년부터 피부양자 요건이 강화되었습니다.',
@@ -1277,6 +1324,7 @@ function vitality(h){
 function insLabel(){
   if (S.ins === 'military') return '군 복무 (급여정지)';
   if (S.retired) return S.ins === 'dependent' ? '은퇴 · 피부양자' : '은퇴 · 지역가입자';
+  if (isJobless()) return `실직 중 · ${S.jobless.mode === 'keep' ? '임의계속가입' : '지역가입자'}`;
   if (S.job) return `${JOBS[S.job].name} · ${S.ins === 'employee' ? '직장' : '지역'}가입자`;
   if (S.age < 0) return '엄마 뱃속';
   return S.path === 'college' && S.age >= 19 ? '대학생 · 피부양자' : '학생 · 피부양자';
@@ -1287,7 +1335,9 @@ function renderHUD(){
   $('#hYear').textContent = S.age < 0 ? `${START_YEAR}년 · 임신 중` : `${START_YEAR + S.age}년 · ${S.age}년째`;
   $('#hName').textContent = `${S.name} (${S.gender === 'F' ? '여' : '남'})`;
   $('#hJob').textContent = insLabel();
-  $('#hEcon').textContent = S.age < 0 ? '' : econLabel();
+  $('#hInc').textContent = S.age < 0 ? '엄마 뱃속' : incomeText();
+  $('#hWealth').textContent = S.age < 0 ? '-' : wealthText();
+  $('#hFam').textContent = S.age < 0 ? `아버지 ${S.fGap}세 · 어머니 ${S.mGap}세` : familyText();
   $('#hHealth').textContent = h;
   $('#hVital').textContent = S.alive ? vitality(h) : '영면';
   const bar = $('#hBar');
@@ -1399,7 +1449,7 @@ function lifeStory(){
     if (S.widowed) ev.push([S.spouse.deathAge, `${S.spouse.deathAge}세에 배우자를 먼저 떠나보냈습니다.`]);
     if (S.retired) ev.push([60, '60세에 은퇴했습니다.']);
     t += ev.sort((x, y) => x[0] - y[0]).map(x => ' ' + x[1]).join('');
-    if (S.peakIncome) t += ` 가장 많이 벌던 해의 연소득은 <b>${won(S.peakIncome)}(${incLvl(S.peakIncome)})</b>, 마지막 재산은 <b>${lvl(S.wdecile)}(${S.wdecile}분위)</b>였습니다.`;
+    if (S.peakIncome) t += ` 가장 많이 벌던 해의 연소득은 <b>${won(S.peakIncome)}(${incLvl(S.peakIncome)})</b>, 마지막 재산은 <b>${won(S.wealth)} (${S.wealth < 0 ? '하, 빚' : wealthLvl(S.wealth)})</b>이었습니다.`;
   }
   sec.push({ ic:'fa-route', h:'어떤 인생을 살았나', p:t });
 
@@ -1507,7 +1557,8 @@ function showEnding(){
       <div class="rc-row"><span>사인</span><span>${S.cause || '-'}</span></div>
       <div class="rc-row"><span>최종 자격</span><span>${insLabel()}</span></div>
       <div class="rc-row"><span>직업</span><span>${S.job ? JOBS[S.job].name : '-'}</span></div>
-      <div class="rc-row"><span>소득 · 재산</span><span>${econLabel()}</span></div>
+      <div class="rc-row"><span>마지막 소득</span><span>${incomeText()}</span></div>
+      <div class="rc-row"><span>마지막 재산</span><span>${wealthText()}</span></div>
       <hr class="rc-hr">
       <div class="rc-row"><span>평생 총 진료비</span><span class="num">${fullWon(S.totalCost)}</span></div>
       <div class="rc-row"><span>  ㄴ 본인 부담 (비급여 포함)</span><span class="num">${fullWon(S.oop)}</span></div>
@@ -1573,6 +1624,8 @@ $('#btnStart').onclick = () => {
   S = newState(nm, g);
   S.health0 = S.health;
   S.hhInc = rint(1,10); S.hhWealth = clamp(S.hhInc + rint(-2,2), 1, 10); S.decile = S.hhInc;
+  S.fGap = rint(28,36); S.mGap = rint(26,34);
+  S.father = rint(70,88) - S.fGap; S.mother = rint(74,93) - S.mGap; // 내 나이 기준 부모님 별세 시점
   shown.paid = 0; shown.ben = 0;
   feed.innerHTML = '';
   $('#startScreen').hidden = true;
