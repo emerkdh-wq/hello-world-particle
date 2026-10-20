@@ -206,24 +206,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <div class="eyebrow">대한민국 인생 &amp; 건강보험 시뮬레이터</div>
       <h1 class="logo">5천만분의<br><em>1</em></h1>
       <p class="lede">엄마 뱃속에서 임종까지. 감기로 소아과를 드나들던 시절부터 검진, 큰 병, 요양까지, 건강보험이 한 사람의 삶을 얼마나 받쳐 주는지 1년씩 살아 보며 확인합니다.</p>
-      <div class="field">
-        <label for="inName">이름</label>
-        <input id="inName" maxlength="10" placeholder="예: 김하늘" autocomplete="off">
-      </div>
-      <div class="field">
-        <label>성별</label>
-        <div class="seg" id="segGender">
-          <button type="button" data-g="F" aria-pressed="false">여성</button>
-          <button type="button" data-g="M" aria-pressed="false">남성</button>
-          <button type="button" data-g="R" aria-pressed="true">운명에 맡김</button>
-        </div>
-      </div>
       <div class="facts">
         <div><b>9단계</b>연령별 의료이용 통계</div>
         <div><b>4대 중증</b>산정특례 5~10%</div>
         <div><b>2026</b>건보료율 7.19%</div>
       </div>
-      <button class="btn primary" id="btnStart" style="flex:none"><i class="fa-solid fa-baby"></i>잉태되기</button>
+      <p class="lede" style="font-size:12.5px">이름과 성별은 태어날 때 운명처럼 정해집니다.</p>
+      <button class="btn primary" id="btnStart" style="flex:none"><i class="fa-solid fa-baby"></i>태어나기</button>
     </div>
   </section>
 
@@ -1330,16 +1319,12 @@ async function share(){
 /* =========================================================
    시작 화면
    ========================================================= */
-let gender = 'R';
-document.querySelectorAll('#segGender button').forEach(b => b.onclick = () => {
-  gender = b.dataset.g;
-  document.querySelectorAll('#segGender button').forEach(x => x.setAttribute('aria-pressed', x === b));
-});
-const NAMES = { F:['서연','하윤','지우','서아','하은','민서','지안','윤서'], M:['민준','서준','도윤','하준','시우','은우','지호','이준'] };
-const SURN = ['김','이','박','최','정','강','조','윤','장','임'];
+const NAMES = { F:['서연','하윤','지우','서아','하은','민서','지안','윤서','지유','채원','수아','다은','예린','소율','하린','유나','시은','지아','나은','아린'],
+  M:['민준','서준','도윤','하준','시우','은우','지호','이준','예준','주원','유준','도현','건우','우진','선우','서진','연우','현우','지훈','태윤'] };
+const SURN = ['김','김','김','이','이','박','박','최','정','강','조','윤','장','임','한','오','서','신','권','황','안','송','류','홍','전'];
 $('#btnStart').onclick = () => {
-  const g = gender === 'R' ? (R() < .5 ? 'F' : 'M') : gender;
-  const nm = $('#inName').value.trim() || pick(SURN) + pick(NAMES[g]);
+  const g = R() < .5 ? 'F' : 'M';
+  const nm = pick(SURN) + pick(NAMES[g]);
   stopAuto(true);
   S = newState(nm, g);
   shown.paid = 0; shown.ben = 0;
@@ -1348,9 +1333,10 @@ $('#btnStart').onclick = () => {
   // 임신 단계
   charge(1000000, 0); S.visits += 12;
   badge('happy');
-  evCard('t-cyan','fa-credit-card','엄마 뱃속에서 삶이 시작됩니다',
+  evCard('t-cyan','fa-credit-card',`${g === 'F' ? '딸' : '아들'}, ${nm}의 삶이 엄마 뱃속에서 시작됩니다`,
     `임신이 확인되자 엄마는 <b>국민행복카드</b>로 임신·출산 진료비 <b>100만원</b>을 지원받았습니다. 초음파와 산전검사에도 건강보험이 적용됩니다. 건강보험은 태어나기 전부터 당신을 지키고 있습니다.`,
-    [['g','국민행복카드 100만원'],['','산전검사 12회']]);
+    [['g','국민행복카드 100만원'],['','산전검사 12회'],['', g === 'F' ? '여아' : '남아']]);
+  toast(`${nm} (${g === 'F' ? '여' : '남'})로 태어날 운명입니다`);
   renderHUD(); renderDock();
 };
 
