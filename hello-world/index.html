@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World Particles + Info</title>
+    <!-- Modern Typography from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #020617; /* Slate-950 */
+            color: #f8fafc;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Ambient Glowing Orbs in the Background */
+        .glowing-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            opacity: 0.5;
+            animation: orb-drift 15s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+        .orb-primary {
+            width: 40vw; height: 40vw;
+            background: rgba(99, 102, 241, 0.4);
+            top: -10vh; right: -10vw;
+        }
+        .orb-secondary {
+            width: 50vw; height: 50vw;
+            background: rgba(236, 72, 153, 0.3);
+            bottom: -20vh; left: -10vw;
+            animation-duration: 20s;
+            animation-direction: alternate-reverse;
+        }
+        @keyframes orb-drift {
+            0% { transform: scale(0.8) translate(0, 0); opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { transform: scale(1.2) translate(10vw, -10vh); opacity: 0.4; }
+        }
+
+        /* Particle Canvas */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        /* Info Display (Date, Time, Location) */
+        .info-container {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            z-index: 20;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideIn 1s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .info-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #94a3b8;
+            display: block;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f8fafc;
+            display: block;
+        }
+
+        .time-value {
+            font-family: monospace;
+            color: #38bdf8;
+            font-size: 1.5rem;
+        }
+
+        .subtitle {
+            position: absolute;
+            bottom: 10%;
+            font-size: 1rem;
+            font-weight: 300;
+            color: #94a3b8;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeIn 2s forwards 3s;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glowing-orb orb-primary"></div>
+    <div class="glowing-orb orb-secondary"></div>
+    
+    <!-- Info Panel -->
+    <div class="info-container">
+        <div class="info-item">
+            <span class="info-label">Current Date</span>
+            <span class="info-value" id="current-date">Loading...</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Live Time</span>
+            <span class="info-value time-value" id="live-time">00:00:00</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Location (Timezone)</span>
+            <span class="info-value" id="location">Seoul (KST)</span>
+        </div>
+    </div>
+
+    <canvas id="particle-canvas"></canvas>
+    <p class="subtitle">Click to shatter reality</p>
+
+    <script>
+        // --- Live Info Updates ---
+        function updateInfo() {
+            const now = new Date();
+            
+            // Date String
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('ko-KR', options);
+            
+            // Time String
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('live-time').textContent = `${h}:${m}:${s}`;
+            
+            // Timezone
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            document.getElementById('location').textContent = tz;
+        }
+        setInterval(updateInfo, 1000);
+        updateInfo();
+
+        // --- Particle Simulation (Same as before) ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        let textParticles = [];
+        let stars = [];
+        let mouse = { x: null, y: null, radius: 100 };
+        const colors = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initStars();
+            initTextParticles();
+        }
+
+        window.addEventListener('resize', () => {
+            clearTimeout(window.resizeTimer);
+            window.resizeTimer = setTimeout(resize, 300);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        window.addEventListener('click', (e) => {
+            textParticles.forEach(p => {
+                let dx = p.x - e.clientX;
+                let dy = p.y - e.clientY;
+                let distance = Math.sqrt(dx*dx + dy*dy);
+                let force = (canvas.width / 1.5) / (distance || 1);
+                force = Math.min(force, 100);
+                let angle = Math.atan2(dy, dx);
+                p.vx += Math.cos(angle) * force * (Math.random() * 2 + 1);
+                p.vy += Math.sin(angle) * force * (Math.random() * 2 + 1);
+            });
+        });
+
+        class TextParticle {
+            constructor(x, y, color) {
+                this.x = x + (Math.random() - 0.5) * window.innerWidth;
+                this.y = y + (Math.random() - 0.5) * window.innerHeight;
+                this.baseX = x;
+                this.baseY = y;
+                this.size = Math.random() * 2 + 1.5;
+                this.color = color;
+                this.vx = 0;
+                this.vy = 0;
+                this.friction = 0.88;
+                this.ease = 0.05;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            update() {
+                let dxBase = this.baseX - this.x;
+                let dyBase = this.baseY - this.y;
+                this.vx += dxBase * this.ease;
+                this.vy += dyBase * this.ease;
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dxMouse = mouse.x - this.x;
+                    let dyMouse = mouse.y - this.y;
+                    let distance = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+                    if (distance < mouse.radius) {
+                        let forceDirectionX = dxMouse / distance;
+                        let forceDirectionY = dyMouse / distance;
+                        let force = (mouse.radius - distance) / mouse.radius;
+                        this.vx -= forceDirectionX * force * 10;
+                        this.vy -= forceDirectionY * force * 10;
+                    }
+                }
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.draw();
+            }
+        }
+
+        class Star {
+            constructor() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.size = Math.random() * 1.5;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.fill();
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x > canvas.width) this.x = 0;
+                else if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                else if (this.y < 0) this.y = canvas.height;
+                this.draw();
+            }
+        }
+
+        function initTextParticles() {
+            textParticles = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let fontSize = Math.min(canvas.width / 6, 180);
+            ctx.font = `900 ${fontSize}px 'Outfit', sans-serif`;
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const text = "HELLO WORLD";
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+            const rect = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const gap = 4;
+            for (let y = 0; y < rect.height; y += gap) {
+                for (let x = 0; x < rect.width; x += gap) {
+                    const index = (y * rect.width + x) * 4;
+                    const alpha = rect.data[index + 3];
+                    if (alpha > 128) {
+                        const ratio = x / canvas.width;
+                        let colorIndex = Math.min(Math.floor(ratio * colors.length), colors.length - 1);
+                        textParticles.push(new TextParticle(x, y, colors[colorIndex]));
+                    }
+                }
+            }
+        }
+
+        function initStars() {
+            stars = [];
+            let starCount = Math.floor((canvas.width * canvas.height) / 8000);
+            for (let i = 0; i < starCount; i++) stars.push(new Star());
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(s => s.update());
+            textParticles.forEach(p => p.update());
+        }
+
+        document.fonts.ready.then(() => {
+            resize();
+            animate();
+        });
+    </script>
+</body>
+</html>

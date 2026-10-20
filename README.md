@@ -1,33 +1,30 @@
-# ✨ Interactive Particle Hello World
+# 5천만분의 1 — 대한민국 인생 & 건강보험 시뮬레이터
 
-A premium, high-performance "Hello World" landing page built with modern frontend techniques. This project features interactive particle physics, glassmorphism design, and a real-time information dashboard.
+엄마 뱃속에서 임종까지 1년씩 살아 보며, 건강보험이 한 사람의 삶을 얼마나 받쳐 주는지 체험하는 웹 게임입니다.
 
-## 🚀 Key Features
+**플레이:** https://emerkdh-wq.github.io/hello-world-particle/
 
-- **Interactive Particle Text**: Thousands of particles form the "HELLO WORLD" text, responding to mouse movement and clicks.
-- **Shatter Physics**: Clicking anywhere on the screen causes the text to explode, with particles gracefully returning to their original positions.
-- **Glassmorphism UI**: A sleek, semi-transparent info panel showing live date, time, and location.
-- **Ambient Background**: Dynamic glowing orbs and a drifting starfield create a deep, cinematic atmosphere.
-- **Pure JavaScript**: Built using HTML5 Canvas and Vanilla JS for maximum compatibility and performance.
+## 주요 기능
 
-## 🛠 Tech Stack
+- 연령별 병의원·약국 이용과 진료비 (심평원 연령별 1인당 진료현황 기반)
+- 생활습관(흡연·음주·식습관·운동), 국가건강검진, 스트레스 지수에 따라 달라지는 질병 위험
+- 암 병기별 생존율, 4대 중증질환 산정특례, 본인부담상한제, 재난적의료비, 장기요양, 호스피스
+- 31개 직업, 연소득·재산, 결혼·출산·부모님과 배우자의 별세 등 인생 이벤트
+- 사망 후 일생 정리와 인생 영수증, 통계 출처 페이지
 
-- **HTML5 & CSS3** (Custom Animations & Glassmorphism)
-- **Vanilla JavaScript** (Canvas API & Physics Engine)
-- **Google Fonts** (Outfit)
+## 구성
 
-## 📸 How to View
+| 경로 | 내용 |
+|---|---|
+| `index.html` | 시뮬레이터 (단일 HTML, 빌드 없음) |
+| `og-image.png` | 링크 공유 미리보기 이미지 |
+| `one-in-50m/` | 예전 주소 → 새 주소로 이동 |
+| `hello-world/` | 예전 HELLO WORLD 파티클 데모 |
 
-1. Clone or download this repository.
-2. Open `index.html` in any modern web browser.
-3. Move your mouse to interact with the text.
-4. Click to see the shatter effect.
+## 배포 (GitHub Pages)
 
-## 📝 Change Log
+저장소 **Settings → Pages**에서 Source를 *Deploy from a branch*, Branch를 `main` / `/ (root)`로 저장하면 몇 분 뒤 위 주소로 공개됩니다.
 
-- **v1.0**: Initial release with glassmorphism design and base background.
-- **v1.1**: Re-implemented text as an interactive particle system with shatter physics.
-- **v1.2**: Added real-time info panel (Date, Time, Timezone).
+## 안내
 
----
-Created with ❤️ by Antigravity AI + DOO
+교육용 시뮬레이션입니다. 공식 통계를 바탕으로 했지만 일부 값은 추정치이며(게임 안 「통계 출처」에서 구분 표시), 실제 보험료·진료비·질병 위험은 사람마다 다릅니다.
