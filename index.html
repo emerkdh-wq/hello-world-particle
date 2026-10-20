@@ -1,337 +1,1851 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World Particles + Info</title>
-    <!-- Modern Typography from Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
-    <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #020617; /* Slate-950 */
-            color: #f8fafc;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            user-select: none;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>5천만분의 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="태어나서 임종까지 1년씩 살아 보며 건강보험이 내 삶을 어떻게 지키는지 체험하는 대한민국 인생 & 건강보험 시뮬레이터.">
+<link rel="canonical" href="https://emerkdh-wq.github.io/hello-world-particle/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="5천만분의 1">
+<meta property="og:title" content="5천만분의 1 · 대한민국 인생 & 건강보험 시뮬레이터">
+<meta property="og:description" content="엄마 뱃속에서 임종까지. 평생 낸 건강보험료와 받은 혜택을 인생 영수증으로 확인해 보세요.">
+<meta property="og:url" content="https://emerkdh-wq.github.io/hello-world-particle/">
+<meta property="og:image" content="https://emerkdh-wq.github.io/hello-world-particle/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="5천만분의 1 · 대한민국 인생 & 건강보험 시뮬레이터">
+<meta name="twitter:description" content="엄마 뱃속에서 임종까지. 평생 낸 건강보험료와 받은 혜택을 인생 영수증으로 확인해 보세요.">
+<meta name="twitter:image" content="https://emerkdh-wq.github.io/hello-world-particle/og-image.png">
+<meta name="theme-color" content="#0d1218">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1218'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%2334d399'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%2334d399' stroke-opacity='.35' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<style>
+/* Layout: one phone-width column — fixed HUD on top, timeline feed in the middle, action dock at the bottom. */
+:root{
+  --bg:#0d1218; --surface:#151d26; --surface-2:#1c2733; --line:#273445;
+  --fg:#e7edf3; --muted:#8b9aab; --faint:#5d6c7d;
+  --paid:#5b9bff; --benefit:#34d399; --warn:#f5b44a; --danger:#f2636b; --violet:#a78bfa; --accent:#5ec8d8; --pink:#f472b6;
+  --paper:#fbfaf5; --ink:#1d1f22; --ink-soft:#6b6f76; --rc-blue:#2f6fe0; --rc-green:#0f9f6e; --on-benefit:#06281c; --scrim:rgba(5,8,12,.72);
+  --f-display:"Black Han Sans","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#eef2f6; --surface:#ffffff; --surface-2:#f4f7fa; --line:#dce3ea;
+    --fg:#17212b; --muted:#5b6876; --faint:#8a97a5;
+    --paid:#2f6fe0; --benefit:#0f9f6e; --warn:#c27c0e; --danger:#d43d47; --violet:#7154d6; --accent:#1690a3; --pink:#c2417f; --on-benefit:#ffffff; --scrim:rgba(20,30,40,.55);
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#eef2f6; --surface:#ffffff; --surface-2:#f4f7fa; --line:#dce3ea;
+  --fg:#17212b; --muted:#5b6876; --faint:#8a97a5;
+  --paid:#2f6fe0; --benefit:#0f9f6e; --warn:#c27c0e; --danger:#d43d47; --violet:#7154d6; --accent:#1690a3; --pink:#c2417f; --on-benefit:#ffffff; --scrim:rgba(20,30,40,.55);
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box;border:0 solid var(--line)}
+html{line-height:1.5;-webkit-text-size-adjust:100%}
+h1,h2,h3,h4,h5,h6,p,dl,dd,figure,blockquote{margin:0}
+h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}
+ul,ol{list-style:none;margin:0;padding:0}
+button,input{font:inherit;color:inherit;line-height:inherit;margin:0}
+button{background:transparent;padding:0;cursor:pointer}
+table{border-collapse:collapse}
+canvas,img{display:block;max-width:100%}
+a{color:inherit}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font-family:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 
-        /* Ambient Glowing Orbs in the Background */
-        .glowing-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(100px);
-            z-index: 0;
-            opacity: 0.5;
-            animation: orb-drift 15s infinite alternate ease-in-out;
-            pointer-events: none;
-        }
-        .orb-primary {
-            width: 40vw; height: 40vw;
-            background: rgba(99, 102, 241, 0.4);
-            top: -10vh; right: -10vw;
-        }
-        .orb-secondary {
-            width: 50vw; height: 50vw;
-            background: rgba(236, 72, 153, 0.3);
-            bottom: -20vh; left: -10vw;
-            animation-duration: 20s;
-            animation-direction: alternate-reverse;
-        }
-        @keyframes orb-drift {
-            0% { transform: scale(0.8) translate(0, 0); opacity: 0.3; }
-            50% { opacity: 0.6; }
-            100% { transform: scale(1.2) translate(10vw, -10vh); opacity: 0.4; }
-        }
+#app{height:100%;max-width:30rem;margin:0 auto;display:flex;flex-direction:column;position:relative;background:var(--bg)}
+@media (min-width:31rem){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 
-        /* Particle Canvas */
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-        }
+/* HUD */
+.hud{flex:none;background:var(--surface);border-bottom:1px solid var(--line);padding-block:12px 12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hud-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.hud-age{font-family:var(--f-display);font-size:30px;line-height:1}
+.hud-age small{font-family:var(--f-body);font-size:12px;color:var(--muted);font-weight:500;margin-left:6px}
+.hud-who{font-size:12px;color:var(--muted);text-align:right;line-height:1.45;min-width:0}
+.hud-who b{color:var(--fg);font-weight:600}
+.hud-info{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:11.5px;color:var(--muted);line-height:1.45}
+.hud-info li{display:flex;gap:7px;align-items:baseline;min-width:0}
+.hud-info li svg{flex:none;width:11px;color:var(--faint)}
+.hud-info li.sick{color:var(--danger)} .hud-info li.sick svg{color:var(--danger)}
+.gauge{margin-top:10px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px}
+.gauge .lbl{color:var(--muted);letter-spacing:.04em;width:4.4em}
+.gauge+.gauge{margin-top:6px}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;border-radius:99px;transition:width .6s ease,background-color .6s}
+.vital{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.money{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mbox{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.mbox .k{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.mbox .v{font-size:16px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbox.paid .v{color:var(--paid)} .mbox.ben .v{color:var(--benefit)}
+.ratio{margin-top:6px;font-size:11px;color:var(--faint);display:flex;justify-content:space-between;gap:8px}
 
-        /* Info Display (Date, Time, Location) */
-        .info-container {
-            position: absolute;
-            top: 40px;
-            left: 40px;
-            z-index: 20;
-            pointer-events: none;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: slideIn 1s ease-out;
-        }
+/* Feed */
+.feed{flex:1;overflow-y:auto;padding-block:14px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;animation:drop .35s ease both;min-width:0}
+@keyframes drop{from{transform:translateY(-8px);opacity:.2}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.card{animation:none}.bar>i{transition:none}}
+.yr-head{display:flex;align-items:baseline;gap:8px}
+.yr-head .a{font-family:var(--f-display);font-size:18px}
+.yr-head .y{font-size:12px;color:var(--faint)}
+.stage{margin-left:auto;font-size:10.5px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);padding:1px 7px;border-radius:99px}
+.flavor{margin:6px 0 8px;color:var(--muted);font-size:13px;line-height:1.5}
+.use{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.use b{color:var(--fg);font-weight:600}
+.ledger{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px;display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:12px}
+.ledger dt{color:var(--muted)} .ledger dd{margin:0;text-align:right}
+.ledger .g{color:var(--benefit)} .ledger .b{color:var(--paid)}
+.mini{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.mini li{display:flex;gap:7px;align-items:baseline;line-height:1.45}
+.mini li svg{flex:none;width:12px;color:var(--faint)}
 
-        @keyframes slideIn {
-            from { transform: translateX(-50px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+.ev{display:grid;grid-template-columns:34px 1fr;gap:12px;border-left-width:3px}
+.ev .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--surface-2);font-size:15px}
+.ev h3{margin:0;font-size:14.5px;font-weight:700;line-height:1.35;text-wrap:balance}
+.ev p{margin:4px 0 0;font-size:13px;color:var(--muted);line-height:1.55}
+.ev p b{color:var(--fg);font-weight:600}
+.chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11px;padding:2px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.g{color:var(--benefit)} .chip.b{color:var(--paid)} .chip.r{color:var(--danger)} .chip.w{color:var(--warn)}
+.t-green{border-left-color:var(--benefit)} .t-green .ic{color:var(--benefit)}
+.t-blue{border-left-color:var(--paid)} .t-blue .ic{color:var(--paid)}
+.t-red{border-left-color:var(--danger)} .t-red .ic{color:var(--danger)}
+.t-amber{border-left-color:var(--warn)} .t-amber .ic{color:var(--warn)}
+.t-violet{border-left-color:var(--violet)} .t-violet .ic{color:var(--violet)}
+.t-cyan{border-left-color:var(--accent)} .t-cyan .ic{color:var(--accent)}
+.t-gray{border-left-color:var(--faint)} .t-gray .ic{color:var(--muted)}
+.t-pink{border-left-color:var(--pink)} .t-pink .ic{color:var(--pink)}
+.ev .eb{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--pink);font-weight:600;margin-bottom:2px}
 
-        .info-item {
-            margin-bottom: 0.5rem;
-        }
+/* Dock */
+.dock{flex:none;background:var(--surface);border-top:1px solid var(--line);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.row{display:flex;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:12px;padding:13px 14px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s ease,filter .15s}
+.btn:active{transform:scale(.98)}
+.btn:hover{filter:brightness(1.08)}
+.btn.primary{background:var(--benefit);border-color:transparent;color:var(--on-benefit);flex:1}
+.btn.blue{background:var(--paid);border-color:transparent;color:#fff}
+.btn.danger{background:transparent;border-color:var(--danger);color:var(--danger)}
+.btn.ghost{background:transparent}
+.btn.on{border-color:var(--accent);color:var(--accent)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn .sub{display:block;font-size:11px;font-weight:500;opacity:.8;margin-top:2px}
+.choice-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.choice-head .ic{width:30px;height:30px;flex:none;border-radius:8px;display:grid;place-items:center;background:var(--surface-2);color:var(--warn)}
+.choice-head h3{margin:0;font-size:15px;font-weight:700;text-wrap:balance}
+.choice-head p{margin:3px 0 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts .btn{flex-direction:column;align-items:stretch;text-align:left;padding:11px 14px;font-size:14px}
 
-        .info-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: #94a3b8;
-            display: block;
-        }
+/* Start screen */
+.overlay{position:absolute;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;overflow-y:auto}
+#dots{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.9}
+.start{position:relative;margin:auto 0;padding-block:32px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-size:11px;letter-spacing:.18em;color:var(--accent);font-weight:600}
+.logo{font-family:var(--f-display);font-size:clamp(46px,15vw,64px);line-height:.95;margin:0;letter-spacing:-.01em}
+.logo em{font-style:normal;color:var(--benefit)}
+.note{display:flex;gap:8px;align-items:baseline;font-size:11.5px;line-height:1.6;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.note svg{flex:none;width:12px;color:var(--warn)}
+.lede{margin:0;color:var(--muted);line-height:1.65;font-size:14px;max-width:34em}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.field input{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--fg);font-size:15px;font-family:inherit}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:14px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--benefit);color:var(--fg);background:var(--surface-2)}
+.std{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px}
+.std-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.std-head b{font-size:13px}
+.std h4{margin:10px 0 4px;font-size:10.5px;letter-spacing:.12em;color:var(--accent);font-weight:600}
+.std dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;font-size:12px}
+.std dt{color:var(--muted);min-width:0}
+.std dt small{color:var(--faint);font-size:10.5px;margin-left:3px}
+.std dd{margin:0;text-align:right;color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+.std dd small{display:block;font-weight:400;color:var(--faint);font-size:10.5px}
 
-        .info-value {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #f8fafc;
-            display: block;
-        }
-
-        .time-value {
-            font-family: monospace;
-            color: #38bdf8;
-            font-size: 1.5rem;
-        }
-
-        .subtitle {
-            position: absolute;
-            bottom: 10%;
-            font-size: 1rem;
-            font-weight: 300;
-            color: #94a3b8;
-            letter-spacing: 0.4em;
-            text-transform: uppercase;
-            z-index: 20;
-            pointer-events: none;
-            opacity: 0;
-            animation: fadeIn 2s forwards 3s;
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-    </style>
+/* Receipt modal */
+.modal{position:absolute;inset:0;z-index:30;background:var(--scrim);backdrop-filter:blur(3px);overflow-y:auto;padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.receipt{--zz:10px;position:relative;background:var(--paper);color:var(--ink);max-width:22rem;margin:0 auto;padding:26px 20px 24px;font-family:var(--f-body);filter:drop-shadow(0 12px 28px rgba(0,0,0,.35));animation:print .7s ease-out both;
+  -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/var(--zz) 51% repeat-x,conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) top/var(--zz) 51% repeat-x;
+  mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/var(--zz) 51% repeat-x,conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) top/var(--zz) 51% repeat-x}
+@keyframes print{from{transform:translateY(-24px);clip-path:inset(0 0 100% 0)}to{transform:none;clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.receipt{animation:none}}
+.rc-c{text-align:center}
+.rc-title{font-family:var(--f-display);font-size:24px;margin:0}
+.rc-sub{font-size:11px;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+.rc-hr{border:0;border-top:1.5px dashed #b9b7ad;margin:12px 0}
+.rc-row{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;line-height:1.9}
+.rc-row span:first-child{color:var(--ink-soft)}
+.rc-row .num{font-weight:600}
+.rc-big{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:15px;margin-top:4px}
+.rc-ratio{text-align:center;margin:10px 0 2px;font-family:var(--f-display);font-size:38px;line-height:1}
+.rc-ratio small{display:block;font-family:var(--f-body);font-size:11px;font-weight:500;color:var(--ink-soft);margin-top:4px}
+.rc-bars{display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:11px}
+.rc-bars div{display:grid;grid-template-columns:52px 1fr;align-items:center;gap:6px}
+.rc-bars i{display:block;height:10px;border-radius:2px}
+.rc-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.rc-life{display:grid;grid-template-columns:3.2em 1fr;gap:2px 8px;font-size:12px;line-height:1.6;margin-top:6px}
+.rc-life span:nth-child(odd){color:var(--ink-soft);font-family:var(--f-mono)}
+.rc-badge{font-size:11px;border:1px solid var(--ink);padding:2px 7px;border-radius:4px;display:inline-flex;gap:5px;align-items:center}
+.barcode{height:44px;margin:14px auto 4px;width:85%;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 8px,var(--ink) 8px 11px,transparent 11px 12px,var(--ink) 12px 13px,transparent 13px 16px)}
+.bio{max-width:22rem;margin:0 auto 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 18px;color:var(--fg)}
+.bio .eb{font-size:10.5px;letter-spacing:.14em;color:var(--accent);font-weight:600}
+.bio h2{font-family:var(--f-display);font-size:26px;line-height:1.15;margin:6px 0 4px;text-wrap:balance}
+.bio .who{font-size:12px;color:var(--muted)}
+.bio section{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.bio h3{margin:0 0 6px;font-size:13px;font-weight:700;display:flex;gap:7px;align-items:center}
+.bio h3 svg{color:var(--accent);width:14px}
+.bio p{margin:0;font-size:13px;line-height:1.7;color:var(--muted)}
+.bio p b{color:var(--fg);font-weight:600}
+.bio ul{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:12.5px;line-height:1.55;color:var(--muted)}
+.bio li b{color:var(--fg)}
+.loss{display:grid;grid-template-columns:6.5em 1fr 2.6em;gap:5px 8px;align-items:center;font-size:11.5px;margin-top:8px}
+.loss .t{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.loss .t i{display:block;height:100%;border-radius:99px;background:var(--danger)}
+.loss .t i.up{background:var(--benefit)}
+.loss .v{text-align:right;font-family:var(--f-mono);color:var(--fg)}
+.srclink{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
+.src-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;font-variant-numeric:tabular-nums}
+.src-table th,.src-table td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right}
+.src-table th:first-child,.src-table td:first-child{text-align:left}
+.src-table th{color:var(--muted);font-weight:600}
+.src-wrap{overflow-x:auto}
+.bio a{color:var(--accent);word-break:break-all}
+.tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;vertical-align:1px}
+.tag.ok{background:color-mix(in srgb, var(--benefit) 18%, transparent);color:var(--benefit)}
+.tag.est{background:color-mix(in srgb, var(--warn) 18%, transparent);color:var(--warn)}
+.rc-actions{max-width:22rem;margin:16px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toast{position:absolute;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;z-index:40;white-space:nowrap}
+</style>
 </head>
 <body>
-    <div class="glowing-orb orb-primary"></div>
-    <div class="glowing-orb orb-secondary"></div>
-    
-    <!-- Info Panel -->
-    <div class="info-container">
-        <div class="info-item">
-            <span class="info-label">Current Date</span>
-            <span class="info-value" id="current-date">Loading...</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Live Time</span>
-            <span class="info-value time-value" id="live-time">00:00:00</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Location (Timezone)</span>
-            <span class="info-value" id="location">Seoul (KST)</span>
-        </div>
+<div id="app">
+  <header class="hud" id="hud">
+    <div class="hud-top">
+      <div class="hud-age"><span id="hAge">태아</span><small id="hYear">2026년</small></div>
+      <div class="hud-who"><b id="hName">-</b><br><span id="hJob">피부양자</span></div>
     </div>
+    <ul class="hud-info">
+      <li><i class="fa-solid fa-coins"></i><span id="hInc">-</span></li>
+      <li><i class="fa-solid fa-house"></i><span id="hWealth">-</span></li>
+      <li><i class="fa-solid fa-people-group"></i><span id="hFam">-</span></li>
+      <li id="hDisRow"><i class="fa-solid fa-notes-medical"></i><span id="hDis">-</span></li>
+    </ul>
+    <div class="gauge">
+      <span class="lbl">체력</span>
+      <div class="bar" role="progressbar" aria-label="체력" aria-valuemin="0" aria-valuemax="100" id="hBarWrap"><i id="hBar" style="width:90%"></i></div>
+      <span class="vital"><span class="num" id="hHealth">90</span> · <span id="hVital">활력 넘침</span></span>
+    </div>
+    <div class="gauge">
+      <span class="lbl">스트레스</span>
+      <div class="bar" role="progressbar" aria-label="스트레스" aria-valuemin="0" aria-valuemax="100" id="sBarWrap"><i id="sBar" style="width:12%"></i></div>
+      <span class="vital"><span class="num" id="hStress">12</span> · <span id="hMood">평온</span></span>
+    </div>
+    <div class="money">
+      <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료</div><div class="v num" id="hPaid">0원</div></div>
+      <div class="mbox ben"><div class="k"><i class="fa-solid fa-shield-heart"></i>누적 공단부담 혜택</div><div class="v num" id="hBen">0원</div></div>
+    </div>
+    <div class="ratio"><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
+  </header>
 
-    <canvas id="particle-canvas"></canvas>
-    <p class="subtitle">Click to shatter reality</p>
+  <main class="feed" id="feed" aria-live="polite"></main>
 
-    <script>
-        // --- Live Info Updates ---
-        function updateInfo() {
-            const now = new Date();
-            
-            // Date String
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-            document.getElementById('current-date').textContent = now.toLocaleDateString('ko-KR', options);
-            
-            // Time String
-            const h = String(now.getHours()).padStart(2, '0');
-            const m = String(now.getMinutes()).padStart(2, '0');
-            const s = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('live-time').textContent = `${h}:${m}:${s}`;
-            
-            // Timezone
-            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            document.getElementById('location').textContent = tz;
-        }
-        setInterval(updateInfo, 1000);
-        updateInfo();
+  <footer class="dock" id="dock"></footer>
 
-        // --- Particle Simulation (Same as before) ---
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        
-        let textParticles = [];
-        let stars = [];
-        let mouse = { x: null, y: null, radius: 100 };
-        const colors = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
+  <section class="overlay" id="startScreen">
+    <canvas id="dots" aria-hidden="true"></canvas>
+    <div class="start">
+      <div class="eyebrow">대한민국 인생 &amp; 건강보험 시뮬레이터</div>
+      <h1 class="logo">5천만분의<br><em>1</em></h1>
+      <p class="lede">엄마 뱃속에서 임종까지. 감기로 소아과를 드나들던 시절부터 검진, 큰 병, 요양까지, 건강보험이 한 사람의 삶을 얼마나 받쳐 주는지 1년씩 살아 보며 확인합니다.</p>
+      <p class="lede" style="font-size:12.5px">이름과 성별은 태어날 때 운명처럼 정해집니다.</p>
+      <p class="note" role="note"><i class="fa-solid fa-circle-info"></i><span>교육용 시뮬레이션입니다. 공식 통계를 바탕으로 했지만 실제 보험료·진료비·질병 위험은 사람마다 다릅니다. 이 결과를 의료·재무 판단의 근거로 쓰지 마세요.</span></p>
+      <button class="btn primary" id="btnStart" style="flex:none"><i class="fa-solid fa-baby"></i>태어나기</button>
+      <section class="std" id="stdPanel" aria-label="적용 기준"></section>
+    </div>
+  </section>
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initStars();
-            initTextParticles();
-        }
+  <section class="modal" id="endModal" hidden></section>
+  <section class="modal" id="srcModal" hidden></section>
+</div>
 
-        window.addEventListener('resize', () => {
-            clearTimeout(window.resizeTimer);
-            window.resizeTimer = setTimeout(resize, 300);
-        });
+<script>
+/* =========================================================
+   데이터
+   ========================================================= */
+// 생애주기 이름과 한 줄 묘사 (통계 수치는 HIRA_AGE 사용)
+const LIFE_STAGES = [
+  // minAge, maxAge, 연간방문일수(외래+입원), 연간약국방문일수, 연간총진료비(원), 공단부담률
+  { min: 0,  max: 9,   visits: 28, pharmacy: 20, totalCost: 1450000, coverageRate: 0.85, stage:'영유아기',
+    flavor:['감기와 중이염으로 소아과 단골이 되었습니다.','수족구병으로 일주일 어린이집을 쉬었습니다.','장염으로 수액을 맞고 왔습니다.','모세기관지염으로 밤새 열이 났습니다.','아토피 피부염 연고를 처방받았습니다.'] },
+  { min: 10, max: 19,  visits: 9,  pharmacy: 6,  totalCost: 520000,  coverageRate: 0.75, stage:'학령기',
+    flavor:['환절기 비염으로 이비인후과를 다녔습니다.','충치 치료와 불소 도포를 받았습니다.','체육 시간에 발목을 삐었습니다.','시력이 떨어져 안과 검사를 받았습니다.','시험 기간 스트레스성 두통이 잦았습니다.'] },
+  { min: 20, max: 29,  visits: 11, pharmacy: 7,  totalCost: 720000,  coverageRate: 0.70, stage:'청년기',
+    flavor:['연 1회 스케일링(건강보험 적용)을 받았습니다.','독감으로 사흘 앓아누웠습니다.','야근 후 위경련으로 내과를 찾았습니다.','손목 통증으로 물리치료를 받았습니다.'] },
+  { min: 30, max: 39,  visits: 13, pharmacy: 8,  totalCost: 950000,  coverageRate: 0.70, stage:'청년기',
+    flavor:['직무 스트레스로 위염 약을 달고 삽니다.','거북목과 허리 통증으로 도수 아닌 물리치료를 받았습니다.','편도염으로 목소리가 나오지 않았습니다.','눈 피로와 안구건조증 진료를 받았습니다.'] },
+  { min: 40, max: 49,  visits: 16, pharmacy: 11, totalCost: 1400000, coverageRate: 0.72, stage:'중년기',
+    flavor:['혈압과 콜레스테롤 수치가 신경 쓰이기 시작합니다.','오십견 전조로 어깨 주사를 맞았습니다.','역류성 식도염 진단을 받았습니다.','노안이 와서 안과를 찾았습니다.'] },
+  { min: 50, max: 59,  visits: 21, pharmacy: 15, totalCost: 2350000, coverageRate: 0.75, stage:'중년기',
+    flavor:['갱년기 증상으로 진료를 받았습니다.','허리 디스크로 MRI(건강보험 적용) 검사를 받았습니다.','정밀검사로 대장 용종을 제거했습니다.','이명과 어지럼증으로 이비인후과를 찾았습니다.'] },
+  { min: 60, max: 69,  visits: 31, pharmacy: 22, totalCost: 4000000, coverageRate: 0.78, stage:'장년기',
+    flavor:['무릎 관절염으로 주사 치료를 이어갑니다.','대상포진으로 고생했습니다.','혈관 건강을 위해 정기적으로 약을 탑니다.','치주질환으로 잇몸 치료를 받았습니다.'] },
+  { min: 70, max: 79,  visits: 50, pharmacy: 34, totalCost: 6800000, coverageRate: 0.80, stage:'노년기',
+    flavor:['하루에 먹는 약이 다섯 가지가 넘었습니다.','폐렴으로 일주일 입원했습니다.','골다공증 치료를 시작했습니다.','어지럼증으로 넘어져 응급실에 다녀왔습니다.'] },
+  { min: 80, max: 100, visits: 68, pharmacy: 45, totalCost: 9800000, coverageRate: 0.82, stage:'초고령기',
+    flavor:['요양병원 입원 치료를 받았습니다.','기력이 떨어져 수액과 영양 치료를 받았습니다.','욕창 관리와 재활 치료를 받았습니다.','감기가 폐렴으로 번져 한동안 입원했습니다.'] }
+];
 
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
+// 심평원 보건의료빅데이터개방시스템 「연령별 건강보험 적용대상자 1인당 진료현황」
+// (2025년 1~12월 심사결정분, 적용대상자 1인당) · days = 1인당 진료일수(입원+내원), cost = 1인당 진료비(공단+본인부담)
+const HIRA_AGE = [
+  { min:0,  max:0,   days:28.38, cost:5485956 },
+  { min:1,  max:4,   days:33.32, cost:1758408 },
+  { min:5,  max:9,   days:21.62, cost:1291113 },
+  { min:10, max:14,  days:13.54, cost:933368 },
+  { min:15, max:19,  days:11.47, cost:815178 },
+  { min:20, max:24,  days:9.25,  cost:820365 },
+  { min:25, max:29,  days:10.17, cost:967177 },
+  { min:30, max:34,  days:11.93, cost:1279006 },
+  { min:35, max:39,  days:13.23, cost:1439468 },
+  { min:40, max:44,  days:13.95, cost:1534457 },
+  { min:45, max:49,  days:14.73, cost:1660284 },
+  { min:50, max:54,  days:17.45, cost:2000000, est:true }, // 진료비는 45~49세·55~59세 사이 보간
+  { min:55, max:59,  days:19.54, cost:2370000 },
+  { min:60, max:64,  days:24.28, cost:3110000 },
+  { min:65, max:69,  days:31.33, cost:4127892 },
+  { min:70, max:74,  days:37.54, cost:4985815 },
+  { min:75, max:79,  days:44.83, cost:6177702 },
+  { min:80, max:84,  days:51.98, cost:7372335 },
+  { min:85, max:120, days:55.44, cost:7825693 },
+];
+const HIRA_AVG = { days:20.71, cost:2421608 };
+// 평균 진료비에는 암·심뇌혈관 같은 중증질환 진료비가 섞여 있어, 이 게임은 그 부분을 별도 사건으로 계산하고
+// 기본 진료비는 평균의 80%만 반영합니다(추정).
+const BASE_SHARE = 0.8;
+// 약국 방문일수: 연령별 공식 수치를 찾지 못해 병의원 진료일수의 65%로 추정
+const PHARM_RATIO = 0.65;
+// 공단부담률: 2024년 전체 1인당 급여비 187만6천원 ÷ 1인당 진료비 약 226만원 ≈ 83%. 연령별 차이는 본인부담 경감 제도로 추정
+function coverageRate(a){ return a < 1 ? .92 : a < 5 ? .88 : a < 15 ? .8 : a < 40 ? .76 : a < 65 ? .79 : .85; }
+const LIFE_EXP = { all:83.7, M:80.8, F:86.6 }; // 2024년 생명표
 
-        window.addEventListener('mouseleave', () => {
-            mouse.x = null;
-            mouse.y = null;
-        });
+const RATE = 0.0719;      // 2026 건강보험료율
+const LTC_RATE = 0.1314;  // 2026 장기요양보험료율 (건보료 대비)
+const START_YEAR = 2026;
+// 본인부담상한제 소득분위별 상한액 (2025년 기준 근사, 요양병원 120일 이하)
+const CAPS = [890000,1100000,1100000,1700000,1700000,3130000,3130000,4230000,5260000,8260000];
 
-        window.addEventListener('click', (e) => {
-            textParticles.forEach(p => {
-                let dx = p.x - e.clientX;
-                let dy = p.y - e.clientY;
-                let distance = Math.sqrt(dx*dx + dy*dy);
-                let force = (canvas.width / 1.5) / (distance || 1);
-                force = Math.min(force, 100);
-                let angle = Math.atan2(dy, dx);
-                p.vx += Math.cos(angle) * force * (Math.random() * 2 + 1);
-                p.vy += Math.sin(angle) * force * (Math.random() * 2 + 1);
-            });
-        });
+// base: 월급(원, 직장가입자) / lo~hi: 월 소득 범위(만원, 지역가입자) / stress: 직무 스트레스 가산
+const JOBS = {
+  // 고졸·전문 기술
+  factory:   { name:'자동차 부품 생산직', path:'work', type:'employee', base:3000000, stress:4, ic:'fa-industry', work:['주야 2교대 근무가 이어졌습니다','생산 라인 증설로 특근이 늘었습니다'] },
+  electric:  { name:'전기기사', path:'work', type:'employee', base:3400000, stress:4, ic:'fa-bolt', work:['한여름 정전 복구에 밤을 새웠습니다','현장 안전 점검이 몰렸습니다'] },
+  cook:      { name:'호텔 조리사', path:'work', type:'employee', base:2700000, stress:6, ic:'fa-kitchen-set', work:['연회 시즌이라 하루 14시간 주방에 섰습니다','손목과 허리 통증이 심해졌습니다'] },
+  nurseaid:  { name:'간호조무사', path:'work', type:'employee', base:2500000, stress:5, ic:'fa-user-nurse', work:['환자 보호자의 폭언에 시달렸습니다','야간 근무가 계속됐습니다'] },
+  logistics: { name:'물류센터 관리자', path:'work', type:'employee', base:2900000, stress:5, ic:'fa-boxes-stacked', work:['명절 물량 폭주로 새벽 퇴근이 이어졌습니다'] },
+  nco:       { name:'부사관 (직업군인)', path:'work', type:'employee', base:3300000, stress:5, ic:'fa-person-military-rifle', work:['장기 훈련으로 집에 못 들어갔습니다','근무지 이동으로 이사를 했습니다'] },
+  mechanic:  { name:'자동차 정비사', path:'work', type:'employee', base:3100000, stress:4, ic:'fa-screwdriver-wrench', work:['수리 예약이 밀려 점심을 거릅니다'] },
+  hair:      { name:'헤어 디자이너', path:'work', type:'regional', lo:180, hi:620, stress:6, ic:'fa-scissors', work:['단골이 다른 미용실로 옮겼습니다'] },
+  delivery:  { name:'택배기사 (개인사업자)', path:'work', type:'regional', lo:280, hi:520, stress:8, ic:'fa-truck-fast', work:['하루 300개 배송에 무릎이 나갔습니다'] },
+  cvs:       { name:'편의점 점주', path:'work', type:'regional', lo:180, hi:500, stress:8, ic:'fa-store', work:['아르바이트생이 그만둬 직접 밤을 지켰습니다'] },
+  cafe:      { name:'카페 사장', path:'work', type:'regional', lo:150, hi:600, stress:7, ic:'fa-mug-saucer', work:['길 건너에 대형 프랜차이즈가 생겼습니다'] },
+  // 대졸
+  designer:  { name:'그래픽 디자이너', path:'college', type:'employee', base:3100000, stress:6, ic:'fa-pen-nib', work:['클라이언트가 시안을 열 번째 갈아엎었습니다','마감 전날 밤샘 작업을 했습니다'] },
+  sales:     { name:'제약회사 영업사원', path:'college', type:'employee', base:4300000, stress:8, ic:'fa-handshake', work:['분기 실적 압박이 극심했습니다','접대 술자리가 일주일 내내 이어졌습니다'] },
+  dev:       { name:'소프트웨어 개발자', path:'college', type:'employee', base:4800000, stress:6, ic:'fa-laptop-code', work:['서비스 장애로 새벽에 호출됐습니다','출시 직전 크런치 모드에 들어갔습니다'] },
+  nurse:     { name:'대학병원 간호사', path:'college', type:'employee', base:3900000, stress:9, ic:'fa-user-nurse', work:['3교대 근무로 생체 리듬이 무너졌습니다','중환자실 인력 부족으로 연속 근무를 했습니다'] },
+  teacher:   { name:'초등학교 교사', path:'college', type:'employee', base:3600000, stress:5, ic:'fa-chalkboard-user', work:['학부모 민원이 이어졌습니다','담임 업무와 행정 업무가 겹쳤습니다'] },
+  civil:     { name:'구청 행정공무원', path:'college', type:'employee', base:3400000, stress:4, ic:'fa-landmark', work:['민원 창구에서 하루 종일 항의를 받았습니다','재난 대응으로 비상 근무를 했습니다'] },
+  account:   { name:'회계사', path:'college', type:'employee', base:5600000, stress:7, ic:'fa-calculator', work:['감사 시즌이라 석 달간 주말이 없었습니다'] },
+  bank:      { name:'은행원', path:'college', type:'employee', base:5200000, stress:6, ic:'fa-building-columns', work:['펀드 판매 목표가 내려왔습니다','지점 통폐합 소식에 불안합니다'] },
+  marketer:  { name:'마케터', path:'college', type:'employee', base:3600000, stress:6, ic:'fa-bullhorn', work:['캠페인 성과가 저조해 보고서를 다시 썼습니다'] },
+  reporter:  { name:'방송사 기자', path:'college', type:'employee', base:4000000, stress:8, ic:'fa-microphone', work:['선거 기간이라 매일 밤 마감에 쫓겼습니다'] },
+  research:  { name:'반도체 연구원', path:'college', type:'employee', base:5000000, stress:6, ic:'fa-microchip', work:['신제품 양산 일정이 당겨졌습니다'] },
+  social:    { name:'사회복지사', path:'college', type:'employee', base:2700000, stress:6, ic:'fa-hands-holding-child', work:['위기가정 사례가 한꺼번에 몰렸습니다'] },
+  pharm:     { name:'약사 (병원 약제부)', path:'college', type:'employee', base:5800000, stress:5, ic:'fa-prescription-bottle-medical', work:['조제 대기 환자가 끝없이 밀려왔습니다'] },
+  architect: { name:'건축설계사', path:'college', type:'employee', base:3400000, stress:7, ic:'fa-compass-drafting', work:['현상설계 공모 마감으로 사무실에서 잤습니다'] },
+  crew:      { name:'항공 승무원', path:'college', type:'employee', base:4000000, stress:6, ic:'fa-plane', work:['장거리 비행으로 시차 적응이 안 됩니다'] },
+  doctor:    { name:'내과 전문의 (봉직의)', path:'college', type:'employee', base:9500000, stress:8, ic:'fa-user-doctor', work:['외래 환자 하루 80명을 봤습니다','당직이 이어졌습니다'] },
+  lawyer:    { name:'변호사 (로펌)', path:'college', type:'employee', base:7500000, stress:8, ic:'fa-scale-balanced', work:['대형 소송 준비로 새벽 퇴근이 이어졌습니다'] },
+  youtuber:  { name:'유튜버 (1인 크리에이터)', path:'college', type:'regional', lo:120, hi:900, stress:7, ic:'fa-video', work:['알고리즘이 바뀌어 조회수가 반토막 났습니다'] },
+  mall:      { name:'온라인 쇼핑몰 창업', path:'college', type:'regional', lo:150, hi:800, stress:8, ic:'fa-cart-shopping', work:['재고가 쌓여 창고 비용이 불어났습니다'] },
+  translator:{ name:'프리랜서 번역가', path:'college', type:'regional', lo:200, hi:480, stress:5, ic:'fa-language', work:['단가가 깎이고 일감이 줄었습니다'] },
+};
+// 순자산 10분위 경계(만원, 가계금융복지조사 근사)
+const WEALTH_CUTS = [1500, 4500, 9000, 14000, 20000, 28000, 38000, 52000, 80000];
+const wealthDecile = w => 1 + WEALTH_CUTS.filter(t => w >= t*1e4).length;
+const lvl = d => d >= 8 ? '상' : d >= 4 ? '중' : '하';
 
-        class TextParticle {
-            constructor(x, y, color) {
-                this.x = x + (Math.random() - 0.5) * window.innerWidth;
-                this.y = y + (Math.random() - 0.5) * window.innerHeight;
-                this.baseX = x;
-                this.baseY = y;
-                this.size = Math.random() * 2 + 1.5;
-                this.color = color;
-                this.vx = 0;
-                this.vy = 0;
-                this.friction = 0.88;
-                this.ease = 0.05;
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            update() {
-                let dxBase = this.baseX - this.x;
-                let dyBase = this.baseY - this.y;
-                this.vx += dxBase * this.ease;
-                this.vy += dyBase * this.ease;
-                if (mouse.x !== null && mouse.y !== null) {
-                    let dxMouse = mouse.x - this.x;
-                    let dyMouse = mouse.y - this.y;
-                    let distance = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-                    if (distance < mouse.radius) {
-                        let forceDirectionX = dxMouse / distance;
-                        let forceDirectionY = dyMouse / distance;
-                        let force = (mouse.radius - distance) / mouse.radius;
-                        this.vx -= forceDirectionX * force * 10;
-                        this.vy -= forceDirectionY * force * 10;
-                    }
-                }
-                this.vx *= this.friction;
-                this.vy *= this.friction;
-                this.x += this.vx;
-                this.y += this.vy;
-                this.draw();
-            }
-        }
+const CANCERS = {
+  thyroid: { name:'갑상선암', w:12, surv:[1,1,.99,.6], cost:.45, screen:()=>false },
+  colon:   { name:'대장암', w:12, surv:[.94,.88,.83,.2], cost:1, screen:a=>a>=50, test:'분변잠혈검사 → 대장내시경' },
+  lung:    { name:'폐암', w:8, surv:[.8,.65,.5,.13], cost:1.25, screen:a=>S.smokeEver&&a>=54&&a<=74, test:'저선량 흉부 CT' },
+  stomach: { name:'위암', w:11, surv:[.97,.8,.62,.075], cost:1, screen:a=>a>=40, test:'위내시경' },
+  breast:  { name:'유방암', w:12, sex:'F', surv:[.99,.93,.8,.4], cost:1, screen:a=>a>=40, test:'유방촬영술' },
+  prostate:{ name:'전립선암', w:9, sex:'M', surv:[1,1,1,.51], cost:.8, screen:()=>false },
+  liver:   { name:'간암', w:7, surv:[.62,.44,.25,.035], cost:1.2, screen:a=>a>=40&&S.drinkEver, test:'간 초음파 + 혈액검사' },
+  pancreas:{ name:'췌장암', w:3, surv:[.47,.35,.23,.026], cost:1.3, screen:()=>false },
+  cervix:  { name:'자궁경부암', w:3, sex:'F', surv:[.93,.75,.5,.2], cost:.8, screen:a=>a>=20, test:'자궁경부세포검사' },
+};
+// 병기 → 요약병기: 1기=국한, 2기=국한과 국소의 중간, 3기=국소, 4기=원격 (국가암등록통계 5년 상대생존율)
+const STAGE_COST = [18000000, 32000000, 52000000, 75000000];
+const SYMPTOM = [.04, .14, .5, .9];
 
-        class Star {
-            constructor() {
-                this.x = Math.random() * window.innerWidth;
-                this.y = Math.random() * window.innerHeight;
-                this.size = Math.random() * 1.5;
-                this.vx = (Math.random() - 0.5) * 0.4;
-                this.vy = (Math.random() - 0.5) * 0.4;
-                this.opacity = Math.random() * 0.5 + 0.1;
-            }
-            draw() {
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-                ctx.fill();
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.x > canvas.width) this.x = 0;
-                else if (this.x < 0) this.x = canvas.width;
-                if (this.y > canvas.height) this.y = 0;
-                else if (this.y < 0) this.y = canvas.height;
-                this.draw();
-            }
-        }
+const BADGES = {
+  happy:   { icon:'fa-credit-card', label:'국민행복카드', desc:'임신·출산 진료비 바우처' },
+  infant:  { icon:'fa-child', label:'영유아검진 완주', desc:'영유아 건강검진을 빠짐없이' },
+  preemie: { icon:'fa-hand-holding-heart', label:'이른둥이 생존자', desc:'신생아중환자실 본인부담 5%' },
+  youth:   { icon:'fa-user-check', label:'2030 청년검진', desc:'청년 일반건강검진 3회 이상' },
+  quit:    { icon:'fa-ban-smoking', label:'금연 성공', desc:'건강보험 금연치료 지원' },
+  parent:  { icon:'fa-baby-carriage', label:'부모가 되다', desc:'임신·출산 진료비 지원' },
+  screen:  { icon:'fa-stethoscope', label:'검진 개근상', desc:'40세 이후 국가검진 8회 이상' },
+  special: { icon:'fa-file-medical', label:'산정특례 등록자', desc:'4대 중증질환 본인부담 5~10%' },
+  survivor:{ icon:'fa-ribbon', label:'암 완치자', desc:'진단 후 5년 생존' },
+  cap:     { icon:'fa-rotate-left', label:'상한제 환급', desc:'본인부담상한제 초과금 환급' },
+  disaster:{ icon:'fa-life-ring', label:'재난적의료비', desc:'과도한 의료비 부담 지원' },
+  heart:   { icon:'fa-heart-pulse', label:'골든타임 생존', desc:'심뇌혈관질환을 이겨냄' },
+  implant: { icon:'fa-tooth', label:'어르신 임플란트', desc:'만 65세 이상 본인부담 30%' },
+  ltc:     { icon:'fa-house-medical', label:'장기요양 수급자', desc:'노인장기요양보험 급여' },
+  directive:{ icon:'fa-feather-pointed', label:'사전연명의료 서약자', desc:'존엄한 마지막을 스스로 결정' },
+  hospice: { icon:'fa-dove', label:'호스피스 동행', desc:'호스피스·완화의료 이용' },
+  centen:  { icon:'fa-crown', label:'백세 인생', desc:'100세까지 살아냄' },
+};
 
-        function initTextParticles() {
-            textParticles = [];
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let fontSize = Math.min(canvas.width / 6, 180);
-            ctx.font = `900 ${fontSize}px 'Outfit', sans-serif`;
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const text = "HELLO WORLD";
-            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-            const rect = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const gap = 4;
-            for (let y = 0; y < rect.height; y += gap) {
-                for (let x = 0; x < rect.width; x += gap) {
-                    const index = (y * rect.width + x) * 4;
-                    const alpha = rect.data[index + 3];
-                    if (alpha > 128) {
-                        const ratio = x / canvas.width;
-                        let colorIndex = Math.min(Math.floor(ratio * colors.length), colors.length - 1);
-                        textParticles.push(new TextParticle(x, y, colors[colorIndex]));
-                    }
-                }
-            }
-        }
+/* =========================================================
+   유틸
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const R = Math.random;
+const rint = (a,b) => a + Math.floor(R()*(b-a+1));
+const pick = arr => arr[Math.floor(R()*arr.length)];
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function won(n){
+  n = Math.round(n);
+  const neg = n < 0; n = Math.abs(n);
+  let s;
+  if (n >= 1e8){ const e = Math.floor(n/1e8), m = Math.round((n%1e8)/1e4); s = e+'억'+(m? ' '+m.toLocaleString('ko-KR')+'만':'')+'원'; }
+  else if (n >= 1e4) s = Math.round(n/1e4).toLocaleString('ko-KR')+'만원';
+  else s = n.toLocaleString('ko-KR')+'원';
+  return (neg?'-':'')+s;
+}
+const fullWon = n => Math.round(n).toLocaleString('ko-KR')+'원';
+const icon = n => `<i class="fa-solid ${n}"></i>`;
 
-        function initStars() {
-            stars = [];
-            let starCount = Math.floor((canvas.width * canvas.height) / 8000);
-            for (let i = 0; i < starCount; i++) stars.push(new Star());
-        }
+/* =========================================================
+   상태
+   ========================================================= */
+let S = null;
+function newState(name, gender){
+  return {
+    name, gender, age:-1, alive:true, dying:false,
+    health: rint(90,96), smoke:false, smokeEver:false, quitAge:null, drink:false, drinkEver:false, upf:false, exercise:false,
+    path:null, job:null, salary:0, decile:5, ins:'dependent', preMil:null, retired:false, hasChild:false, jobless:null,
+    paid:0, employerPaid:0, benefit:0, totalCost:0, oop:0, nonCov:0, specialSaved:0, capRefund:0, catastrophic:0, ltcBenefit:0,
+    visits:0, pharmacy:0, checkups:0, checkSkips:0, youth:0, infantSkipped:false,
+    yearOOP:0, yearNonCov:0, yearIncome:0, yearPrem:0,
+    cancers:[], htn:null, dm:null, cardio:0, dementia:false, rare:false, cataract:false, knee:false,
+    ltc:null, ltcAsked:false, directive:false, hospice:false,
+    badges:new Set(), queue:[], cause:null, auto:false,
+    stress:12, stressPeak:12, married:false, marryAt:null, marryAge:rint(27,34), marryDeclined:false, spouse:null, widowed:false,
+    children:0, childBirths:[], father:rint(50,74), mother:rint(56,82), badYears:0, milestones:[],
+    hhInc:0, hhWealth:0, wealth:0, wdecile:1, peakIncome:0,
+    hloss:{}, hgain:0, stressLog:[], cardioLog:[], hist:{ mind:[] }, health0:0, healthMin:100, healthMinAge:0
+  };
+}
 
-        function animate() {
-            requestAnimationFrame(animate);
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            stars.forEach(s => s.update());
-            textParticles.forEach(p => p.update());
-        }
+/* 진료비 처리: 공단부담·본인부담·비급여·산정특례 절감 */
+function charge(total, ownRate, o={}){
+  const pub = total*(1-ownRate), own = total*ownRate, nc = o.nonCov||0;
+  S.totalCost += total; S.benefit += pub; S.oop += own + nc;
+  S.yearOOP += own; S.yearNonCov += nc;
+  if (o.special) S.specialSaved += total*Math.max(0,(o.normal ?? .25) - ownRate);
+  return { pub, own, nc };
+}
+function badge(k, burst){
+  if (S.badges.has(k)) return;
+  S.badges.add(k);
+  const b = BADGES[k];
+  toast(`뱃지 획득 · ${b.label}`);
+  if (burst) fire();
+}
+function fire(){
+  if (typeof confetti !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  confetti({ particleCount:90, spread:70, origin:{ y:.35 }, colors:['#34d399','#5b9bff','#f5b44a','#ffffff'] });
+}
 
-        document.fonts.ready.then(() => {
-            resize();
-            animate();
-        });
-    </script>
+/* =========================================================
+   소득·보험료
+   ========================================================= */
+function ageFactor(a){
+  if (a < 25) return .8;
+  if (a < 35) return .8 + (a-25)*.035;
+  if (a < 50) return 1.115 + (a-35)*.017;
+  return 1.35;
+}
+function updateIncome(){
+  const a = S.age;
+  S.yearIncome = 0;
+  if (S.ins === 'military' || !S.job || S.retired){
+    if (S.retired) S.yearIncome = (900 + S.decile*160)*1e4; // 연금 등
+    return;
+  }
+  const j = JOBS[S.job];
+  if (j.type === 'regional') S.salary = rint(j.lo, j.hi)*1e4*ageFactor(a);
+  else S.salary = j.base*ageFactor(a)*(.98 + R()*.04);
+  if (S.jobless && S.jobless.age === a) S.salary *= .5;
+  S.yearIncome = S.salary*12;
+  S.decile = clamp(Math.ceil(S.salary/700000), 1, 10);
+}
+// 지역가입자 월 보험료: 소득분 + 재산분(재산 분위 반영, 기본공제 1억 근사)
+function regionalMonthly(monthlyIncome){
+  const incomePart = monthlyIncome*RATE*.75;
+  const propPart = Math.max(0, S.wdecile - 2)*18000;
+  return (incomePart + propPart)*(1+LTC_RATE);
+}
+function payPremium(){
+  const a = S.age;
+  let mine = 0, employer = 0, note = '';
+  if (S.ins === 'military'){ note = '군 복무 중: 건강보험 급여정지, 보험료 면제'; }
+  else if (S.ins === 'dependent'){ note = S.retired ? '자녀의 피부양자: 보험료 0원' : a < 19 ? '미성년자는 건강보험료를 내지 않습니다 · 부모님 건강보험의 피부양자로 보장' : '부모님 건강보험의 피부양자로 보장 · 보험료 0원'; }
+  else if (S.jobless && S.jobless.age === a){
+    if (S.jobless.mode === 'keep'){ mine = S.jobless.prev; note = '임의계속가입: 직장 시절 보험료 유지'; }
+    else { mine = (regionalMonthly(S.salary*.5) )*12; note = `지역가입자 전환: 소득 + ${wealthText()} 반영 · 월 ${won(mine/12)}`; }
+  }
+  else if (S.ins === 'employee'){
+    mine = S.salary*12*RATE/2*(1+LTC_RATE); employer = mine;
+    note = `직장가입자 · 월 ${won(mine/12)} (회사도 같은 금액 부담)`;
+  }
+  else if (S.ins === 'regional'){
+    mine = regionalMonthly(S.retired ? S.yearIncome/12 : S.salary)*12;
+    note = `지역가입자 · 월 ${won(mine/12)} (소득분 + 재산분 · ${wealthText()})`;
+  }
+  S.paid += mine; S.employerPaid += employer; S.yearPrem = mine;
+  return { mine, note };
+}
+
+/* =========================================================
+   연말 정산: 본인부담상한제 / 재난적의료비 (다음 해 사후환급)
+   ========================================================= */
+function settleYear(final){
+  if (S.age < 0) return;
+  const cap = CAPS[S.decile-1];
+  let refund = 0;
+  if (S.yearOOP > cap){
+    refund = S.yearOOP - cap;
+    S.capRefund += refund; S.benefit += refund; S.oop -= refund;
+    badge('cap');
+    evCard('t-green','fa-rotate-left', `${final?'':'작년 '}본인부담상한제 환급 ${won(refund)}`,
+      `${S.decile}분위의 연간 본인부담 상한액은 <b>${won(cap)}</b>입니다. 넘게 낸 <b>${won(refund)}</b>을 공단이 돌려줬습니다.`,
+      [['g','상한제'],['', `${S.decile}분위`]]);
+  }
+  const income = Math.max(S.yearIncome, 1.2e7);
+  const burden = Math.min(S.yearOOP, cap) + S.yearNonCov;
+  if (S.yearNonCov > 0 && burden > income*.1 && S.decile <= 6){
+    const sup = Math.min(5e7, S.yearNonCov*.6);
+    S.catastrophic += sup; S.benefit += sup; S.oop -= sup;
+    badge('disaster');
+    evCard('t-green','fa-life-ring', `재난적의료비 지원 ${won(sup)}`,
+      `한 해 의료비가 소득의 10%를 넘어 가계가 흔들릴 뻔했습니다. 비급여 의료비의 일부를 <b>재난적의료비 지원사업</b>이 보탰습니다.`,
+      [['g','재난적의료비'],['', '최대 5천만원']]);
+  }
+  S.yearOOP = 0; S.yearNonCov = 0;
+}
+
+/* =========================================================
+   1년 진행
+   ========================================================= */
+let year = null; // 이번 해 카드 데이터
+
+/* =========================================================
+   스트레스
+   ========================================================= */
+function hurt(k, v, floor=0){
+  S.hloss[k] = (S.hloss[k] || 0) + v;
+  S.health = clamp(S.health - v, floor, 100);
+}
+function riskFactors(){
+  const f = [];
+  if (S.smoke) f.push('흡연'); if (S.drink) f.push('고위험 음주'); if (S.upf) f.push('초가공식품');
+  if (!S.exercise && S.age >= 30) f.push('운동 부족'); if (S.stress >= 50) f.push(`높은 스트레스(${Math.round(S.stress)})`);
+  return f;
+}
+function addStress(n, why){
+  if (why && n >= 8) S.stressLog.push({ age:S.age, n, why });
+  S.stress = clamp(S.stress + n, 0, 100);
+  S.stressPeak = Math.max(S.stressPeak, S.stress);
+  return `스트레스 ${n > 0 ? '+' : ''}${n}`;
+}
+function mood(v){
+  if (v < 20) return '평온'; if (v < 40) return '보통'; if (v < 60) return '긴장';
+  if (v < 80) return '높음'; return '번아웃';
+}
+function stressYear(){
+  const a = S.age;
+  let base = a < 15 ? 8 : 18;
+  if (S.job && !S.retired && S.ins !== 'military') base += JOBS[S.job].stress;
+  if (S.exercise) base -= 5;
+  if (S.married) base -= 3;
+  if (S.smoke) base += 2;
+  S.stress = clamp(S.stress + (base - S.stress)*.25, 0, 100);
+  if (S.stress > 50) hurt('stress', (S.stress - 50)/40);
+  if (S.stress >= 65 && !S.queue.some(q => q.id === 'mind') && R() < .45) S.queue.push(mindChoice());
+}
+function mindChoice(){
+  return { id:'mind', tone:'violet', icon:'fa-cloud-rain', title:'요즘 잠이 안 오고 무기력합니다',
+    desc:`스트레스 지수 ${Math.round(S.stress)}. 오래 쌓인 스트레스는 고혈압·심근경색·뇌졸중 위험을 높입니다. 정신건강의학과 외래는 건강보험이 적용되고, 국가건강검진에서도 10년마다 우울증 검사를 받을 수 있습니다.`,
+    options:[
+      { label:'정신건강의학과 상담받기', sub:'건강보험 적용 · 본인부담 30%', cls:'primary', run:()=>{
+        const f = charge(700000, .3); S.visits += 6; S.pharmacy += 6; S.hist.mind.push({ age:S.age, c:'counsel' });
+        line2('fa-comment-medical', `상담과 약물치료로 마음이 한결 가벼워졌습니다 · 본인부담 ${won(f.own)} · ${addStress(-25)}`, 't-green'); } },
+      { label:'술·담배로 푼다', sub:'잠깐은 편하지만…', cls:'danger', run:()=>{
+        S.drink = true; S.drinkEver = true; S.hist.mind.push({ age:S.age, c:'vice' });
+        if (S.hist.drinkAt == null || S.hist.drinkStop != null){ S.hist.drinkAt = S.hist.drinkAt ?? S.age; S.hist.drinkStop = null; S.hist.drinkVice = S.age; }
+        let t = '퇴근 후 매일 술을 마시게 되었습니다';
+        if (!S.smoke && R() < .4){ S.smoke = true; S.smokeEver = true; S.quitAge = null; S.hist.smokeVice = S.age; if (S.hist.smokeAt == null) S.hist.smokeAt = S.age; t += '. 끊었던(혹은 안 피우던) 담배에도 손이 갔습니다'; }
+        line2('fa-wine-bottle', `${t} · ${addStress(-8)}`, 't-amber'); } },
+      { label:'혼자 참는다', sub:'괜찮아지겠지', cls:'ghost', run:()=>{ hurt('stress', 2); S.hist.mind.push({ age:S.age, c:'endure' }); line2('fa-face-sad-tear', `혼자 버티는 밤이 길어집니다 · ${addStress(4)}`); } },
+    ]};
+}
+function ownEconomy(){ return !!(S.job || S.retired); }
+function updateWealth(){
+  if (S.health < S.healthMin){ S.healthMin = S.health; S.healthMinAge = S.age; }
+  if (S.ins !== 'military') S.peakIncome = Math.max(S.peakIncome, S.yearIncome);
+  if (!ownEconomy()) return;
+  const P = S.incomeParts || {};
+  const earned = (P['근로소득'] || 0) + (P['사업소득'] || 0);
+  S.wealth += earned*(S.married ? .075 : .05);
+  if (S.retired) S.wealth -= Math.max(0, 1.8e7 - S.yearIncome); // 생활비 부족분을 재산에서
+  S.wealth *= S.wealth > 0 ? 1.012 : 1;              // 자산 가치 상승(물가 차감)
+  S.wealth -= (S.yearOOP + S.yearNonCov)*.5;          // 의료비 지출
+  S.wealth = Math.max(S.wealth, -3e7);
+  S.wdecile = wealthDecile(S.wealth);
+}
+const HH_INCOME = [1100,2000,2900,3800,4700,5700,6800,8100,9900,14000].map(v => v*1e4);
+const incLvl = v => v >= 6e7 ? '상' : v >= 2.5e7 ? '중' : '하';
+const HH_WEALTH = [800,3000,6500,11500,17000,24000,33000,45000,65000,120000].map(v => v*1e4);
+const isJobless = () => !!(S.jobless && S.age >= S.jobless.from && S.age <= S.jobless.age);
+// 소득 구성: 근로·사업·연금·실업급여·금융(이자·배당)·임대
+function finalizeIncome(){
+  const P = {};
+  if (S.job && !S.retired && S.ins !== 'military'){
+    const v = S.salary*12;
+    if (S.jobless && S.jobless.age === S.age) P['실업급여'] = v;
+    else P[JOBS[S.job].type === 'employee' ? '근로소득' : '사업소득'] = v;
+  }
+  if (S.retired) P['연금소득'] = (900 + S.decile*160)*1e4;
+  if (ownEconomy() && S.wealth > 0){
+    P['금융소득'] = S.wealth*.02;
+    if (S.wealth > 5e8) P['임대소득'] = (S.wealth - 5e8)*.03;
+  }
+  S.incomeParts = P;
+  S.yearIncome = Object.values(P).reduce((x, y) => x + y, 0);
+}
+function mainIncome(){
+  const e = Object.entries(S.incomeParts || {}).sort((a,b) => b[1]-a[1])[0];
+  return e && e[1] > 0 ? e[0] : null;
+}
+function incomeText(){
+  if (!ownEconomy()){ const v = HH_INCOME[S.hhInc-1]; return `가구 연소득 ${won(v)} (${incLvl(v)})`; }
+  if (S.ins === 'military') return '군 복무 중 (소득 없음)';
+  const m = mainIncome();
+  return `연소득 ${won(S.yearIncome)} (${incLvl(S.yearIncome)})${m ? ` · ${m} 위주` : ''}`;
+}
+const wealthLvl = w => lvl(wealthDecile(w));
+function wealthText(w){
+  if (w == null) w = ownEconomy() ? S.wealth : HH_WEALTH[S.hhWealth-1];
+  const pre = ownEconomy() ? '' : '가구 ';
+  return w < 0 ? `${pre}재산 ${won(w)} (하, 빚)` : `${pre}재산 ${won(w)} (${wealthLvl(w)})`;
+}
+function econLabel(){ return `${incomeText()} · ${wealthText()}`; }
+// 진단받은(본인이 알고 있는) 질병만 표시
+function diseaseText(){
+  const d = [];
+  for (const c of S.cancers){
+    if (c.dxAge == null || c.status === 'cured' || c.status === 'hidden') continue;
+    const nm = CANCERS[c.type].name;
+    if (c.status === 'terminal') d.push(`${nm} ${c.stage}기 (${c.palliative ? '완화의료' : '재발·투병'} 중)`);
+    else d.push(`${nm} ${c.stage}기 (치료 후 추적관찰 ${S.age - c.dxAge + 1}년차)`);
+  }
+  const kinds = [...new Set(S.cardioLog.filter(c => !c.fatal).map(c => c.kind))];
+  if (kinds.length) d.push(`${kinds.join('·')} 후 재발 방지 치료`);
+  if (S.htn && S.htn.detected) d.push('고혈압 (약 복용)');
+  if (S.dm && S.dm.detected) d.push('당뇨병 (약 복용)');
+  if (S.dementia) d.push('치매');
+  if (S.rare) d.push('희귀질환 (산정특례)');
+  if (S.ltc) d.push(`장기요양 ${S.ltc === 'home' ? '재가' : '시설'}급여 이용`);
+  return d;
+}
+function familyText(){
+  if (S.age < 0) return '';
+  const a = S.age, f = [];
+  if (S.spouse) f.push(S.spouse.alive ? `배우자 ${a + S.spouse.gap}세` : '배우자 사별');
+  S.childBirths.forEach((cb, i) => f.push(`${['첫째','둘째','셋째'][i]} ${a - cb}세`));
+  if (a < S.father) f.push(`아버지 ${a + S.fGap}세`);
+  if (a < S.mother) f.push(`어머니 ${a + S.mGap}세`);
+  return f.length ? f.join(' · ') : '가족 없음 (혼자)';
+}
+function workLife(){
+  if (!S.job || S.retired || S.ins === 'military') return;
+  if (S.jobless && S.jobless.age === S.age){ line('fa-briefcase', '실직 상태로 1년을 보냈습니다. 실업급여로 버티며 구직 활동을 합니다.'); return; }
+  if (S.jobless && S.jobless.age + 1 === S.age) line('fa-briefcase', `${ro(JOBS[S.job].name)} 재취업했습니다 · ${addStress(-6)}`);
+  if (JOBS[S.job].type === 'regional'){
+    const r = R();
+    if (r < .2){
+      S.salary *= .55; S.badYears++;
+      line('fa-arrow-trend-down', `${pick(JOBS[S.job].work.concat(['경기가 얼어붙어 매출이 반토막 났습니다']))} · 소득 급감 · ${addStress(14, `${JOBS[S.job].name} 수입 급감`)}`);
+      if (S.badYears >= 3){
+        const old = JOBS[S.job].name;
+        S.badYears = 0; S.job = 'logistics'; S.ins = 'employee'; S.salary = JOBS.logistics.base*ageFactor(S.age)*.9; S.wealth *= .55;
+        lifeEvent('fa-store-slash',`${old} 일을 접었습니다`,
+          `적자가 이어지는 것을 견디지 못하고 사업을 정리했습니다. 빚을 갚느라 재산이 크게 줄었고, 물류센터 관리자로 재취업해 다시 직장가입자가 되었습니다. 지역가입자일 때보다 보험료 부담이 줄었습니다.`,
+          [['r', addStress(22, '폐업')],['b','직장가입자 전환']]);
+      }
+    } else if (r > .85){
+      S.salary *= 1.3; S.badYears = 0;
+      line('fa-arrow-trend-up', `일이 잘 풀려 수입이 크게 늘었습니다 · ${addStress(-6)}`);
+    } else if (S.badYears > 0){
+      S.badYears--;
+    }
+  } else {
+    const r = R();
+    if (r < .13) line('fa-fire', `${pick(JOBS[S.job].work.concat(['상사와의 갈등으로 잠을 설칩니다']))} · ${addStress(10, `${JOBS[S.job].name} 업무 스트레스`)}`);
+    else if (r < .19){ S.salary *= 1.08; line('fa-award', `승진했습니다! · ${addStress(-6)}`); }
+  }
+  S.yearIncome = S.salary*12;
+  S.decile = clamp(Math.ceil(S.salary/700000), 1, 10);
+}
+
+/* =========================================================
+   인생 이벤트 (결혼·출산·부모·배우자·자녀)
+   ========================================================= */
+function lifeEvent(ic, title, body, chips){
+  S.milestones.push({ age:S.age, ic, title });
+  prepend(`<article class="card ev t-pink"><div class="ic">${icon(ic)}</div><div style="min-width:0"><span class="eb">인생 이벤트 · ${S.age}세</span><h3>${title}</h3>${body?`<p>${body}</p>`:''}${chipsHtml(chips)}</div></article>`);
+  toast(title);
+}
+function familyEvents(){
+  const a = S.age, Q = S.queue;
+  // 결혼
+  if (!S.married && !S.widowed && (a === S.marryAge || (a === 38 && S.marryDeclined))) Q.push(marryChoice());
+  // 출산
+  if (S.married && a <= 44){
+    if (S.children === 0 && a === S.marryAt + 2) Q.push(babyChoice(false));
+    if (S.children === 1 && a === S.childBirths[0] + 3) Q.push(babyChoice(true));
+  }
+  // 자녀의 성장
+  S.childBirths.forEach((cb, i) => {
+    const who = i === 0 ? '첫째' : '둘째';
+    if (a === cb + 7) line('fa-school', `${who}가 초등학교에 입학했습니다.`);
+    if (a === cb + 19) line('fa-graduation-cap', `${who}가 고등학교를 졸업하고 독립을 준비합니다.`);
+    if (a === cb + 30) lifeEvent('fa-champagne-glasses', `${who}가 결혼했습니다`, '품을 떠나는 아이를 보며 대견함과 허전함이 함께 밀려옵니다.', [['g', addStress(-4)]]);
+    if (a === cb + 32 && i === 0) lifeEvent('fa-baby', '손주가 태어났습니다', '자녀의 국민행복카드로 산전 진료비를, 분만비는 공단이 부담했습니다. 이제 할머니·할아버지입니다.', [['g', addStress(-5)]]);
+  });
+  // 부모님
+  for (const [nm, age] of [['아버지', S.father], ['어머니', S.mother]]){
+    if (a === age - 1) line('fa-hospital-user', `${nm}가 투병을 시작했습니다. 주말마다 병원에 갑니다 · ${addStress(10, `${nm}의 투병과 간병`)}`);
+    if (a === age){
+      const inh = S.hhWealth*S.hhWealth*rint(60, 160)*1e4/2; // 부모 두 분이 각각 절반
+      S.wealth += inh; S.wdecile = wealthDecile(S.wealth);
+      lifeEvent('fa-dove', `${nm}가 돌아가셨습니다`,
+      `장례를 치르는 동안 슬픔과 피로가 한꺼번에 몰려왔습니다. 그나마 ${nm}의 마지막 투병비는 산정특례와 본인부담상한제 덕분에 가계를 무너뜨리지 않았습니다.`,
+      [['r', addStress(28, `${nm}의 별세`)], ['', `상속 ${won(inh)}`]]);
+    }
+  }
+  // 배우자
+  if (S.married && S.spouse && S.spouse.alive){
+    if (a === S.spouse.deathAge - 1) line('fa-hospital-user', `배우자가 큰 병을 진단받아 간병을 시작했습니다 · ${addStress(12, '배우자 간병')}`);
+    if (a === S.spouse.deathAge){
+      S.spouse.alive = false; S.married = false; S.widowed = true;
+      lifeEvent('fa-heart-crack','배우자를 먼저 떠나보냈습니다',
+        '평생을 함께한 사람이 곁에 없습니다. 배우자를 잃은 직후 1~2년은 심혈관질환 위험이 눈에 띄게 높아집니다.',
+        [['r', addStress(35, '배우자와 사별')]]);
+    }
+  }
+}
+function marryChoice(){
+  return { id:'marry', tone:'pink', icon:'fa-ring', title: S.marryDeclined ? '오랜 친구가 인연을 소개해 줍니다' : '평생을 함께하고 싶은 사람이 생겼습니다',
+    desc:'결혼하면 배우자에게 소득이 없을 때 내 건강보험의 피부양자로 등록할 수 있고, 맞벌이라면 각자 직장가입자로 보험료를 냅니다. 든든한 내 편은 스트레스도 덜어 줍니다.',
+    options:[
+      { label:'결혼한다', sub:'둘이서 함께', cls:'primary', run:()=>{
+        S.married = true; S.marryAt = S.age; S.spouse = { alive:true, deathAge: S.age + rint(36, 62), gap: rint(-3, 4) };
+        S.wealth += rint(1000, 5000)*1e4; S.wdecile = wealthDecile(S.wealth);
+        lifeEvent('fa-ring','결혼했습니다','결혼 준비로 정신없었지만 든든한 내 편이 생겼습니다. 이제 건강검진 결과도 함께 챙깁니다.',[['g', addStress(-6)],['','배우자 피부양자 가능']]); } },
+      { label:'혼자의 삶을 택한다', sub:'비혼', cls:'ghost', run:()=>{ S.marryDeclined = true; line2('fa-user', '나 자신에게 집중하는 삶을 택했습니다.'); } },
+    ]};
+}
+function babyChoice(second){
+  const F = S.gender === 'F';
+  return { tone:'pink', icon:'fa-baby-carriage', title: second ? '둘째를 가질까요?' : '아이를 가질까요?',
+    desc:'임신이 확인되면 국민행복카드로 임신·출산 진료비 100만원(다태아 140만원)을 지원받고, 자연분만 입원비는 본인부담 0원입니다. 육아는 기쁘지만 고되기도 합니다.',
+    options:[
+      { label: second ? '둘째를 맞이한다' : '새 가족을 맞이한다', sub:'임신·출산 진료비 지원', cls:'primary', run:()=>{
+        S.hasChild = true; S.children++; S.childBirths.push(S.age);
+        charge(1000000, 0); charge(2600000, 0); if (F) S.visits += 14;
+        badge('parent', true);
+        lifeEvent('fa-baby-carriage', second ? '둘째가 태어났습니다' : (F ? '엄마가 되었습니다' : '아빠가 되었습니다'),
+          `${F?'':'배우자 명의로 '}국민행복카드 바우처 <b>100만원</b>을 산전검사에 썼고, 분만비 <b>${won(2600000)}</b>은 공단이 전액 부담했습니다. 아이는 영유아검진 8번을 무료로 받게 됩니다. 다만 밤잠은 포기해야 합니다.`,
+          [['g','국민행복카드'],['g','분만 본인부담 0원'],['r', addStress(8, '육아')]]); } },
+      { label:'지금은 아니다', sub: second ? '한 명으로 충분해요' : '둘만의 삶 또는 다음에', cls:'ghost', run:()=>{ line2('fa-heart', second ? '지금의 가족에 집중하기로 했습니다.' : '두 사람의 삶에 집중하기로 했습니다.'); } },
+    ]};
+}
+function advance(){
+  if (!S.alive || S.queue.length || S.dying) return;
+  settleYear(false);
+  S.age++;
+  const a = S.age;
+  year = { lines:[] };
+
+  if (a === 0) birth();
+  if (a === 22 && S.ins === 'military'){ S.ins = S.preMil; line('fa-person-military-rifle', '전역했습니다. 건강보험 자격이 다시 살아났습니다.'); }
+  if (a === 20 && S.gender === 'M'){ S.preMil = S.ins; S.ins = 'military'; }
+
+  updateIncome();
+  workLife();
+  finalizeIncome();
+  const base = baseline();
+  const prem = payPremium();
+  lifestyleHealth();
+  stressYear();
+  diseases();
+  randomEvents();
+  scheduled();
+  if (!S.dying && !S.cause) mortality();
+  if (S.cause && !S.dying) S.queue = [];
+  if (S.dying) S.queue = S.queue.filter(q => q.id === 'eol' || q.id === 'directive');
+  updateWealth();
+
+  renderYear(base, prem);
+  renderHUD();
+  if (S.cause && !S.queue.length) return die(S.cause);
+  renderDock();
+}
+
+function line(ic, text){ year.lines.push([ic, text]); }
+
+function birth(){
+  const r = R();
+  if (r < .07){
+    const c = charge(26000000, .05, { special:true, normal:.2 });
+    S.health = rint(72,80);
+    badge('preemie');
+    evCard('t-violet','fa-hand-holding-heart','이른둥이로 태어났습니다',
+      `예정일보다 9주 일찍 세상에 나와 신생아중환자실에서 6주를 보냈습니다. 진료비 <b>${won(26000000)}</b> 중 가족은 <b>${won(c.own)}</b>(5%)만 냈습니다.`,
+      [['g',`공단 ${won(c.pub)}`],['','이른둥이 지원']]);
+  } else if (r < .38){
+    const c = charge(4800000, .05);
+    evCard('t-cyan','fa-baby','제왕절개로 건강하게 태어났습니다',
+      `분만 진료비 <b>${won(4800000)}</b> 중 본인부담은 5%인 <b>${won(c.own)}</b>입니다.`, [['g',`공단 ${won(c.pub)}`]]);
+  } else {
+    charge(2600000, 0);
+    evCard('t-cyan','fa-baby','응애! 자연분만으로 태어났습니다',
+      `자연분만은 2016년부터 입원 본인부담이 <b>0원</b>입니다. 분만 진료비 <b>${won(2600000)}</b>을 공단이 전액 부담했습니다.`, [['g','본인부담 0원']]);
+  }
+}
+
+function baseline(){
+  const b = LIFE_STAGES.find(r => S.age >= r.min && S.age <= r.max) || LIFE_STAGES[LIFE_STAGES.length-1];
+  const h = HIRA_AGE.find(r => S.age >= r.min && S.age <= r.max) || HIRA_AGE[HIRA_AGE.length-1];
+  let visits = Math.round(h.days*(.7 + R()*.6)), ph = Math.round(h.days*PHARM_RATIO*(.7 + R()*.6));
+  let cost = h.cost*BASE_SHARE*(.75 + R()*.5);
+  if (S.htn && S.htn.detected){ cost += 420000; visits += 4; ph += 12; }
+  if (S.dm && S.dm.detected){ cost += 650000; visits += 4; ph += 12; }
+  if (S.smoke && S.age >= 30) cost *= 1.1;
+  if (S.health < 50) cost *= 1.25;
+  S.visits += visits; S.pharmacy += ph;
+  if (S.ins === 'military') return { visits, ph, cost:0, pub:0, own:0, stage:b.stage, flavor:'군 병원과 의무대에서 진료를 받았습니다. 비용은 국방부가 부담합니다.', mil:true };
+  const c = charge(cost, 1 - coverageRate(S.age));
+  return { visits, ph, cost, pub:c.pub, own:c.own, stage:b.stage, flavor:pick(b.flavor) };
+}
+
+function maxHealth(a){ return 100 - Math.max(0, a-25)*.45; }
+function lifestyleHealth(){
+  const a = S.age;
+  let d = 0;
+  const loss = (k, v) => { d -= v; S.hloss[k] = (S.hloss[k] || 0) + v; };
+  if (a >= 20 && a < 40) loss('aging', .25); else if (a >= 40 && a < 60) loss('aging', .5); else if (a >= 60 && a < 75) loss('aging', .85); else if (a >= 75) loss('aging', 1.5);
+  if (S.smoke && a >= 20) loss('smoke', .45);
+  if (S.drink && a >= 20) loss('drink', .3);
+  if (S.upf && a >= 12) loss('upf', .15);
+  if (S.exercise){ d += .3; S.hgain += .3; }
+  if (S.htn && !S.htn.detected) loss('chronic', .8);
+  if (S.dm && !S.dm.detected) loss('chronic', .8);
+  if (S.cancers.some(c => c.status === 'treating')) d += 3;
+  if (a < 20) d += 1;
+  S.health = clamp(S.health + d, 0, maxHealth(a));
+}
+
+function riskMult(kind){
+  let m = 1;
+  const quitYears = S.quitAge != null ? S.age - S.quitAge : null;
+  const smokeF = kind === 'cardio' ? 2 : 1.7;
+  if (S.smoke) m *= smokeF; else if (quitYears != null) m *= quitYears < 10 ? 1 + (smokeF-1)*.45 : 1.1;
+  if (S.drink) m *= kind === 'cardio' ? 1.4 : 1.3;
+  if (S.upf) m *= kind === 'cardio' ? 1.3 : 1.2;
+  if (S.exercise) m *= kind === 'cardio' ? .75 : .85;
+  m *= kind === 'cardio' ? 1 + S.stress/110 : 1 + S.stress/300; // 만성 스트레스
+  return m;
+}
+
+function diseases(){
+  const a = S.age;
+  // 만성질환
+  if (a >= 35){
+    if (!S.htn && R() < .014*(1 + (a-35)/10)*(S.smoke?1.2:1)*(S.drink?1.4:1)*(S.upf?1.3:1)*(S.exercise?.7:1)*(1 + S.stress/150)) S.htn = { detected:false, onset:a, why:riskFactors() };
+    if (!S.dm && R() < .008*(1 + (a-35)/10)*(S.upf?1.6:1)*(S.drink?1.1:1)*(S.exercise?.7:1)) S.dm = { detected:false, onset:a, why:riskFactors() };
+    for (const [k, nm] of [['htn','고혈압'],['dm','당뇨병']]){
+      if (S[k] && !S[k].detected && R() < .07){
+        S[k].detected = true; S[k].detAge = a; S[k].how = '증상이 나타난 뒤 병원';
+        line('fa-triangle-exclamation', `두통과 갈증이 심해져 병원에 갔다가 ${nm}을 뒤늦게 발견했습니다.`);
+      }
+    }
+  }
+  // 암: 진행 및 발병
+  for (const c of S.cancers){
+    if (c.status === 'hidden'){
+      if (R() < .55 && c.stage < 4) c.stage++;
+      hurt('cancer', [0,1,3,6][c.stage-1]);
+      if (R() < SYMPTOM[c.stage-1]) queueDiagnosis(c, 'symptom');
+    } else if (c.status === 'treating'){
+      const f = charge(6000000, .05, { special:true });
+      line('fa-file-medical', `${CANCERS[c.type].name} 추적 관찰 (산정특례 5%) · 본인부담 ${won(f.own)}`);
+      if (a >= c.cureAge){
+        c.status = 'cured';
+        addStress(-10);
+        S.milestones.push({ age:a, ic:'fa-ribbon', title:`${CANCERS[c.type].name} 완치` });
+        badge('survivor', true);
+        evCard('t-green','fa-ribbon', `${CANCERS[c.type].name} 5년 생존, 완치 판정`,
+          `진단 후 5년 동안 재발이 없었습니다. 산정특례 기간이 끝나고 이제 일반 환자로 돌아갑니다. 그동안 산정특례로 아낀 돈만 <b>${won(S.specialSaved)}</b>입니다.`,
+          [['g','암 완치'],['g','산정특례 졸업']]);
+      }
+    } else if (c.status === 'terminal'){
+      const f = charge(22000000, .05, { special:true, nonCov:3000000 });
+      hurt('cancer', 14);
+      line('fa-bed-pulse', `${CANCERS[c.type].name} 재발·전이로 항암 치료 지속 · 본인부담 ${won(f.own)} + 비급여 ${won(3000000)}`);
+      if (a >= c.deathAge && !S.dying) endOfLife(`${CANCERS[c.type].name}`);
+    }
+  }
+  const active = S.cancers.some(c => c.status !== 'cured');
+  if (a >= 30 && !active){
+    const p = .0014*Math.exp(.075*(a-40))*riskMult('cancer')*(S.gender==='F'?.78:1.15);
+    if (R() < p){
+      const types = Object.entries(CANCERS).filter(([,v]) => !v.sex || v.sex === S.gender);
+      let tot = 0;
+      const ws = types.map(([k,v]) => { let w = v.w; if (k==='lung' && S.smokeEver) w *= 5; if (k==='liver' && S.drinkEver) w *= 2.5; if (k==='colon' && S.upf) w *= 1.3; tot += w; return [k,w]; });
+      let r = R()*tot, type = ws[0][0];
+      for (const [k,w] of ws){ if ((r -= w) <= 0){ type = k; break; } }
+      S.cancers.push({ type, stage:1, status:'hidden', onset:a });
+    }
+  }
+  // 심뇌혈관
+  if (a >= 35 && !S.dying){
+    let p = .00045*Math.exp(.075*(a-40))*riskMult('cardio');
+    if (S.htn) p *= S.htn.detected ? 1.3 : 2.2;
+    if (S.dm) p *= S.dm.detected ? 1.3 : 1.9;
+    if (S.cardio) p *= 1.6;
+    if (R() < p) cardioEvent();
+  }
+}
+
+function queueDiagnosis(c, via){
+  if (c.queued) return;
+  c.queued = true;
+  const C = CANCERS[c.type];
+  const s = C.surv[c.stage-1];
+  const early = c.stage <= 2;
+  const total = STAGE_COST[c.stage-1]*C.cost;
+  const item = {
+    tone: early ? 'amber' : 'red', icon:'fa-file-waveform',
+    title: `${C.name} ${c.stage}기 진단`,
+    desc: (via === 'screen'
+      ? `국가검진(${C.test})에서 증상이 없을 때 발견했습니다. `
+      : `${c.stage>=3?'체중이 빠지고 통증이 심해져서야':'몸이 이상해서'} 병원을 찾았습니다. `)
+      + `${c.stage}기 5년 생존율은 약 ${Math.round(s*100)}%입니다. 예상 치료비 ${won(total)}.`,
+    options:[
+      { label:'산정특례 등록하고 치료 시작', sub:'본인부담 5% · 5년간 적용', cls:'primary', run:()=>treatCancer(c, via, false) },
+    ]
+  };
+  if (c.stage === 4) item.options.push({ label:'적극적 치료 대신 완화의료 중심으로', sub:'통증 조절과 삶의 질에 집중', cls:'ghost', run:()=>treatCancer(c, via, true) });
+  S.queue.unshift(item);
+}
+
+function treatCancer(c, via, palliative){
+  const C = CANCERS[c.type];
+  const total = STAGE_COST[c.stage-1]*C.cost*(palliative ? .35 : 1);
+  const nc = total*(.06 + c.stage*.03);
+  const f = charge(total, .05, { special:true, nonCov:nc });
+  c.status = 'treating';
+  badge('special');
+  addStress(25, `${C.name} 진단`);
+  S.milestones.push({ age:S.age, ic:'fa-file-medical', title:`${C.name} ${c.stage}기 진단` });
+  hurt('cancer', palliative ? 10 : 12 + c.stage*4, 1);
+  const survive = !palliative && R() < C.surv[c.stage-1];
+  c.dxAge = S.age; c.via = via; c.why = riskFactors(); c.palliative = palliative;
+  if (survive){ c.cureAge = S.age + 5; }
+  else { c.status = 'terminal'; c.deathAge = S.age + (c.stage === 4 ? rint(1,2) : rint(1,4)); }
+  const normalOwn = total*.25;
+  evCard(c.stage <= 2 ? 't-amber' : 't-red', 'fa-file-medical', `${C.name} ${palliative?'완화의료':'치료'} 시작 · 산정특례 적용`,
+    `수술·항암·방사선 진료비 <b>${won(total)}</b>. 산정특례가 없었다면 본인부담이 약 <b>${won(normalOwn)}</b>였겠지만, 실제로는 <b>${won(f.own)}</b>만 냈습니다.`
+    + (nc ? ` 다만 상급병실·신약 등 비급여 <b>${won(nc)}</b>은 따로 들었습니다.` : '')
+    + (via === 'screen' && c.stage === 1 ? ' <b>조기 발견 덕분에 완치 가능성이 높습니다.</b>' : ''),
+    [['g',`공단 ${won(f.pub)}`],['b',`본인 ${won(f.own)}`],['w',`비급여 ${won(nc)}`]]);
+  if (S.smoke) queueQuit(true);
+  if (!S.directive && c.status === 'terminal') queueDirective(true);
+}
+
+function cardioEvent(){
+  const kind = R() < .5 ? '급성 심근경색' : '뇌졸중';
+  let fatal = .13;
+  if ((S.htn && !S.htn.detected) || (S.dm && !S.dm.detected)) fatal *= 1.5;
+  if (S.exercise) fatal *= .8;
+  if (S.age > 75) fatal *= 1.4;
+  if (R() < fatal){
+    S.cause = kind;
+    S.cardioLog.push({ age:S.age, kind, fatal:true, why:riskFactors(), htnHidden: !!(S.htn && !S.htn.detected) });
+    evCard('t-red','fa-heart-crack', `${kind}으로 쓰러졌습니다`,
+      `골든타임 안에 병원에 도착하지 못했습니다. ${(S.htn&&!S.htn.detected)?'검진을 받지 않아 고혈압이 있는 줄 몰랐습니다.':''}`, [['r','돌연사']]);
+    return;
+  }
+  S.cardio++;
+  S.cardioLog.push({ age:S.age, kind, fatal:false, why:riskFactors() });
+  addStress(18, `${kind} 발병`);
+  S.milestones.push({ age:S.age, ic:'fa-heart-pulse', title:`${kind} 생존` });
+  const total = rint(18, 30)*1e6;
+  const f = charge(total, .05, { special:true, normal:.2, nonCov:1500000 });
+  hurt('cardio', rint(15,22), 1);
+  if (S.htn && !S.htn.detected){ S.htn.detected = true; S.htn.detAge = S.age; S.htn.how = `${kind}으로 쓰러진 뒤 응급실`; }
+  badge('heart', true);
+  evCard('t-red','fa-heart-pulse', `${kind}, 골든타임 안에 살아났습니다`,
+    `119로 이송돼 ${kind==='뇌졸중'?'혈전제거술':'스텐트 시술'}을 받았습니다. 심뇌혈관질환 산정특례로 진료비 <b>${won(total)}</b> 중 본인부담은 <b>${won(f.own)}</b>입니다.`,
+    [['g',`공단 ${won(f.pub)}`],['','산정특례 5%']]);
+  if (S.smoke) queueQuit(true);
+}
+
+function randomEvents(){
+  const a = S.age;
+  if (a >= 3 && a <= 65 && R() < .035){
+    const f = charge(2600000, .2);
+    line('fa-bone', `${pick(['자전거를 타다','계단에서','운동 중에','빙판길에서'])} 넘어져 골절 수술을 받았습니다 · 본인부담 ${won(f.own)}`);
+  }
+  if (a >= 28 && a <= 55 && R() < .04){
+    const f = charge(1600000, .25);
+    line('fa-notes-medical', `${pick(['허리 디스크 시술','담낭 절제술','치질 수술','갑상선 결절 조직검사'])}을 받았습니다 · 본인부담 ${won(f.own)}`);
+  }
+  if (a >= 35 && a <= 55 && S.ins === 'employee' && !S.jobless && !S.queue.some(q=>q.id==='jobless') && R() < .025){
+    const prev = S.salary*12*RATE/2*(1+LTC_RATE);
+    S.queue.push({ id:'jobless', tone:'amber', icon:'fa-briefcase', title:'회사가 구조조정을 합니다',
+      desc:`실직하면 직장가입자 자격을 잃습니다. 지역가입자가 되면 소득뿐 아니라 재산(주택·토지 등)까지 반영돼 보험료가 오를 수 있어요. 2024년 2월부터 자동차는 보험료 부과 대상에서 빠졌습니다. 퇴직 후 36개월간 직장 시절 보험료를 유지하는 '임의계속가입'이 있습니다.`,
+      options:[
+        { label:'임의계속가입 신청', sub:`월 ${won(prev/12)} 유지`, cls:'primary', run:()=>{ S.jobless={ from:a, age:a+1, mode:'keep', prev }; S.wealth *= .92; addStress(20, '구조조정 실직'); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-blue','fa-shield','임의계속가입을 신청했습니다','내년 1년간 직장 시절 보험료를 그대로 냅니다. 재취업할 때까지 안전망이 이어집니다.',[['b','임의계속가입']]); } },
+        { label:'지역가입자로 전환', sub:`월 약 ${won(regionalMonthly(S.salary*.5))} (${wealthText()} 반영)`, cls:'ghost', run:()=>{ S.jobless={ from:a, age:a+1, mode:'regional' }; S.wealth *= .92; addStress(22, '구조조정 실직'); S.milestones.push({ age:a, ic:'fa-briefcase', title:'구조조정으로 실직' }); evCard('t-gray','fa-house','지역가입자로 전환합니다','소득은 줄었는데 집(재산)에도 보험료가 매겨져 부담이 크게 줄지 않았습니다.',[['w','지역가입자']]); } }
+      ]});
+  }
+  if (a >= 66 && a <= 78 && !S.cataract && R() < .07){
+    S.cataract = true;
+    const f = charge(2200000, .2);
+    line('fa-eye', `백내장 수술(양안)을 받고 세상이 다시 밝아졌습니다 · 본인부담 ${won(f.own)}`);
+  }
+  if (a >= 68 && !S.knee && R() < .03){
+    S.knee = true;
+    const f = charge(12000000, .2);
+    evCard('t-cyan','fa-person-walking-with-cane','무릎 인공관절 수술',
+      `퇴행성 관절염이 심해져 인공관절 수술을 받았습니다. 진료비 <b>${won(12000000)}</b> 중 본인부담은 <b>${won(f.own)}</b>(20%)입니다.`,[['g',`공단 ${won(f.pub)}`]]);
+  }
+  if (!S.rare && R() < .0005){
+    S.rare = true;
+    addStress(15, '희귀질환 진단');
+    const f = charge(9000000, .1, { special:true, normal:.3 });
+    hurt('other', 10, 1);
+    badge('special');
+    evCard('t-violet','fa-dna','희귀질환 진단',
+      `수년간 원인을 몰랐던 증상의 정체가 밝혀졌습니다. <b>희귀질환 산정특례</b>로 본인부담이 10%로 줄었습니다. 첫해 진료비 ${won(9000000)} 중 본인부담 ${won(f.own)}.`,[['g','산정특례 10%']]);
+  }
+  if (S.rare && S.alive){ charge(3000000, .1, { special:true, normal:.3 }); }
+  if (a >= 75 && !S.dementia && R() < .012*Math.exp(.1*(a-75))*(S.exercise?.8:1)){
+    S.dementia = true;
+    hurt('dementia', 12, 1);
+    evCard('t-violet','fa-brain','치매 진단',
+      `가족 이름이 가끔 생각나지 않습니다. 중증치매는 <b>산정특례(본인부담 10%)</b> 대상입니다.`,[['','중증치매 산정특례']]);
+  }
+  if (S.dementia) charge(4000000, .1, { special:true, normal:.3 });
+  // 장기요양
+  if (a >= 65 && !S.ltcAsked && !S.dying && (S.health < 40 || S.dementia)){
+    S.ltcAsked = true;
+    S.queue.push({ tone:'violet', icon:'fa-house-medical', title:'혼자 일상생활이 어려워졌습니다',
+      desc:'노인장기요양보험에 등급을 신청하면 방문요양·목욕(재가급여)이나 요양원(시설급여)을 이용할 수 있습니다. 보험료는 건보료와 함께 내 왔습니다.',
+      options:[
+        { label:'재가급여 (집에서 방문요양)', sub:'본인부담 15%', cls:'primary', run:()=>{ S.ltc='home'; S.ltcAt=S.age; badge('ltc'); evCard('t-violet','fa-house-user','장기요양 3등급 판정 · 재가급여','요양보호사가 매일 집으로 찾아옵니다. 가족의 돌봄 부담이 크게 줄었습니다.',[['g','장기요양']]); } },
+        { label:'시설급여 (요양원 입소)', sub:'본인부담 20%', cls:'ghost', run:()=>{ S.ltc='facility'; S.ltcAt=S.age; badge('ltc'); evCard('t-violet','fa-hospital-user','장기요양 2등급 판정 · 시설급여','요양원에서 24시간 돌봄을 받습니다.',[['g','장기요양']]); } },
+        { label:'가족이 직접 돌본다', sub:'신청하지 않음', cls:'ghost', run:()=>{ evCard('t-gray','fa-people-roof','가족이 돌봄을 맡았습니다','자녀들이 번갈아 휴직을 고민하기 시작했습니다.',[['r', addStress(15, '돌봄 공백')]]); hurt('other', 3); } },
+      ]});
+  }
+  if (S.ltc){
+    const total = S.ltc === 'home' ? 14000000 : 26000000, own = S.ltc === 'home' ? .15 : .2;
+    const pub = total*(1-own);
+    S.ltcBenefit += pub; S.benefit += pub; S.oop += total*own; S.totalCost += total;
+    line('fa-house-medical', `장기요양 ${S.ltc==='home'?'재가':'시설'}급여 · 공단부담 ${won(pub)}`);
+  }
+}
+
+/* =========================================================
+   생애주기 이벤트
+   ========================================================= */
+function scheduled(){
+  const a = S.age, F = S.gender === 'F', Q = S.queue;
+  if (a >= 19) familyEvents();
+  if (a === 1){ charge(150000, 0); line('fa-child', '영유아검진 1~3차를 받았습니다. 성장·발달 평가는 전액 공단 부담입니다.'); }
+  if (a === 2 || a === 4) Q.push(infantCheck());
+  if (a === 6 && !S.infantSkipped){ badge('infant'); evCard('t-green','fa-child','영유아검진 8차까지 완주','생후 14일부터 71개월까지 8번의 검진을 모두 받았습니다.',[['g','영유아검진 완주']]); }
+  if (a === 7) evCard('t-gray','fa-school','초등학교 입학','이제 학교에서 학생건강검사를 받습니다. 국가예방접종은 보건소와 지정 의료기관에서 무료입니다.',[]);
+  if (a === 12 && F) line('fa-syringe','HPV(자궁경부암) 예방접종을 무료로 맞았습니다.');
+  if (a === 15) Q.push({ tone:'amber', icon:'fa-burger', title:'편의점 간식이 너무 맛있습니다',
+    desc:'탄산음료·라면·과자 같은 초가공식품을 자주 먹으면 비만, 당뇨, 대장암 위험이 올라갑니다.',
+    options:[
+      { label:'탄산·라면·과자가 최고', sub:'초가공식품 위주', cls:'ghost', run:()=>{ S.upf = true; line2('fa-burger','입맛이 짜고 달게 길들여졌습니다.'); } },
+      { label:'집밥과 물, 과일로', sub:'건강한 식습관', cls:'primary', run:()=>{ S.upf = false; line2('fa-carrot','건강한 식습관이 몸에 배었습니다.'); } },
+    ]});
+  if (a === 19 && !S.job) line('fa-id-card', '만 19세 성인이 되었습니다. 미성년자일 때는 보험료가 없었지만, 이제 소득이 생기면 내 이름으로 건강보험료를 냅니다.');
+  if (a === 18) Q.push({ tone:'blue', icon:'fa-graduation-cap', title:'고3, 진로를 정할 때입니다',
+    desc:'대학에 가면 졸업 때까지 부모님의 피부양자로 남고, 바로 취업하면 내 이름으로 건강보험료를 내기 시작합니다.',
+    options:[
+      { label:'대학에 진학한다', sub:'24세 취업 · 그때까지 피부양자', cls:'primary', run:()=>{ S.path='college'; line2('fa-graduation-cap','대학 합격! 당분간은 부모님 건강보험으로 보장받습니다.'); } },
+      { label:'바로 취업한다', sub:'19세부터 직장가입자', cls:'ghost', run:()=>{ S.path='work'; line2('fa-briefcase','사회생활을 일찍 시작하기로 했습니다.'); } },
+    ]});
+  if (a === 19){
+    Q.push({ tone:'red', icon:'fa-smoking', title:'친구가 담배를 권합니다',
+      desc:'흡연자는 폐암 위험이 10배 이상, 심근경색·뇌졸중 위험이 2배 이상 높습니다.',
+      options:[
+        { label:'한 대 피워 본다', sub:'흡연 시작', cls:'danger', run:()=>{ S.smoke=true; S.smokeEver=true; S.hist.smokeAt=S.age; line2('fa-smoking','그렇게 하루 한 갑이 되었습니다.'); } },
+        { label:'정중하게 거절한다', sub:'비흡연', cls:'primary', run:()=>{ line2('fa-ban-smoking','담배는 평생 입에 대지 않기로 했습니다.'); } },
+      ]});
+    if (S.path === 'work') Q.push(jobChoice('work'));
+  }
+  if (a === 20){
+    if (S.gender === 'M') evCard('t-gray','fa-person-military-rifle','입대했습니다','군 복무 중에는 건강보험 급여가 정지되고 보험료도 면제됩니다. 군 의료체계가 대신 책임집니다.',[['','급여정지']]);
+    Q.push({ tone:'amber', icon:'fa-wine-bottle', title:'성인이 되었습니다. 술자리는?',
+      desc:'고위험 음주(남성 7잔·여성 5잔 이상을 주 2회 이상)는 간암, 위암, 고혈압 위험을 높입니다.',
+      options:[
+        { label:'회식·술자리는 끝까지', sub:'고위험 음주', cls:'danger', run:()=>{ S.drink=true; S.drinkEver=true; S.hist.drinkAt=S.age; line2('fa-wine-bottle','주 3회 이상 술자리가 이어집니다.'); } },
+        { label:'적당히, 또는 마시지 않는다', sub:'절주', cls:'primary', run:()=>{ line2('fa-mug-hot','술은 기분 좋을 만큼만 마십니다.'); } },
+      ]});
+  }
+  if (a >= 20 && a <= 34 && a % 2 === 0 && S.ins !== 'military') Q.push(youthCheck());
+  if (a === 24 && S.path === 'college') Q.push(jobChoice('college'));
+  if (a === 26) Q.push(exerciseChoice());
+  if (a === 50 && !S.exercise) Q.push(exerciseChoice());
+  if ([30,40,50,60].includes(a) && S.smoke) queueQuit(false);
+  if (a === 45 && S.drink) Q.push({ tone:'amber', icon:'fa-wine-bottle', title:'간 수치가 경계선입니다',
+    desc:'검진 결과 간 수치(GGT)가 높습니다. 이대로 마시면 간경변과 간암으로 이어질 수 있습니다.',
+    options:[
+      { label:'술을 줄인다', sub:'절주 시작', cls:'primary', run:()=>{ S.drink=false; S.hist.drinkStop=S.age; line2('fa-mug-hot','술자리를 한 달에 두 번으로 줄였습니다.'); } },
+      { label:'인생은 한 번뿐', sub:'계속 마신다', cls:'danger', run:()=>{ line2('fa-wine-bottle','오늘도 2차까지 갔습니다.'); } },
+    ]});
+  if (a >= 40 && a <= 84 && a % 2 === 0) Q.push(nationalCheck());
+  if (a === 60) retire();
+  if (a === 65){
+    evCard('t-cyan','fa-person-cane','만 65세, 법적 어르신이 되었습니다',
+      '동네 의원 외래 진료비가 정액제로 바뀌고, 임플란트 2개와 틀니에 건강보험(본인부담 30%)이 적용되며, 독감·폐렴구균 예방접종이 무료입니다.',
+      [['g','노인 외래 정액제'],['g','임플란트 30%']]);
+    Q.push({ tone:'cyan', icon:'fa-tooth', title:'어금니가 흔들립니다',
+      desc:'만 65세 이상은 평생 2개까지 임플란트에 건강보험이 적용됩니다. 1개 약 120만원.',
+      options:[
+        { label:'임플란트 2개 심기', sub:'본인부담 30%', cls:'primary', run:()=>{ const f = charge(2400000, .3); badge('implant'); evCard('t-cyan','fa-tooth','임플란트 2개 시술',`진료비 <b>${won(2400000)}</b> 중 본인부담 <b>${won(f.own)}</b>. 다시 고기를 씹을 수 있습니다.`,[['g',`공단 ${won(f.pub)}`]]); } },
+        { label:'그냥 참고 산다', sub:'치료 안 함', cls:'ghost', run:()=>{ hurt('other', 2); line2('fa-face-frown','부드러운 음식만 먹게 되었습니다.'); } },
+      ]});
+  }
+  if ((a === 60 || a === 75) && !S.directive) queueDirective(false);
+  if (a === 100){ badge('centen', true); evCard('t-green','fa-crown','100세 생일','한 세기를 살아냈습니다. 통계청 기준 대한민국 100세 이상 인구는 1만 명 안팎입니다.',[['g','백세 인생']]); S.cause = '노환 (100세)'; }
+}
+
+function infantCheck(){
+  const n = S.age === 2 ? '4~5차' : '6~7차';
+  return { tone:'cyan', icon:'fa-child', title:`영유아검진 ${n} 안내 문자가 왔습니다`,
+    desc:'영유아검진은 성장·발달·시각·청각을 점검하고 비용은 전액 공단이 부담합니다.',
+    options:[
+      { label:'검진 받으러 간다', sub:'본인부담 0원', cls:'primary', run:()=>{ charge(80000, 0); S.visits++; line2('fa-child',`영유아검진 ${n} 완료: 키·몸무게 모두 정상 범위입니다.`); } },
+      { label:'바빠서 건너뛴다', sub:'다음에…', cls:'ghost', run:()=>{ S.infantSkipped = true; line2('fa-clock','이번 검진은 놓쳤습니다.'); } },
+    ]};
+}
+function jobChoice(path, rerolled){
+  const pool = Object.keys(JOBS).filter(k => JOBS[k].path === path);
+  const picks = [];
+  while (picks.length < 4 && pool.length) picks.push(pool.splice(Math.floor(R()*pool.length), 1)[0]);
+  if (!picks.some(k => JOBS[k].type === 'employee')) picks[0] = Object.keys(JOBS).find(k => JOBS[k].path === path && JOBS[k].type === 'employee');
+  const sub = k => {
+    const j = JOBS[k];
+    if (j.type === 'regional'){ const lo = j.lo*1e4*.8*12, hi = j.hi*1e4*.8*12; return `연소득 ${won(lo)}~${won(hi)} (${incLvl(lo)}~${incLvl(hi)}, 들쭉날쭉) · 지역가입자`; }
+    const v = j.base*.8*12;
+    return `초봉 연 ${won(v)} (${incLvl(v)}) · 직장가입자`;
+  };
+  const opts = picks.map((k, i) => ({ label:JOBS[k].name, sub:sub(k), cls: i === 0 ? 'primary' : 'ghost', run:()=>{
+      const j = JOBS[k];
+      S.job = k; S.ins = (S.ins === 'military') ? 'military' : j.type; S.preMil = j.type;
+      S.wealth = (S.hhWealth - 1)*300*1e4; S.wdecile = wealthDecile(S.wealth);
+      updateIncome(); finalizeIncome(); payPremiumDelta();
+      S.milestones.push({ age:S.age, ic:j.ic, title:`${j.name} 일을 시작` });
+      evCard('t-blue', j.ic, `${ro(j.name)} 사회생활 시작`,
+        `이제 ${j.type==='employee'?'직장가입자로 월급에서 건강보험료가 원천징수되고, 회사가 같은 금액을 함께 냅니다':'지역가입자로 소득과 재산에 따라 보험료가 매겨지고, 전액을 직접 냅니다'}. 내가 낸 보험료가 누군가의 수술비가 되고, 언젠가 내 치료비가 됩니다.`,
+        [['b', j.type==='employee'?'직장가입자':'지역가입자'],['', `연소득 ${won(S.yearIncome)} (${incLvl(S.yearIncome)})`],['', wealthText()]]);
+    }}));
+  if (!rerolled) opts.push({ label:'다른 채용 공고 보기', sub:'한 번만 다시 볼 수 있어요', cls:'ghost', run:()=>{ S.queue.unshift(jobChoice(path, true)); } });
+  return { tone:'blue', icon:'fa-id-card', title: path === 'work' ? '어떤 일을 시작할까요?' : '졸업! 첫 직장을 고르세요',
+    desc:'직장가입자는 보험료를 회사와 반씩 나눠 냅니다. 자영업·프리랜서는 지역가입자로 소득과 재산에 따라 보험료 전액을 직접 냅니다.',
+    options: opts };
+}
+// 취업한 해의 보험료 반영 (선택이 연산 뒤에 일어나므로 보정)
+function payPremiumDelta(){
+  const before = S.yearPrem;
+  S.paid -= before;
+  const p = payPremium();
+  renderHUD();
+  return p;
+}
+function youthCheck(){
+  const F = S.gender === 'F';
+  return { tone:'cyan', icon:'fa-user-check', title:'2030 청년 일반건강검진 대상입니다',
+    desc:`만 20~34세는 직장·학생·취준생 상관없이 2년마다 무료로 일반건강검진을 받을 수 있습니다.${F?' 자궁경부암 검진도 함께 받습니다.':''}`,
+    options:[
+      { label:'건강검진 받기', sub:'본인부담 0원', cls:'primary', run:()=>{ charge(120000, 0); S.youth++; S.checkups++; S.visits++; screenDetect(); if (S.youth >= 3) badge('youth'); } },
+      { label:'바쁘니 건너뛰기', sub:'젊은데 뭐…', cls:'ghost', run:()=>{ S.checkSkips++; skipHint(); } },
+    ]};
+}
+function nationalCheck(){
+  const a = S.age, F = S.gender === 'F';
+  const list = ['일반검진'];
+  if (a === 40 || a === 66) list[0] = '생애전환기 검진';
+  if (a <= 74){
+    list.push('위암');
+    if (a >= 50) list.push('대장암');
+    if (F) list.push('유방암', '자궁경부암');
+    if (S.drinkEver) list.push('간암(고위험)');
+    if (S.smokeEver && a >= 54) list.push('폐암 저선량CT');
+  }
+  if (a % 10 === 0 && a <= 70) list.push('우울증 검사');
+  return { tone:'cyan', icon:'fa-stethoscope', title:`${a}세 국가건강검진 안내`,
+    desc:`올해 대상: ${list.join(' · ')}. 일반검진은 무료, 암검진은 본인부담 10%(보험료 하위 50%는 면제)입니다.`,
+    options:[
+      { label:'건강검진 받기', sub:list.length > 1 ? '일반 + 암검진' : '일반검진', cls:'primary', run:()=>{
+        charge(list.length > 1 ? 380000 : 120000, list.length > 1 ? .04 : 0); S.checkups++; S.visits++;
+        screenDetect();
+        if (S.checkups - S.youth >= 8) badge('screen', true);
+      } },
+      { label:'바쁘니 건너뛰기', sub:'아픈 데 없는데…', cls:'ghost', run:()=>{ S.checkSkips++; skipHint(); } },
+    ]};
+}
+function screenDetect(){
+  const a = S.age, found = [];
+  for (const [k, nm, med] of [['htn','고혈압','혈압약'],['dm','당뇨병','혈당약']]){
+    if (S[k] && !S[k].detected && R() < .95){ S[k].detected = true; S[k].detAge = a; S[k].how = '건강검진'; found.push(`${nm} (${med} 처방, 꾸준히 관리 시작)`); }
+  }
+  let cancerFound = false;
+  for (const c of S.cancers){
+    if (c.status === 'hidden' && !c.queued && CANCERS[c.type].screen(a) && R() < .85){ queueDiagnosis(c, 'screen'); cancerFound = true; }
+  }
+  if (cancerFound) found.push('추가 정밀검사 필요 소견');
+  if (!found.length){
+    line2('fa-circle-check', pick(['검진 결과 이상 소견 없음. 정상 A 판정입니다.','콜레스테롤이 약간 높아 생활습관 개선을 권고받았습니다.','위내시경에서 가벼운 위염만 보였습니다.','혈압이 주의 단계라 싱겁게 먹으라는 조언을 들었습니다.']), 't-green');
+  } else {
+    evCard(cancerFound ? 't-amber' : 't-cyan', 'fa-stethoscope', '검진에서 이상을 발견했습니다', found.map(f => `· ${f}`).join('<br>') + '<br>증상이 없을 때 찾아낸 덕분에 일찍 관리할 수 있습니다.', [['g','조기 발견']]);
+  }
+}
+function skipHint(){
+  const hidden = S.cancers.some(c => c.status === 'hidden') || (S.htn && !S.htn.detected) || (S.dm && !S.dm.detected);
+  line2(hidden ? 'fa-triangle-exclamation' : 'fa-clock', hidden ? '검진을 건너뛰었습니다. 그런데 요즘 이유 없이 쉽게 피곤합니다…' : '검진을 건너뛰었습니다. 별일 없겠죠.', hidden ? 't-amber' : 't-gray');
+}
+function exerciseChoice(){
+  return { tone:'green', icon:'fa-person-running', title: S.age >= 50 ? '의사가 운동을 권합니다' : '헬스장 3개월 할인 전단지를 받았습니다',
+    desc:'주 150분 이상 중강도 운동은 심뇌혈관질환 위험을 20~30% 낮추고 치매 위험도 줄입니다.',
+    options:[
+      { label:'주 3회 운동한다', sub:'걷기·근력 운동', cls:'primary', run:()=>{ S.exercise = true; S.hist.exAt = S.age; S.health = clamp(S.health + 3, 0, maxHealth(S.age)); line2('fa-person-running','운동이 습관이 되었습니다. 몸이 가볍습니다.'); } },
+      { label:'운동은 귀찮다', sub:'소파와 한 몸', cls:'ghost', run:()=>{ line2('fa-couch','오늘도 넷플릭스와 함께합니다.'); } },
+    ]};
+}
+function queueQuit(urgent){
+  if (S.queue.some(q => q.id === 'quit')) return;
+  const item = { id:'quit', tone:'red', icon:'fa-ban-smoking', title: urgent ? '의사가 당장 담배를 끊으라고 합니다' : `${S.age}세, 금연을 결심해 볼까요?`,
+    desc:'건강보험 금연치료 지원사업은 12주 프로그램을 이수하면 상담료와 금연약 본인부담을 전액 지원합니다. 금연 10년이 지나면 폐암 위험이 절반으로 줄어듭니다.',
+    options:[
+      { label:'금연치료 프로그램 참여', sub:'이수 시 본인부담 0원', cls:'primary', run:()=>{
+        charge(250000, 0);
+        if (R() < (urgent ? .62 : .45)){ S.smoke = false; S.quitAge = S.age; badge('quit', true); evCard('t-green','fa-ban-smoking','금연에 성공했습니다','12주 프로그램을 끝까지 이수했습니다. 숨이 덜 찹니다.',[['g','금연 성공']]); }
+        else line2('fa-smoking','3주 만에 다시 피웠습니다. 다음 기회에…', 't-amber');
+      } },
+      { label:'계속 피운다', sub:'스트레스엔 담배지', cls:'danger', run:()=>{ line2('fa-smoking','오늘도 담배 연기 속에 하루를 보냅니다.'); } },
+    ]};
+  urgent ? S.queue.push(item) : S.queue.push(item);
+}
+function queueDirective(urgent){
+  if (S.queue.some(q => q.id === 'directive') || S.directive) return;
+  S.queue.push({ id:'directive', tone:'violet', icon:'fa-feather-pointed', title: urgent ? '치료가 어렵다는 이야기를 들었습니다' : '사전연명의료의향서를 아시나요?',
+    desc:'만 19세 이상이면 누구나 건강보험공단 지사 등 등록기관에서, 회복 불가능한 상태가 됐을 때 심폐소생술·인공호흡기 같은 연명의료를 받지 않겠다는 뜻을 미리 남길 수 있습니다.',
+    options:[
+      { label:'의향서를 작성한다', sub:'존엄한 마지막을 스스로 결정', cls:'primary', run:()=>{ S.directive = true; badge('directive'); evCard('t-violet','fa-feather-pointed','사전연명의료의향서 등록','가족이 대신 어려운 결정을 내리지 않아도 됩니다. 마음이 한결 가벼워졌습니다.',[['','국립연명의료관리기관 등록']]); } },
+      { label:'아직은 생각하고 싶지 않다', sub:'나중에', cls:'ghost', run:()=>{ line2('fa-clock','다음에 생각해 보기로 했습니다.'); } },
+    ]});
+}
+function retire(){
+  S.retired = true; const prevDecile = S.decile; S.decile = clamp(prevDecile - 3, 1, 10);
+  lifeEvent('fa-umbrella-beach', S.job && JOBS[S.job].type === 'regional' ? '가게를 정리하고 은퇴했습니다' : '정년퇴직했습니다',
+    '긴 사회생활을 마쳤습니다. 출근 부담은 사라졌지만 소득이 줄고, 직장가입자 자격도 함께 끝납니다.', [['g', addStress(-8)]]);
+  if (S.hasChild && S.wdecile >= 9){
+    S.ins = 'regional';
+    evCard('t-blue','fa-house','피부양자가 될 수 없습니다',`${wealthText()}으로 피부양자 재산 기준(재산세 과표 9억원 초과 등)을 넘습니다. 지역가입자로 보험료를 직접 냅니다.`,[['b','지역가입자'],['', wealthText()]]);
+  } else if (S.hasChild){
+    S.queue.push({ tone:'blue', icon:'fa-umbrella', title:'은퇴했습니다. 보험료는 어떻게 할까요?',
+      desc:'연소득 2천만원·재산 기준 이하라면 자녀 건강보험의 피부양자로 등록할 수 있습니다. 2022년부터 피부양자 요건이 강화되었습니다.',
+      options:[
+        { label:'자녀의 피부양자로 등록', sub:'보험료 0원', cls:'primary', run:()=>{ S.ins = 'dependent'; S.paid -= S.yearPrem; S.yearPrem = 0; renderHUD(); evCard('t-blue','fa-people-roof','자녀의 피부양자가 되었습니다','평생 낸 보험료 덕분에 이제는 자녀의 보험으로 보장받습니다.',[['b','피부양자']]); } },
+        { label:'지역가입자로 직접 낸다', sub:'연금·재산 기준', cls:'ghost', run:()=>{ S.ins = 'regional'; payPremiumDelta(); evCard('t-blue','fa-house','지역가입자로 전환',`월 ${won(S.yearPrem/12)}의 보험료를 직접 냅니다.`,[['b','지역가입자']]); } },
+      ]});
+  } else {
+    S.ins = 'regional';
+    evCard('t-blue','fa-house','지역가입자로 전환','직장을 떠나며 지역가입자가 되었습니다. 연금소득과 재산에 따라 보험료가 매겨집니다.',[['b','지역가입자']]);
+  }
+}
+
+/* =========================================================
+   임종
+   ========================================================= */
+function mortality(){
+  const a = S.age;
+  if (S.health <= 0){ endOfLife('다발성 장기부전'); return; }
+  let q = .72e-5*Math.exp(.1*a);
+  q *= S.gender === 'M' ? 1.15 : .55;
+  if (S.health < 50) q *= 1 + (50 - S.health)/12;
+  if (S.smoke) q *= 2; else if (S.quitAge != null) q *= 1.25;
+  if (S.drink) q *= 1.4;
+  if (S.upf) q *= 1.15;
+  if (S.exercise) q *= .8;
+  if ((S.htn && !S.htn.detected) || (S.dm && !S.dm.detected)) q *= 1.3;
+  if (S.stress > 60) q *= 1 + (S.stress - 60)/80;
+  if (a < 1) q = .0025;
+  if (R() < q){
+    if (a >= 65 && R() < .6) endOfLife(pick(['노환','폐렴','심부전']));
+    else S.cause = a < 45 ? '불의의 사고' : a < 70 ? pick(['심장마비','불의의 사고']) : pick(['심장마비','노환 (잠든 채 영면)']);
+  }
+}
+function endOfLife(cause){
+  S.dying = true;
+  const opts = [
+    { label:'호스피스·완화의료 병동으로', sub:'통증 조절과 가족과의 시간', cls:'primary', run:()=>{
+      const f = charge(9000000, .05, { special:true, normal:.2 });
+      S.hospice = true; badge('hospice');
+      evCard('t-violet','fa-dove','호스피스 병동에서 마지막을 보냈습니다',`통증 없이 가족과 이야기를 나눌 시간이 있었습니다. 진료비 ${won(9000000)} 중 본인부담 ${won(f.own)}.`,[['g','호스피스']]);
+      S.cause = cause;
+    } },
+  ];
+  if (!S.directive) opts.push({ label:'끝까지 연명치료', sub:'중환자실 · 인공호흡기', cls:'ghost', run:()=>{
+    const f = charge(38000000, .2, { nonCov:4000000 });
+    evCard('t-red','fa-lungs','중환자실에서 연명치료를 받았습니다',`인공호흡기와 투석으로 몇 주를 더 버텼지만 의식은 돌아오지 않았습니다. 진료비 ${won(38000000)} 중 본인부담 ${won(f.own)}, 비급여 ${won(4000000)}.`,[['r','연명의료']]);
+    S.cause = cause;
+  } });
+  S.queue.push({ id:'eol', tone:'violet', icon:'fa-hourglass-end', title:'삶의 마지막이 다가옵니다',
+    desc: S.directive ? '미리 작성한 사전연명의료의향서에 따라 무의미한 연명치료는 하지 않습니다. 남은 시간을 어디서 보낼지만 정하면 됩니다.'
+      : '의료진이 회복이 어렵다고 말합니다. 연명의료를 이어갈지, 편안한 마무리를 택할지 가족이 결정해야 합니다.',
+    options: opts });
+}
+function die(cause){
+  S.alive = false; stopAuto(true);
+  settleYear(true);
+  evCard('t-gray','fa-dove', `${S.name}, 향년 ${Math.max(0,S.age)}세 · ${lifeStory().verdict}`, `${START_YEAR + S.age}년, ${ro(cause)} 생을 마쳤습니다. 영수증 화면에서 일생 정리를 볼 수 있습니다.`, [['', cause]]);
+  renderHUD(); renderDock();
+  setTimeout(showEnding, 900);
+}
+
+/* =========================================================
+   렌더링
+   ========================================================= */
+const feed = $('#feed');
+function prepend(html){
+  feed.insertAdjacentHTML('afterbegin', html);
+  feed.scrollTop = 0;
+}
+function chipsHtml(chips){ return chips && chips.length ? `<div class="chips">${chips.map(([c,t]) => `<span class="chip ${c}">${t}</span>`).join('')}</div>` : ''; }
+function evCard(tone, ic, title, body, chips){
+  prepend(`<article class="card ev ${tone}"><div class="ic">${icon(ic)}</div><div style="min-width:0"><h3>${title}</h3>${body?`<p>${body}</p>`:''}${chipsHtml(chips)}</div></article>`);
+}
+// 선택 직후의 짧은 결과 한 줄
+function line2(ic, text, tone='t-gray'){
+  prepend(`<article class="card ev ${tone}" style="padding:9px 12px"><div class="ic" style="width:26px;height:26px;font-size:12px">${icon(ic)}</div><p style="margin:3px 0 0">${text}</p></article>`);
+}
+function renderYear(b, prem){
+  const a = S.age;
+  const lines = year.lines.map(([ic,t]) => `<li>${icon(ic)}<span>${t}</span></li>`).join('');
+  prepend(`<article class="card">
+    <div class="yr-head"><span class="a">${a}세</span><span class="y">${START_YEAR + a}년</span><span class="stage">${b.stage}</span></div>
+    <p class="flavor">${b.flavor}</p>
+    <div class="use"><span>${icon('fa-hospital')} 병의원 <b class="num">${b.visits}</b>일</span><span>${icon('fa-prescription-bottle-medical')} 약국 <b class="num">${b.ph}</b>일</span></div>
+    ${b.mil ? '' : `<dl class="ledger">
+      ${ownEconomy() && S.yearIncome > 0 ? `<dt>올해 연소득</dt><dd class="num">${won(S.yearIncome)} (${incLvl(S.yearIncome)})</dd>` : ''}
+      <dt>올해 기본 진료비</dt><dd class="num">${won(b.cost)}</dd>
+      <dt>공단 부담</dt><dd class="num g">+${won(b.pub)}</dd>
+      <dt>본인 부담</dt><dd class="num">${won(b.own)}</dd>
+      <dt>낸 건강보험료</dt><dd class="num b">${prem.mine ? won(prem.mine) : '0원'}</dd>
+    </dl>`}
+    <ul class="mini"><li>${icon('fa-receipt')}<span>${prem.note}</span></li>${lines}</ul>
+  </article>`);
+}
+
+const shown = { paid:0, ben:0 }, tweenId = { paid:0, ben:0 };
+function tween(key, el, target){
+  const from = shown[key], start = performance.now(), dur = 700, id = ++tweenId[key];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function step(t){
+    if (id !== tweenId[key]) return;
+    const k = reduce ? 1 : Math.min(1, (t - start)/dur);
+    shown[key] = from + (target - from)*(1 - Math.pow(1 - k, 3));
+    el.textContent = fullWon(shown[key]);
+    if (k < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function vitality(h){
+  if (h >= 85) return '활력 넘침'; if (h >= 70) return '건강함'; if (h >= 55) return '무난함';
+  if (h >= 40) return '자주 피곤함'; if (h >= 25) return '쇠약함'; return '위중';
+}
+function insLabel(){
+  if (S.ins === 'military') return '군 복무 (급여정지)';
+  if (S.retired) return S.ins === 'dependent' ? '은퇴 · 피부양자' : '은퇴 · 지역가입자';
+  if (isJobless()) return `실직 중 · ${S.jobless.mode === 'keep' ? '임의계속가입' : '지역가입자'}`;
+  if (S.job) return `${JOBS[S.job].name} · ${S.ins === 'employee' ? '직장' : '지역'}가입자`;
+  if (S.age < 0) return '엄마 뱃속';
+  const a = S.age;
+  if (a <= 6) return '영유아 · 부모님 피부양자';
+  if (a <= 12) return '초등학생 · 부모님 피부양자';
+  if (a <= 15) return '중학생 · 부모님 피부양자';
+  if (a <= 18) return '고등학생 · 부모님 피부양자';
+  return S.path === 'college' ? '대학생 · 부모님 피부양자' : '취업 준비 · 부모님 피부양자';
+}
+function renderHUD(){
+  const h = clamp(Math.round(S.health), 0, 100);
+  $('#hAge').textContent = S.age < 0 ? '태아' : `${S.age}세`;
+  $('#hYear').textContent = S.age < 0 ? `${START_YEAR}년 · 임신 중` : `${START_YEAR + S.age}년 · ${S.age}년째`;
+  $('#hName').textContent = `${S.name} (${S.gender === 'F' ? '여' : '남'})`;
+  $('#hJob').textContent = insLabel();
+  $('#hInc').textContent = S.age < 0 ? '엄마 뱃속' : incomeText();
+  $('#hWealth').textContent = S.age < 0 ? '-' : wealthText();
+  const dz = S.age < 0 ? [] : diseaseText();
+  $('#hDis').textContent = dz.length ? dz.join(' · ') : '진단받은 질병 없음';
+  $('#hDisRow').classList.toggle('sick', dz.length > 0);
+  $('#hFam').textContent = S.age < 0 ? `아버지 ${S.fGap}세 · 어머니 ${S.mGap}세` : familyText();
+  $('#hHealth').textContent = h;
+  $('#hVital').textContent = S.alive ? vitality(h) : '영면';
+  const bar = $('#hBar');
+  bar.style.width = h + '%';
+  bar.style.backgroundColor = h >= 70 ? 'var(--benefit)' : h >= 40 ? 'var(--warn)' : 'var(--danger)';
+  $('#hBarWrap').setAttribute('aria-valuenow', h);
+  const st = Math.round(S.stress);
+  $('#hStress').textContent = st; $('#hMood').textContent = mood(st);
+  const sb = $('#sBar'); sb.style.width = st + '%';
+  sb.style.backgroundColor = st < 40 ? 'var(--accent)' : st < 65 ? 'var(--warn)' : 'var(--danger)';
+  $('#sBarWrap').setAttribute('aria-valuenow', st);
+  tween('paid', $('#hPaid'), S.paid);
+  tween('ben', $('#hBen'), S.benefit);
+  $('#hVisits').textContent = S.visits.toLocaleString('ko-KR');
+  $('#hPharm').textContent = S.pharmacy.toLocaleString('ko-KR');
+  $('#hRatio').textContent = S.paid > 0 ? `${Math.round(S.benefit / S.paid * 100).toLocaleString('ko-KR')}%` : '-';
+}
+
+const dock = $('#dock');
+let autoTimer = null;
+function renderDock(){
+  if (!S.alive){
+    dock.innerHTML = `<div class="row"><button class="btn blue" style="flex:1" id="btnReceipt">${icon('fa-receipt')}인생 영수증 보기</button></div>`;
+    $('#btnReceipt').onclick = showEnding;
+    return;
+  }
+  const q = S.queue[0];
+  if (q){
+    stopAuto(false);
+    dock.innerHTML = `<div class="choice-head"><div class="ic" style="color:var(--${({ green:'benefit', blue:'paid', red:'danger', cyan:'accent', violet:'violet', pink:'pink' })[q.tone] || 'warn'})">${icon(q.icon)}</div><div><h3>${q.title}</h3><p>${q.desc}</p></div></div>
+      <div class="opts">${q.options.map((o,i) => `<button class="btn ${o.cls||''}" data-i="${i}">${o.label}${o.sub?`<span class="sub">${o.sub}</span>`:''}</button>`).join('')}</div>`;
+    dock.querySelectorAll('.opts .btn').forEach(b => b.onclick = () => {
+      const o = q.options[+b.dataset.i];
+      S.queue.shift();
+      o.run();
+      renderHUD();
+      if (S.cause && (!S.dying || !S.queue.some(x => x.id === 'eol'))){ S.queue = []; return die(S.cause); }
+      renderDock();
+      if (S.autoWanted && !S.queue.length) startAuto();
+    });
+    return;
+  }
+  const label = S.age < 0 ? '태어나기 (0세)' : '1년 더 살기 (+1세)';
+  dock.innerHTML = `<div class="row">
+    <button class="btn ghost ${S.auto?'on':''}" id="btnAuto" aria-pressed="${S.auto}" title="선택지가 나올 때까지 자동 진행">${icon(S.auto?'fa-pause':'fa-forward')}<span>${S.auto?'멈춤':'자동'}</span></button>
+    <button class="btn primary" id="btnNext">${icon('fa-seedling')}${label}</button></div>`;
+  $('#btnNext').onclick = () => advance();
+  $('#btnAuto').onclick = () => { S.auto ? stopAuto(true) : startAuto(); renderDock(); };
+}
+function startAuto(){
+  S.auto = true; S.autoWanted = true;
+  clearInterval(autoTimer);
+  autoTimer = setInterval(() => {
+    if (!S.alive || S.queue.length){ return; }
+    advance();
+  }, 650);
+}
+function stopAuto(user){
+  if (S){ S.auto = false; if (user) S.autoWanted = false; }
+  clearInterval(autoTimer);
+}
+
+let toastT = null;
+function toast(msg){
+  const old = document.querySelector('.toast'); if (old) old.remove();
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  $('#app').appendChild(t);
+  clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2200);
+}
+
+/* =========================================================
+   엔딩 영수증
+   ========================================================= */
+function josa(w, a, b){ const c = w.charCodeAt(w.length-1) - 0xAC00; return (c >= 0 && c <= 11171 && c % 28) ? a : b; }
+function ro(w){ const c = w.replace(/[)\s]+$/,'').charCodeAt(w.replace(/[)\s]+$/,'').length-1) - 0xAC00; return w + ((c >= 0 && c <= 11171 && c % 28 && c % 28 !== 8) ? '으로' : '로'); }
+const LOSS_NAMES = { aging:'노화', smoke:'흡연', drink:'음주', upf:'초가공식품', chronic:'방치한 만성질환', stress:'스트레스', cancer:'암', cardio:'심뇌혈관질환', dementia:'치매', other:'기타 질환' };
+function lifeStory(){
+  const n = S.name, A = Math.max(0, S.age), eun = josa(n,'은','는');
+  const cancers = S.cancers.filter(c => c.dxAge != null), hidden = S.cancers.filter(c => c.status === 'hidden');
+  const fatalCancer = cancers.find(c => c.status === 'terminal');
+  const fatalCardio = S.cardioLog.find(c => c.fatal);
+  const screenSaved = cancers.some(c => c.via === 'screen' && c.status === 'cured');
+  // 한 줄 평
+  let verdict = A >= 83 ? '천수를 누린 삶' : '평범하지만 단단했던 삶';
+  if (A >= 95) verdict = '건강하게 장수한 삶';
+  else if (A < 45) verdict = '너무 일찍 저문 삶';
+  if (S.stressPeak >= 80 && A >= 45) verdict = '고단했지만 끝까지 버텨낸 삶';
+  if (screenSaved) verdict = '검진이 살린 삶';
+  if (fatalCancer && fatalCancer.via !== 'screen' && S.checkSkips > 0) verdict = '너무 늦게 찾아낸 병';
+  if (fatalCardio && fatalCardio.htnHidden) verdict = '모르고 지나친 고혈압';
+  if (fatalCardio && S.stressPeak >= 70) verdict = '스트레스에 무너진 심장';
+  if (S.smokeEver && S.quitAge == null && ((fatalCancer && fatalCancer.type === 'lung') || fatalCardio)) verdict = '담배가 앗아간 삶';
+
+  const sec = [];
+  // 1. 인생 궤적
+  const hhV = HH_INCOME[S.hhInc-1];
+  let t = `${START_YEAR}년, 연소득 ${won(hhV)}(${incLvl(hhV)})인 가정의 ${S.gender==='F'?'딸':'아들'}로 태어났습니다.`;
+  if (A < 19) t += ` 그러나 ${A}세, 어른이 되기도 전에 세상을 떠났습니다.`;
+  else {
+    const jobs = S.milestones.filter(m => m.title.endsWith('일을 시작'));
+    if (jobs.length) t += ` ${S.path === 'college' ? '대학을 졸업하고' : '고등학교를 마치자마자'} ${jobs[0].age}세에 <b>${ro(jobs[0].title.replace(' 일을 시작',''))}</b> 일을 시작했습니다.`;
+    const ev = [];
+    const closed = S.milestones.find(m => m.title.includes('일을 접었습니다'));
+    if (closed) ev.push([closed.age, `${closed.age}세에 사업을 접고 물류센터 관리자로 다시 일어섰습니다.`]);
+    const laid = S.milestones.find(m => m.title.includes('실직'));
+    if (laid) ev.push([laid.age, `${laid.age}세에는 구조조정으로 직장을 잃기도 했습니다.`]);
+    if (S.marryAt != null) ev.push([S.marryAt, `${S.marryAt}세에 결혼해 ${S.children ? `자녀 ${S.children}명을 키웠습니다` : '아이 없이 둘이서 살았습니다'}.`]);
+    else if (A >= 35) ev.push([999, '평생 혼자의 삶을 살았습니다.']);
+    if (S.widowed) ev.push([S.spouse.deathAge, `${S.spouse.deathAge}세에 배우자를 먼저 떠나보냈습니다.`]);
+    if (S.retired) ev.push([60, '60세에 은퇴했습니다.']);
+    t += ev.sort((x, y) => x[0] - y[0]).map(x => ' ' + x[1]).join('');
+    if (S.peakIncome) t += ` 가장 많이 벌던 해의 연소득은 <b>${won(S.peakIncome)}(${incLvl(S.peakIncome)})</b>, 마지막 재산은 <b>${won(S.wealth)} (${S.wealth < 0 ? '하, 빚' : wealthLvl(S.wealth)})</b>이었습니다.`;
+  }
+  sec.push({ ic:'fa-route', h:'어떤 인생을 살았나', p:t });
+
+  // 2. 건강과 생활습관
+  const losses = Object.entries(S.hloss).filter(([,v]) => v >= .5).sort((a,b) => b[1]-a[1]);
+  const top = losses.slice(0,3).map(([k,v]) => `${LOSS_NAMES[k]}(-${Math.round(v)})`);
+  let h = `체력은 태어날 때 <b>${Math.round(S.health0)}</b>에서 ${A}세에 <b>${Math.round(clamp(S.health,0,100))}</b>까지 내려왔습니다.`;
+  if (top.length) h += ` 체력을 가장 많이 깎은 것은 ${top.join(', ')} 순이었습니다.`;
+  const habits = [];
+  const hs = S.hist;
+  if (hs.smokeAt != null){
+    if (S.quitAge != null && !S.smoke) habits.push(`${hs.smokeAt}세에 시작한 담배를 ${S.quitAge}세에 금연치료로 끊었습니다(${S.quitAge - hs.smokeAt}년 흡연).`);
+    else habits.push(`${hs.smokeAt}세에 ${hs.smokeVice === hs.smokeAt ? '스트레스를 못 이겨 ' : ''}시작한 담배를 끝내 끊지 못했습니다(${A - hs.smokeAt}년 흡연). 흡연은 폐암 위험을 크게, 심근경색·뇌졸중 위험을 2배로 올렸습니다.`);
+  } else if (A >= 20) habits.push('담배는 평생 입에 대지 않았습니다.');
+  if (hs.drinkAt != null) habits.push(hs.drinkStop ? `${hs.drinkAt}세부터 이어진 잦은 술자리를 ${hs.drinkStop}세에 줄였습니다.` : `${hs.drinkVice ? `${hs.drinkVice}세부터 스트레스를 술로 풀었고` : `${hs.drinkAt}세부터 고위험 음주가 이어졌고`}, 간과 혈관이 그 대가를 치렀습니다.`);
+  if (S.upf) habits.push('10대에 길든 짜고 단 초가공식품 입맛이 평생 따라다녔습니다.');
+  if (hs.exAt != null) habits.push(`${hs.exAt}세부터 꾸준히 운동해 체력을 <b>+${Math.round(S.hgain)}</b>만큼 지켜냈습니다.`);
+  else if (A >= 30) habits.push('운동은 평생 멀리했습니다.');
+  sec.push({ ic:'fa-heart-pulse', h:'무엇이 건강을 좌우했나', p:h, list:habits, losses });
+
+  // 3. 스트레스
+  const groups = {};
+  for (const e of S.stressLog){ const g = groups[e.why] || (groups[e.why] = { why:e.why, sum:0, cnt:0, first:e.age, last:e.age }); g.sum += e.n; g.cnt++; g.last = e.age; }
+  const sl = Object.values(groups).sort((a,b) => b.sum - a.sum);
+  let st;
+  if (!sl.length) st = '큰 굴곡 없이 비교적 평온한 삶이었습니다.';
+  else {
+    st = `스트레스 지수는 최고 <b>${Math.round(S.stressPeak)}</b>까지 올랐습니다. 마음을 가장 크게 흔든 것은 ` +
+      sl.slice(0,3).map(g => g.cnt > 1 ? `<b>${g.why}</b>(${g.first}~${g.last}세에 ${g.cnt}번, +${g.sum})` : `<b>${g.first}세 ${g.why}</b>(+${g.sum})`).join(', ') + ' 순이었습니다.';
+  }
+  const mind = S.hist.mind;
+  if (mind.some(m => m.c === 'counsel')) st += ' 한계에 이르렀을 땐 정신건강의학과 상담으로 마음을 돌봤습니다.';
+  if (mind.some(m => m.c === 'vice')) st += ' 스트레스를 술·담배로 풀었고, 그 습관이 다시 몸을 해쳤습니다.';
+  if (mind.some(m => m.c === 'endure') && !mind.some(m => m.c === 'counsel')) st += ' 힘들 때 도움을 청하지 않고 혼자 참았습니다.';
+  if ((S.hloss.stress || 0) >= 3) st += ` 오래 쌓인 스트레스는 체력을 <b>-${Math.round(S.hloss.stress)}</b> 깎고 혈관질환 위험을 높였습니다.`;
+  sec.push({ ic:'fa-cloud-rain', h:'스트레스는 어디서 왔나', p:st });
+
+  // 4. 질병과 검진
+  const dx = [];
+  const fx = w => w && w.length ? ` 당시 위험요인: ${w.join(', ')}.` : '';
+  for (const [k, nm] of [['htn','고혈압'],['dm','당뇨병']]){
+    const c = S[k]; if (!c) continue;
+    dx.push(c.detected ? `<b>${nm}</b>: ${c.onset}세 무렵 생겨 ${c.detAge}세에 ${c.how}에서 발견, ${c.how === '건강검진' ? '일찍 약으로 관리했습니다' : c.detAge - c.onset >= 2 ? `${c.detAge - c.onset}년이나 모른 채 지냈습니다` : '다행히 오래 방치하지는 않았습니다'}.${fx(c.why)}`
+                       : `<b>${nm}</b>: ${c.onset}세 무렵부터 있었지만 끝내 몰랐습니다.${fx(c.why)}`);
+  }
+  for (const c of cancers){
+    const C = CANCERS[c.type];
+    const how = c.via === 'screen' ? '국가검진에서 증상 없이 발견' : '증상이 나타난 뒤에야 발견';
+    const out = c.status === 'cured' ? '5년을 이겨내 완치되었습니다' : c.status === 'terminal' ? '끝내 이겨내지 못했습니다' : '치료를 이어가던 중이었습니다';
+    dx.push(`<b>${C.name} ${c.stage}기</b> (${c.dxAge}세): ${how}, ${out}.${fx(c.why)}`);
+  }
+  for (const h2 of hidden) dx.push(`<b>${CANCERS[h2.type].name}</b>: ${h2.onset}세 무렵 몸속에 생겨 ${h2.stage}기까지 자랐지만 끝내 발견되지 않았습니다.`);
+  for (const c of S.cardioLog) dx.push(`<b>${c.kind}</b> (${c.age}세): ${c.fatal ? '골든타임을 놓쳐 돌연사했습니다' : '119 덕분에 살아났습니다'}.${fx(c.why)}${c.htnHidden ? ' 고혈압이 있는 줄 몰랐습니다.' : ''}`);
+  if (S.dementia) dx.push('<b>치매</b>: 노년에 기억이 흐려지기 시작했습니다.');
+  if (S.rare) dx.push('<b>희귀질환</b>: 원인을 몰라 헤매다 진단받고 산정특례로 치료했습니다.');
+  let dp = `건강검진은 <b>${S.checkups}번</b> 받고 <b>${S.checkSkips}번</b> 건너뛰었습니다.`;
+  if (screenSaved) dp += ' 증상 없을 때 받은 검진이 생명을 지켰습니다.';
+  else if (cancers.some(c => c.via !== 'screen' && c.stage >= 3) && S.checkSkips) dp += ' 건너뛴 검진이 늦은 발견으로 이어졌습니다.';
+  if (!dx.length) dp += ' 큰 병 없이 살았습니다.';
+  sec.push({ ic:'fa-stethoscope', h:'병은 어떻게 찾아왔나', p:dp, list:dx });
+
+  // 5. 마지막
+  let e = `${A}세, <b>${ro(S.cause)}</b> 생을 마쳤습니다.`;
+  if (fatalCancer) e += ` ${fatalCancer.dxAge}세 진단 후 ${A - fatalCancer.dxAge}년을 투병했습니다.`;
+  if (S.cause === '다발성 장기부전') e += ` 노화와 ${top.slice(1).join(', ') || '병'}이 겹치며 체력이 바닥났습니다.`;
+  if (S.ltc) e += ` 마지막 ${Math.max(1, S.age - S.ltcAt)}년은 장기요양 ${S.ltc === 'home' ? '방문요양' : '요양원'}의 돌봄을 받았습니다.`;
+  if (S.hospice) e += ' 호스피스 병동에서 가족과 작별 인사를 나눴습니다.';
+  if (S.directive) e += ' 미리 써 둔 사전연명의료의향서 덕분에 가족이 어려운 결정을 대신하지 않아도 됐습니다.';
+  const helps = [['산정특례', S.specialSaved], ['본인부담상한제', S.capRefund], ['장기요양보험', S.ltcBenefit], ['재난적의료비 지원', S.catastrophic]].sort((a,b) => b[1]-a[1]);
+  e += ` 평생 건강보험료 <b>${won(S.paid)}</b>을 내고 <b>${won(S.benefit)}</b>의 혜택을 받았습니다${helps[0][1] > 1e6 ? `. 가장 든든했던 제도는 <b>${helps[0][0]}</b>${josa(helps[0][0],'이었','였')}습니다(${won(helps[0][1])} 절감)` : ''}.`;
+  sec.push({ ic:'fa-dove', h:'마지막 장면', p:e });
+  return { verdict, sec };
+}
+function storyHtml(){
+  const L = lifeStory();
+  const max = Math.max(1, ...Object.values(S.hloss), S.hgain);
+  return `<article class="bio" aria-label="일생 정리">
+    <div class="eb">${S.name}의 일생 · ${START_YEAR}–${START_YEAR + Math.max(0,S.age)}</div>
+    <h2>${L.verdict}</h2>
+    <div class="who">${S.gender==='F'?'여성':'남성'} · 향년 ${Math.max(0,S.age)}세 · ${S.job ? JOBS[S.job].name : '직업 없음'}</div>
+    ${L.sec.map(x => `<section><h3>${icon(x.ic)}${x.h}</h3><p>${x.p}</p>
+      ${x.losses && (x.losses.length || S.hgain) ? `<div class="loss">${x.losses.map(([k,v]) => `<span>${LOSS_NAMES[k]}</span><span class="t"><i style="width:${v/max*100}%"></i></span><span class="v">-${Math.round(v)}</span>`).join('')}${S.hgain >= .5 ? `<span>운동</span><span class="t"><i class="up" style="width:${S.hgain/max*100}%"></i></span><span class="v">+${Math.round(S.hgain)}</span>` : ''}</div>` : ''}
+      ${x.list && x.list.length ? `<ul>${x.list.map(li => `<li>${li}</li>`).join('')}</ul>` : ''}</section>`).join('')}
+  </article>`;
+}
+function showSources(){
+  const m = $('#srcModal');
+  const OK = '<span class="tag ok">공식 통계</span>', EST = '<span class="tag est">추정</span>';
+  const L = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+  const rows = HIRA_AGE.map(r => `<tr><td>${r.max >= 120 ? '85세 이상' : r.min === r.max ? r.min+'세' : r.min+'~'+r.max+'세'}</td><td>${r.days.toFixed(2)}일</td><td>${Math.round(r.cost).toLocaleString('ko-KR')}원${r.est ? ' *' : ''}</td></tr>`).join('');
+  m.innerHTML = `<article class="bio" aria-label="통계 출처">
+    <div class="eb">5천만분의 1 · 데이터 출처</div>
+    <h2>이 게임의 숫자는 어디서 왔나</h2>
+    <div class="who">공식 통계를 그대로 쓴 값과, 자료가 없어 추정한 값을 구분했습니다.</div>
+    <section><h3>${icon('fa-hospital')}연령별 기본 의료이용 ${OK}</h3>
+      <p>매년 쌓이는 병의원 진료일수와 진료비는 건강보험심사평가원 「연령별 건강보험 적용대상자 1인당 진료현황」(2025년 1~12월 심사결정분)을 씁니다. 해마다 ±25~30% 무작위로 흔듭니다.</p>
+      <div class="src-wrap"><table class="src-table"><thead><tr><th>연령</th><th>1인당 진료일수</th><th>1인당 진료비</th></tr></thead><tbody>${rows}
+      <tr><td><b>전체</b></td><td>${HIRA_AVG.days}일</td><td>${HIRA_AVG.cost.toLocaleString('ko-KR')}원</td></tr></tbody></table></div>
+      <ul>
+        <li>* 50~54세 진료비는 검색으로 확인하지 못해 앞뒤 연령대 사이 값으로 채웠습니다. ${EST}</li>
+        <li>55~59세 237만원, 60~64세 311만원은 반올림된 값입니다.</li>
+        <li>평균 진료비에는 암·심뇌혈관질환 진료비가 들어 있어, 이 게임은 기본 진료비를 평균의 80%만 반영하고 중증질환은 따로 계산합니다. ${EST}</li>
+        <li>약국 방문일수는 연령별 공식 수치를 찾지 못해 병의원 진료일수의 65%로 잡았습니다. ${EST}</li>
+        <li>공단부담률: 2024년 1인당 급여비 187만6천원 ÷ 1인당 진료비 약 226만원 ≈ 83% ${OK}, 연령별 차이(영유아·노인 경감) ${EST}</li>
+        <li>참고: 2024년 1인당 외래진료 17.9회, 75~79세 40.8회로 최다, 20~24세 8.7회로 최소 ${OK}</li>
+      </ul>
+      <p style="margin-top:6px">${L('https://opendata.hira.or.kr/op/opc/olapHthInsRvStatInfoTab19.do?docNo=03-035','심평원 보건의료빅데이터개방시스템 · 연령별 1인당 진료현황')}<br>${L('https://www.medipana.com/news/articleView.html?idxno=402890','2024 건강보험통계연보 보도 (1인당 급여비)')}<br>${L('https://www.kpanews.co.kr/news/articleView.html?idxno=532136','2024 의료서비스 이용현황 보도 (외래 17.9회)')}</p></section>
+    <section><h3>${icon('fa-ribbon')}암 ${OK}</h3>
+      <ul>
+        <li>기대수명까지 살 때 암에 걸릴 확률: 남성 37.7%, 여성 34.8% (2022년 국가암등록통계). 게임의 연령별 발생률은 이 값에 맞춰 조정했습니다. ${EST}</li>
+        <li>병기별 5년 상대생존율(2018~2022 진단): 전체 국한 92.1%·국소 75.1%·원격 27.1%. 위암 97.4/62.0/7.5, 폐암 79.8/50.4/12.9, 간암 62.3/25.4/3.5, 췌장암 46.6/22.9/2.6, 대장암 국한 94.0, 유방암 국한 99.1 (%)</li>
+        <li>대장암·갑상선암·전립선암의 국소·원격 값은 2019~2023 진단 기준(국가암정보센터)을 썼습니다.</li>
+        <li>게임의 1기=국한, 3기=국소, 4기=원격, 2기=국한과 국소의 중간으로 대응시켰습니다. 유방암·자궁경부암의 국소·원격 값은 찾지 못해 추정했습니다. ${EST}</li>
+      </ul>
+      <p style="margin-top:6px">${L('https://www.cancer.go.kr/download.do?uuid=48ec0d0b-2eb1-4dd8-bd8e-dd9dc629473a.pdf','2022년 국가암등록통계 주요 결과 (PDF)')}<br>${L('https://www.mohw.go.kr/board.es?mid=a10503010100&bid=0027&act=view&list_no=1484074','보건복지부 보도자료 (2024.12.26)')}<br>${L('https://cancer.go.kr/lay1/S1T648C652/contents.do','국가암정보센터 · 요약병기별 생존율')}</p></section>
+    <section><h3>${icon('fa-hourglass-half')}기대수명 ${OK}</h3>
+      <p>2024년 생명표: 전체 83.7세, 남성 80.8세, 여성 86.6세. 사망률 곡선은 이 값에 맞춰 조정했고, 흡연·음주·스트레스에 따른 가중치는 역학 연구의 일반적 범위로 정했습니다. ${EST}</p>
+      <p style="margin-top:6px">${L('https://v.daum.net/v/20251203140047593','2024년 생명표 보도 (국가데이터처)')}</p></section>
+    <section><h3>${icon('fa-receipt')}보험료와 제도 ${OK}</h3>
+      <ul>
+        <li>2026년 건강보험료율 7.19%(직장가입자 본인 3.595%), 장기요양보험료율 0.9448%(건보료의 13.14%)</li>
+        <li>지역가입자는 소득과 재산(주택·토지 등)에 부과하며, 자동차는 2024년 2월부터 부과하지 않습니다. 게임의 재산분 계산식은 단순화한 것입니다. ${EST}</li>
+        <li>본인부담상한액(2025): 1분위 89만원 ~ 10분위 826만원 ${OK}. 중간 분위 값은 근사치 ${EST}</li>
+        <li>국민행복카드 100만원(다태아 140만원), 자연분만 본인부담 0원, 산정특례 본인부담 암·심뇌혈관 5%·희귀질환·중증치매 10%, 65세 이상 임플란트 30%, 장기요양 재가 15%·시설 20%</li>
+        <li>건강보험 보장률(비급여 포함) 2024년 64.9%. 게임의 비급여는 중증질환에만 따로 붙입니다. ${EST}</li>
+      </ul>
+      <p style="margin-top:6px">${L('https://www.kmpnews.co.kr/news/articleView.html?idxno=68875','2024 건강보험환자 진료비 실태조사 (보장률 64.9%)')}</p></section>
+    <section><h3>${icon('fa-flask')}게임을 위해 정한 값 ${EST}</h3>
+      <p>심뇌혈관질환·고혈압·당뇨 발생률, 스트레스 효과, 직업별 소득, 재산 분위 경계, 저축률, 가족 사건 시점은 공식 통계가 아니라 그럴듯한 범위에서 정하고 수백 번 모의 실행으로 맞춘 값입니다. 교육용 시뮬레이션으로만 봐 주세요.</p></section>
+    <div class="rc-actions" style="grid-template-columns:1fr"><button class="btn primary" id="btnSrcClose">닫기</button></div>
+  </article>`;
+  m.hidden = false; m.scrollTop = 0;
+  $('#btnSrcClose').onclick = () => { m.hidden = true; };
+}
+function showEnding(){
+  const m = $('#endModal');
+  const ratio = S.paid > 0 ? Math.round(S.benefit / S.paid * 100) : null;
+  const max = Math.max(S.paid, S.benefit, 1);
+  const total = S.paid + S.employerPaid;
+  const badges = [...S.badges].map(k => `<span class="rc-badge">${icon(BADGES[k].icon)}${BADGES[k].label}</span>`).join('') || '<span style="font-size:11px;color:var(--ink-soft)">획득한 뱃지가 없습니다</span>';
+  const now = new Date();
+  const le = LIFE_EXP[S.gender];
+  const lifeLeft = S.age >= le ? `${S.gender==='F'?'여성':'남성'} 기대수명(${le}세)보다 ${Math.round(S.age - le)}년 더 살았습니다.` : `${S.gender==='F'?'여성':'남성'} 기대수명(${le}세)보다 ${Math.round(le - Math.max(0,S.age))}년 일찍 떠났습니다.`;
+  m.innerHTML = `
+    ${storyHtml()}
+    <div class="receipt" role="dialog" aria-label="인생 영수증">
+      <div class="rc-c">
+        <p class="rc-title">인생 영수증</p>
+        <div class="rc-sub">국민건강보험 · 5천만분의 1<br>${START_YEAR}.${String(now.getMonth()+1).padStart(2,'0')} 발급 · No.${String(Math.floor(R()*9e7)+1e7)}</div>
+      </div>
+      <hr class="rc-hr">
+      <div class="rc-row"><span>성명</span><span>${S.name} (${S.gender==='F'?'여':'남'})</span></div>
+      <div class="rc-row"><span>생애</span><span class="num">${START_YEAR} – ${START_YEAR + Math.max(0,S.age)}</span></div>
+      <div class="rc-row"><span>향년</span><span>${Math.max(0,S.age)}세</span></div>
+      <div class="rc-row"><span>사인</span><span>${S.cause || '-'}</span></div>
+      <div class="rc-row"><span>최종 자격</span><span>${insLabel()}</span></div>
+      <div class="rc-row"><span>직업</span><span>${S.job ? JOBS[S.job].name : '-'}</span></div>
+      <div class="rc-row"><span>마지막 소득</span><span>${incomeText()}</span></div>
+      <div class="rc-row"><span>마지막 재산</span><span>${wealthText()}</span></div>
+      <hr class="rc-hr">
+      <div class="rc-row"><span>평생 총 진료비</span><span class="num">${fullWon(S.totalCost)}</span></div>
+      <div class="rc-row"><span>  ㄴ 본인 부담 (비급여 포함)</span><span class="num">${fullWon(S.oop)}</span></div>
+      <div class="rc-row"><span>  ㄴ 산정특례 절감액</span><span class="num">${fullWon(S.specialSaved)}</span></div>
+      <div class="rc-row"><span>  ㄴ 본인부담상한제 환급</span><span class="num">${fullWon(S.capRefund)}</span></div>
+      <div class="rc-row"><span>  ㄴ 재난적의료비 지원</span><span class="num">${fullWon(S.catastrophic)}</span></div>
+      <div class="rc-row"><span>  ㄴ 장기요양 급여</span><span class="num">${fullWon(S.ltcBenefit)}</span></div>
+      <hr class="rc-hr">
+      <div class="rc-big"><span>내가 낸 건보료</span><span class="num">${fullWon(S.paid)}</span></div>
+      <div class="rc-row"><span>  (회사 부담분 별도)</span><span class="num">${fullWon(S.employerPaid)}</span></div>
+      <div class="rc-big"><span>받은 공단 혜택</span><span class="num">${fullWon(S.benefit)}</span></div>
+      <div class="rc-bars">
+        <div><span>낸 돈</span><i style="width:${S.paid/max*100}%;background:var(--rc-blue)"></i></div>
+        <div><span>받은 돈</span><i style="width:${S.benefit/max*100}%;background:var(--rc-green)"></i></div>
+      </div>
+      <div class="rc-ratio">${ratio == null ? '∞' : ratio.toLocaleString('ko-KR') + '%'}<small>${ratio == null ? '보험료를 한 번도 내지 않고 보장받았습니다' : '낸 보험료 대비 받은 혜택 (회사 부담분 포함 시 ' + (total ? Math.round(S.benefit/total*100).toLocaleString('ko-KR') : 0) + '%)'}</small></div>
+      <hr class="rc-hr">
+      <div class="rc-row"><span>병의원 이용</span><span class="num">${S.visits.toLocaleString('ko-KR')}일</span></div>
+      <div class="rc-row"><span>약국 이용</span><span class="num">${S.pharmacy.toLocaleString('ko-KR')}일</span></div>
+      <div class="rc-row"><span>건강검진 수검 / 미수검</span><span class="num">${S.checkups}회 / ${S.checkSkips}회</span></div>
+      <div class="rc-row"><span>최고 스트레스 지수</span><span class="num">${Math.round(S.stressPeak)}</span></div>
+      <hr class="rc-hr">
+      <div style="font-size:12px;font-weight:600">인생 연표</div>
+      <div class="rc-life">${S.milestones.length ? S.milestones.map(m => `<span>${m.age}세</span><span>${m.title}</span>`).join('') : '<span></span><span>조용하고 평범한 삶이었습니다</span>'}</div>
+      <hr class="rc-hr">
+      <div style="font-size:12px;font-weight:600">획득 뱃지 ${S.badges.size}개</div>
+      <div class="rc-badges">${badges}</div>
+      <hr class="rc-hr">
+      <div class="rc-sub" style="text-align:center">${lifeLeft}<br>한 사람의 삶을 5천만 명이 함께 지켰습니다.</div>
+      <div class="barcode" aria-hidden="true"></div>
+      <div class="rc-sub rc-c num">*${S.name.length}${S.age}${Math.round(S.benefit/1e4)}*</div>
+      <div class="rc-sub rc-c" style="margin-top:8px">수치는 심평원·건보공단 통계를 바탕으로 한 교육용 추정치입니다.</div>
+    </div>
+    <div class="rc-actions">
+      <button class="btn" id="btnShare">${icon('fa-share-nodes')}공유하기</button>
+      <button class="btn primary" id="btnReplay">${icon('fa-rotate-right')}다시 태어나기</button>
+      <button class="btn ghost" id="btnSrcEnd" style="font-size:13px">통계 출처</button>
+      <button class="btn ghost" id="btnClose" style="font-size:13px">타임라인 다시 보기</button>
+    </div>`;
+  m.hidden = false; m.scrollTop = 0;
+  $('#btnReplay').onclick = () => { m.hidden = true; $('#startScreen').hidden = false; drawDots(); };
+  $('#btnClose').onclick = () => { m.hidden = true; };
+  $('#btnShare').onclick = share;
+  $('#btnSrcEnd').onclick = showSources;
+  if (S.age >= 83 || S.badges.has('survivor')) fire();
+}
+async function share(){
+  const ratio = S.paid > 0 ? Math.round(S.benefit / S.paid * 100) + '%' : '∞';
+  const text = `[5천만분의 1] ${S.name}의 인생 영수증\n향년 ${Math.max(0,S.age)}세 · ${S.cause}\n낸 건보료 ${won(S.paid)} → 받은 혜택 ${won(S.benefit)} (${ratio})\n병의원 ${S.visits}일 · 약국 ${S.pharmacy}일 · 뱃지 ${S.badges.size}개\n${[...S.badges].map(k=>BADGES[k].label).join(', ')}`;
+  try { if (navigator.share){ await navigator.share({ title:'5천만분의 1', text }); return; } } catch(e){ if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text); toast('결과를 복사했습니다'); }
+  catch(e){ toast('복사하지 못했습니다. 화면을 캡처해 주세요'); }
+}
+
+/* =========================================================
+   시작 화면
+   ========================================================= */
+const NAMES = { F:['서연','하윤','지우','서아','하은','민서','지안','윤서','지유','채원','수아','다은','예린','소율','하린','유나','시은','지아','나은','아린'],
+  M:['민준','서준','도윤','하준','시우','은우','지호','이준','예준','주원','유준','도현','건우','우진','선우','서진','연우','현우','지훈','태윤'] };
+const SURN = ['김','김','김','이','이','박','박','최','정','강','조','윤','장','임','한','오','서','신','권','황','안','송','류','홍','전'];
+$('#btnStart').onclick = () => {
+  const g = R() < .5 ? 'F' : 'M';
+  const nm = pick(SURN) + pick(NAMES[g]);
+  stopAuto(true);
+  S = newState(nm, g);
+  S.health0 = S.health;
+  S.hhInc = rint(1,10); S.hhWealth = clamp(S.hhInc + rint(-2,2), 1, 10); S.decile = S.hhInc;
+  S.fGap = rint(28,36); S.mGap = rint(26,34);
+  S.father = rint(70,88) - S.fGap; S.mother = rint(74,93) - S.mGap; // 내 나이 기준 부모님 별세 시점
+  shown.paid = 0; shown.ben = 0;
+  feed.innerHTML = '';
+  $('#startScreen').hidden = true;
+  // 임신 단계
+  charge(1000000, 0); S.visits += 12;
+  badge('happy');
+  evCard('t-cyan','fa-credit-card',`${g === 'F' ? '딸' : '아들'}, ${nm}의 삶이 엄마 뱃속에서 시작됩니다`,
+    `임신이 확인되자 엄마는 <b>국민행복카드</b>로 임신·출산 진료비 <b>100만원</b>을 지원받았습니다. 초음파와 산전검사에도 건강보험이 적용됩니다. 건강보험은 태어나기 전부터 당신을 지키고 있습니다. 태어나면 부모님 건강보험의 피부양자로 등록되고, 미성년자인 동안에는 <b>보험료를 한 푼도 내지 않습니다</b>.`,
+    [['g','국민행복카드 100만원'],['','산전검사 12회'],['b','미성년자 보험료 0원'],['', g === 'F' ? '여아' : '남아']]);
+  toast(`${nm} (${g === 'F' ? '여' : '남'})로 태어날 운명입니다`);
+  renderHUD(); renderDock();
+};
+
+function drawDots(){
+  const cv = $('#dots'), dpr = Math.min(2, devicePixelRatio || 1);
+  const w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w*dpr; cv.height = h*dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  const css = getComputedStyle(document.documentElement);
+  ctx.fillStyle = css.getPropertyValue('--line').trim() || '#273445';
+  const gap = 9;
+  for (let y = 4; y < h; y += gap) for (let x = 4; x < w; x += gap){ if (R() < .55) ctx.fillRect(x, y, 1.6, 1.6); }
+  ctx.fillStyle = css.getPropertyValue('--benefit').trim() || '#34d399';
+  const px = w*.78, py = h*.16;
+  ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = .25; ctx.beginPath(); ctx.arc(px, py, 12, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1;
+}
+function renderStd(){
+  const pct = v => parseFloat((v*100).toFixed(4)) + '%';
+  const man = v => Math.round(v/1e4).toLocaleString('ko-KR') + '만원';
+  const old = HIRA_AGE.find(r => r.min === 75);
+  const g = (title, rows) => `<h4>${title}</h4><dl>${rows.map(([k, y, v, sub]) => `<dt>${k}${y ? `<small>${y}</small>` : ''}</dt><dd>${v}${sub ? `<small>${sub}</small>` : ''}</dd>`).join('')}</dl>`;
+  $('#stdPanel').innerHTML = `<div class="std-head"><b>이 게임에 적용된 기준</b><button class="srclink" id="btnSrcStart">자세한 출처</button></div>`
+    + g('보험료', [
+        ['건강보험료율', '2026', pct(RATE), `직장가입자 본인 ${pct(RATE/2)} · 회사 ${pct(RATE/2)}`],
+        ['장기요양보험료율', '2026', `건보료의 ${pct(LTC_RATE)}`, `소득 대비 ${pct(RATE*LTC_RATE)}`],
+        ['지역가입자 부과 기준', '', '소득 + 재산', '자동차는 2024년 2월부터 제외'],
+        ['미성년 피부양자', '', '0원', ''],
+      ])
+    + g('의료이용 (심평원)', [
+        ['1인당 연간 진료비', '2025', man(HIRA_AVG.cost), `0세 ${man(HIRA_AGE[0].cost)} · 85세+ ${man(HIRA_AGE[HIRA_AGE.length-1].cost)}`],
+        ['1인당 연간 진료일수', '2025', `${HIRA_AVG.days}일`, `75~79세 ${old.days}일`],
+        ['1인당 외래진료 횟수', '2024', '17.9회', 'OECD 평균의 약 3배'],
+      ])
+    + g('의료비 안전망', [
+        ['본인부담상한액', '2025', `${man(CAPS[0])} ~ ${man(CAPS[9])}`, '소득 1분위 ~ 10분위'],
+        ['산정특례 본인부담', '', '5% · 10%', '암·심뇌혈관 5%, 희귀·중증치매 10%'],
+        ['임신·출산 바우처', '', '100만원', '다태아 140만원 · 자연분만 0원'],
+        ['노인 임플란트 · 장기요양', '', '30% · 15~20%', '본인부담률'],
+      ])
+    + g('생명과 질병', [
+        ['기대수명', '2024', `${LIFE_EXP.all}세`, `남 ${LIFE_EXP.M}세 · 여 ${LIFE_EXP.F}세`],
+        ['평생 암 발생 확률', '2022', '남 37.7% · 여 34.8%', '기대수명까지 생존 시'],
+        ['암 5년 상대생존율', '2018~22', '국한 92.1%', '국소 75.1% · 원격 27.1%'],
+      ]);
+  $('#btnSrcStart').onclick = showSources;
+}
+renderStd();
+$('#btnSrcHud').onclick = showSources;
+addEventListener('resize', () => { if (!$('#startScreen').hidden) drawDots(); });
+drawDots();
+dock.innerHTML = '';
+</script>
 </body>
 </html>
