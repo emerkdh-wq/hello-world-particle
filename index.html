@@ -1462,7 +1462,7 @@ function insLabel(){
 function renderHUD(){
   const h = clamp(Math.round(S.health), 0, 100);
   $('#hAge').textContent = S.age < 0 ? '태아' : `${S.age}세`;
-  $('#hYear').textContent = S.age < 0 ? `${START_YEAR}년 · 임신 중` : `${START_YEAR + S.age}년 · ${S.age}년째`;
+  $('#hYear').textContent = S.age < 0 ? `${START_YEAR}년 · 임신 중` : `${START_YEAR + S.age}년`;
   $('#hName').textContent = `${S.name} (${S.gender === 'F' ? '여' : '남'})`;
   $('#hJob').textContent = insLabel();
   $('#hInc').textContent = S.age < 0 ? '엄마 뱃속' : incomeText();
