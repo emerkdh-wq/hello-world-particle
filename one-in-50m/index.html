@@ -58,6 +58,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hud-info{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:11.5px;color:var(--muted);line-height:1.45}
 .hud-info li{display:flex;gap:7px;align-items:baseline;min-width:0}
 .hud-info li svg{flex:none;width:11px;color:var(--faint)}
+.hud-info li.sick{color:var(--danger)} .hud-info li.sick svg{color:var(--danger)}
 .gauge{margin-top:10px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px}
 .gauge .lbl{color:var(--muted);letter-spacing:.04em;width:4.4em}
 .gauge+.gauge{margin-top:6px}
@@ -202,6 +203,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <li><i class="fa-solid fa-coins"></i><span id="hInc">-</span></li>
       <li><i class="fa-solid fa-house"></i><span id="hWealth">-</span></li>
       <li><i class="fa-solid fa-people-group"></i><span id="hFam">-</span></li>
+      <li id="hDisRow"><i class="fa-solid fa-notes-medical"></i><span id="hDis">-</span></li>
     </ul>
     <div class="gauge">
       <span class="lbl">체력</span>
@@ -596,6 +598,24 @@ function wealthText(w){
   return w < 0 ? `${pre}재산 ${won(w)} (하, 빚)` : `${pre}재산 ${won(w)} (${wealthLvl(w)})`;
 }
 function econLabel(){ return `${incomeText()} · ${wealthText()}`; }
+// 진단받은(본인이 알고 있는) 질병만 표시
+function diseaseText(){
+  const d = [];
+  for (const c of S.cancers){
+    if (c.dxAge == null || c.status === 'cured' || c.status === 'hidden') continue;
+    const nm = CANCERS[c.type].name;
+    if (c.status === 'terminal') d.push(`${nm} ${c.stage}기 (${c.palliative ? '완화의료' : '재발·투병'} 중)`);
+    else d.push(`${nm} ${c.stage}기 (치료 후 추적관찰 ${S.age - c.dxAge + 1}년차)`);
+  }
+  const kinds = [...new Set(S.cardioLog.filter(c => !c.fatal).map(c => c.kind))];
+  if (kinds.length) d.push(`${kinds.join('·')} 후 재발 방지 치료`);
+  if (S.htn && S.htn.detected) d.push('고혈압 (약 복용)');
+  if (S.dm && S.dm.detected) d.push('당뇨병 (약 복용)');
+  if (S.dementia) d.push('치매');
+  if (S.rare) d.push('희귀질환 (산정특례)');
+  if (S.ltc) d.push(`장기요양 ${S.ltc === 'home' ? '재가' : '시설'}급여 이용`);
+  return d;
+}
 function familyText(){
   if (S.age < 0) return '';
   const a = S.age, f = [];
@@ -1343,6 +1363,9 @@ function renderHUD(){
   $('#hJob').textContent = insLabel();
   $('#hInc').textContent = S.age < 0 ? '엄마 뱃속' : incomeText();
   $('#hWealth').textContent = S.age < 0 ? '-' : wealthText();
+  const dz = S.age < 0 ? [] : diseaseText();
+  $('#hDis').textContent = dz.length ? dz.join(' · ') : '진단받은 질병 없음';
+  $('#hDisRow').classList.toggle('sick', dz.length > 0);
   $('#hFam').textContent = S.age < 0 ? `아버지 ${S.fGap}세 · 어머니 ${S.mGap}세` : familyText();
   $('#hHealth').textContent = h;
   $('#hVital').textContent = S.alive ? vitality(h) : '영면';
