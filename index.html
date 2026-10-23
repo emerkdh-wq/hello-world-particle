@@ -65,12 +65,12 @@ canvas,img{display:block;max-width:100%}
 a{color:inherit}
 html,body{height:100%}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+body{margin:0;word-break:keep-all;overflow-wrap:break-word;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
 button{font-family:inherit}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 
-#app{height:100%;max-width:30rem;margin:0 auto;display:flex;flex-direction:column;position:relative;background:var(--bg)}
+#app{height:100%;height:100dvh;max-width:30rem;margin:0 auto;display:flex;flex-direction:column;position:relative;background:var(--bg)}
 @media (min-width:31rem){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 
 /* HUD */
@@ -84,6 +84,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hud-info li{display:flex;gap:7px;align-items:baseline;min-width:0}
 .hud-info li svg{flex:none;width:11px;color:var(--faint)}
 .hud-info li.sick{color:var(--danger)} .hud-info li.sick svg{color:var(--danger)}
+.hud-info li.warn{color:var(--warn)} .hud-info li.warn svg{color:var(--warn)}
 .gauge{margin-top:10px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px}
 .gauge .lbl{color:var(--muted);letter-spacing:.04em;width:4.4em}
 .gauge+.gauge{margin-top:6px}
@@ -95,10 +96,22 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .mbox .k{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .mbox .v{font-size:16px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mbox.paid .v{color:var(--paid)} .mbox.ben .v{color:var(--benefit)}
-.ratio{margin-top:6px;font-size:11px;color:var(--faint);display:flex;justify-content:space-between;gap:8px}
+.ratio{margin-top:6px;font-size:11px;color:var(--faint);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px}
+.ratio .fold-btn{order:3}
 
 /* Feed */
-.feed{flex:1;overflow-y:auto;padding-block:14px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.feed{flex:1 1 0;min-height:0;overflow-y:auto;padding-block:14px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+/* 이번 해에 새로 생긴 카드 강조, 지난 카드는 살짝 흐리게 */
+.card.fresh{border-color:color-mix(in srgb, var(--accent) 60%, var(--line));box-shadow:0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent), 0 6px 18px -10px color-mix(in srgb, var(--accent) 70%, transparent)}
+.card.fresh.ev{border-left-width:3px}
+.feed .card:not(.fresh){opacity:.62;transition:opacity .4s}
+.feed .card:not(.fresh):hover{opacity:1}
+.new-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.08em;color:var(--bg);background:var(--accent);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px}
+.card:not(.fresh) .new-tag{display:none}
+/* 상단 값이 바뀌면 잠깐 반짝임 */
+@keyframes hl{0%{background:color-mix(in srgb, var(--warn) 42%, transparent)}100%{background:transparent}}
+.hl{animation:hl 1.8s ease-out;border-radius:4px}
+@media (prefers-reduced-motion:reduce){.hl{animation:none;outline:1px solid var(--warn)}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;animation:drop .35s ease both;min-width:0}
 @keyframes drop{from{transform:translateY(-8px);opacity:.2}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.card{animation:none}.bar>i{transition:none}}
@@ -135,7 +148,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .ev .eb{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--pink);font-weight:600;margin-bottom:2px}
 
 /* Dock */
-.dock{flex:none;background:var(--surface);border-top:1px solid var(--line);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.dock{flex:0 0 auto;max-height:62%;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border-top:1px solid var(--line);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .row{display:flex;gap:8px}
 .btn{border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:12px;padding:13px 14px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s ease,filter .15s}
 .btn:active{transform:scale(.98)}
@@ -153,6 +166,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .choice-head p{margin:3px 0 0;font-size:12.5px;color:var(--muted);line-height:1.5}
 .opts{display:flex;flex-direction:column;gap:8px}
 .opts .btn{flex-direction:column;align-items:stretch;text-align:left;padding:11px 14px;font-size:14px}
+/* 짧은 화면: 상단 상세를 접고 선택지를 촘촘하게 */
+#app.fold .hud-info{display:none}
+.fold-btn{margin-left:auto;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:1px 8px;white-space:nowrap}
+.fold-btn svg{width:9px}
+@media (max-height:760px){
+  .hud{padding-block:9px}
+  .hud-age{font-size:26px}
+  .gauge{margin-top:7px}
+  .money{margin-top:7px} .mbox{padding:6px 9px} .mbox .v{font-size:15px}
+  .opts{gap:6px} .opts .btn{padding:8px 12px;font-size:13.5px} .opts .btn .sub{font-size:10.5px}
+  .choice-head{margin-bottom:8px} .choice-head p{font-size:12px;line-height:1.45}
+  .dock{padding-block:10px calc(10px + env(safe-area-inset-bottom,0px))}
+}
 
 /* Start screen */
 .overlay{position:absolute;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;overflow-y:auto}
@@ -221,6 +247,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .loss .t i{display:block;height:100%;border-radius:99px;background:var(--danger)}
 .loss .t i.up{background:var(--benefit)}
 .loss .v{text-align:right;font-family:var(--f-mono);color:var(--fg)}
+.fbar{display:flex;height:26px;border-radius:7px;overflow:hidden;margin-top:8px;background:var(--surface-2)}
+.fbar i{display:block;height:100%;min-width:2px}
+.fleg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.fleg span{display:inline-flex;align-items:center;gap:5px}
+.fleg span::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--c)}
+.frow{display:grid;grid-template-columns:5.6em 1fr auto;gap:8px;align-items:center;font-size:12px;margin-top:6px}
+.frow .t{height:12px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.frow .t i{display:block;height:100%}
+.frow .v{font-variant-numeric:tabular-nums;color:var(--fg);font-weight:600;white-space:nowrap}
+.fyears{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.fyears div{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:11px;color:var(--muted)}
+.fyears b{display:block;font-size:14px;color:var(--fg);font-variant-numeric:tabular-nums}
+.fyears .neg b{color:var(--danger)} .fyears .pos b{color:var(--benefit)}
 .srclink{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
 .src-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;font-variant-numeric:tabular-nums}
 .src-table th,.src-table td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right}
@@ -247,6 +286,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <li><i class="fa-solid fa-house"></i><span id="hWealth">-</span></li>
       <li><i class="fa-solid fa-people-group"></i><span id="hFam">-</span></li>
       <li id="hDisRow"><i class="fa-solid fa-notes-medical"></i><span id="hDis">-</span></li>
+      <li id="hRiskRow"><i class="fa-solid fa-triangle-exclamation"></i><span id="hRisk">-</span></li>
     </ul>
     <div class="gauge">
       <span class="lbl">체력</span>
@@ -262,7 +302,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료</div><div class="v num" id="hPaid">0원</div></div>
       <div class="mbox ben"><div class="k"><i class="fa-solid fa-shield-heart"></i>누적 공단부담 혜택</div><div class="v num" id="hBen">0원</div></div>
     </div>
-    <div class="ratio"><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
+    <div class="ratio"><button class="fold-btn" id="btnFold" aria-expanded="true" title="가족·소득·질병 정보 접기"><i class="fa-solid fa-chevron-up"></i> 접기</button><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnFinHud">재정</button> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
   </header>
 
   <main class="feed" id="feed" aria-live="polite"></main>
@@ -393,17 +433,42 @@ const WEALTH_CUTS = [1500, 4500, 9000, 14000, 20000, 28000, 38000, 52000, 80000]
 const wealthDecile = w => 1 + WEALTH_CUTS.filter(t => w >= t*1e4).length;
 const lvl = d => d >= 8 ? '상' : d >= 4 ? '중' : '하';
 
+// smk: 흡연 경험자 가중, alc: 음주자 가중, upf: 초가공식품 가중 (발생 부위 선택용, 추정)
 const CANCERS = {
   thyroid: { name:'갑상선암', w:12, surv:[1,1,.99,.6], cost:.45, screen:()=>false },
-  colon:   { name:'대장암', w:12, surv:[.94,.88,.83,.2], cost:1, screen:a=>a>=50, test:'분변잠혈검사 → 대장내시경' },
-  lung:    { name:'폐암', w:8, surv:[.8,.65,.5,.13], cost:1.25, screen:a=>S.smokeEver&&a>=54&&a<=74, test:'저선량 흉부 CT' },
-  stomach: { name:'위암', w:11, surv:[.97,.8,.62,.075], cost:1, screen:a=>a>=40, test:'위내시경' },
-  breast:  { name:'유방암', w:12, sex:'F', surv:[.99,.93,.8,.4], cost:1, screen:a=>a>=40, test:'유방촬영술' },
+  colon:   { name:'대장암', w:12, alc:1.3, upf:1.4, surv:[.94,.88,.83,.2], cost:1, screen:a=>a>=50, test:'분변잠혈검사 → 대장내시경' },
+  lung:    { name:'폐암', w:7, smk:6, surv:[.8,.65,.5,.13], cost:1.25, screen:a=>S.smokeEver&&a>=54&&a<=74, test:'저선량 흉부 CT' },
+  stomach: { name:'위암', w:11, smk:1.6, alc:1.3, upf:1.4, surv:[.97,.8,.62,.075], cost:1, screen:a=>a>=40, test:'위내시경' },
+  breast:  { name:'유방암', w:12, sex:'F', alc:1.3, surv:[.99,.93,.8,.4], cost:1, screen:a=>a>=40, test:'유방촬영술' },
   prostate:{ name:'전립선암', w:9, sex:'M', surv:[1,1,1,.51], cost:.8, screen:()=>false },
-  liver:   { name:'간암', w:7, surv:[.62,.44,.25,.035], cost:1.2, screen:a=>a>=40&&S.drinkEver, test:'간 초음파 + 혈액검사' },
-  pancreas:{ name:'췌장암', w:3, surv:[.47,.35,.23,.026], cost:1.3, screen:()=>false },
-  cervix:  { name:'자궁경부암', w:3, sex:'F', surv:[.93,.75,.5,.2], cost:.8, screen:a=>a>=20, test:'자궁경부세포검사' },
+  liver:   { name:'간암', w:6, alc:2.5, surv:[.62,.44,.25,.035], cost:1.2, screen:a=>a>=40&&(S.drinkEver||S.cond.cirrhosis||S.cond.fatty), test:'간 초음파 + 혈액검사' },
+  pancreas:{ name:'췌장암', w:3, smk:2, surv:[.47,.35,.23,.026], cost:1.3, screen:()=>false },
+  cervix:  { name:'자궁경부암', w:3, sex:'F', smk:1.5, surv:[.93,.75,.5,.2], cost:.8, screen:a=>a>=20, test:'자궁경부세포검사' },
+  esoph:   { name:'식도암', w:1.5, smk:4, alc:4, surv:[.6,.45,.3,.05], cost:1.2, screen:a=>a>=40, sens:.55, test:'위내시경(식도 관찰)' },
+  bladder: { name:'방광암', w:2, smk:3, surv:[.9,.75,.55,.1], cost:.8, screen:()=>false },
+  kidney:  { name:'신장암', w:2.5, smk:1.5, surv:[.98,.8,.7,.15], cost:.9, screen:()=>false },
+  headneck:{ name:'구강·후두암', w:1.5, smk:5, alc:3, surv:[.85,.65,.5,.25], cost:1, screen:()=>false },
+  blood:   { name:'혈액암(백혈병·림프종)', w:3, smk:1.2, surv:[.8,.7,.6,.4], cost:1.5, screen:()=>false },
+  biliary: { name:'담낭·담도암', w:2.5, surv:[.5,.3,.18,.03], cost:1.2, screen:()=>false },
 };
+
+// 만성질환 (발생률·영향은 국내외 유병률 범위에 맞춘 추정치)
+// base·grow: 연간 발생확률 = base × e^(grow×(나이-from)) × 위험요인 배수
+// drain: 체력 손실 [방치, 치료 중] / q: 사망위험 배수 [방치, 치료 중] / cost: 연간 진료비 / rate: 본인부담률
+const CHRONIC = {
+  lipid:    { name:'이상지질혈증', med:'고지혈증약 복용', from:30, base:.006, grow:.05, f:{upf:1.7, drink:1.2, smoke:1.2, exercise:.7}, screen:()=>true, sens:.95, sympt:0, drain:[.4,.05], cost:300000 },
+  fatty:    { name:'지방간', med:'식습관·체중 관리', from:25, base:.006, grow:.02, f:{drink:3, upf:1.8, exercise:.6}, screen:()=>true, sens:.8, sympt:0, drain:[.25,.05], cost:80000 },
+  cirrhosis:{ name:'간경변', med:'간 전문 치료', from:40, base:.0001, grow:.05, f:{drink:12, fatty:2}, screen:()=>true, sens:.7, sympt:.15, drain:[2,.9], cost:3000000, q:[2,1.5], cause:'간경변 합병증(간부전)', severe:true },
+  copd:     { name:'만성폐쇄성폐질환(COPD)', med:'흡입기 치료', from:40, base:.00015, grow:.07, f:{smoke:12, quit:4}, screen:null, sympt:.2, drain:[1.4,.8], cost:1200000, q:[1.8,1.5], cause:'만성폐쇄성폐질환(COPD) 호흡부전', severe:true },
+  ckd:      { name:'만성콩팥병', med:'신장 보호 치료', from:45, base:.0004, grow:.07, f:{htnH:3, dmH:4, htn:1.5, dm:2, smoke:1.4}, screen:()=>true, sens:.9, sympt:.05, drain:[1,.25], cost:900000, q:[1.8,1.15], cause:'만성콩팥병(요독증)', severe:true },
+  afib:     { name:'심방세동', med:'항응고제 복용', from:50, base:.0005, grow:.08, f:{drink:1.6, htn:1.5, htnH:1.8, smoke:1.3}, screen:null, sympt:.15, drain:[.4,.1], cost:700000 },
+  osteo:    { name:'골다공증', med:'골다공증약 복용', from:50, base:.0015, fbase:.006, grow:.06, f:{smoke:1.6, drink:1.4, exercise:.6}, screen:a=>S.gender==='F' && (a===54||a===66), sens:.95, sympt:0, drain:[.2,.05], cost:400000 },
+  parkinson:{ name:'파킨슨병', med:'약물 치료 (산정특례)', from:55, base:.0002, grow:.08, f:{exercise:.7}, screen:null, sympt:.5, drain:[1.5,1.2], cost:3000000, rate:.1, q:[1.6,1.6], cause:'파킨슨병 합병증', severe:true },
+  hf:       { name:'심부전', med:'심부전 약물 치료', base:0, drain:[1.2,1.2], cost:1500000, q:[2,2], cause:'심부전' },
+  stseq:    { name:'뇌졸중 후유증(편마비)', med:'재활 치료', base:0, drain:[1,1], cost:2000000, q:[1.5,1.5], cause:'뇌졸중 합병증' },
+  esrd:     { name:'말기신부전(혈액투석)', med:'주 3회 혈액투석 (산정특례)', base:0, drain:[2.5,2.5], cost:26000000, rate:.1, q:[3,3], cause:'말기신부전' },
+};
+
 // 병기 → 요약병기: 1기=국한, 2기=국한과 국소의 중간, 3기=국소, 4기=원격 (국가암등록통계 5년 상대생존율)
 const STAGE_COST = [18000000, 32000000, 52000000, 75000000];
 const SYMPTOM = [.04, .14, .5, .9];
@@ -466,6 +531,7 @@ function newState(name, gender){
     stress:12, stressPeak:12, married:false, marryAt:null, marryAge:rint(27,34), marryDeclined:false, spouse:null, widowed:false,
     children:0, childBirths:[], father:rint(50,74), mother:rint(56,82), badYears:0, milestones:[],
     hhInc:0, hhWealth:0, wealth:0, wdecile:1, peakIncome:0,
+    cond:{}, hipFx:null, polypAt:null,
     hloss:{}, hgain:0, stressLog:[], cardioLog:[], hist:{ mind:[] }, health0:0, healthMin:100, healthMinAge:0
   };
 }
@@ -685,6 +751,8 @@ function diseaseText(){
   }
   const kinds = [...new Set(S.cardioLog.filter(c => !c.fatal).map(c => c.kind))];
   if (kinds.length) d.push(`${kinds.join('·')} 후 재발 방지 치료`);
+  if (S.hipFx != null && S.age - S.hipFx < 2) d.push('고관절 골절 회복 중');
+  for (const [k, c] of Object.entries(CHRONIC)) if (S.cond[k] && S.cond[k].detected && !(k === 'ckd' && S.cond.esrd)) d.push(c.name);
   if (S.htn && S.htn.detected) d.push('고혈압 (약 복용)');
   if (S.dm && S.dm.detected) d.push('당뇨병 (약 복용)');
   if (S.dementia) d.push('치매');
@@ -692,13 +760,47 @@ function diseaseText(){
   if (S.ltc) d.push(`장기요양 ${S.ltc === 'home' ? '재가' : '시설'}급여 이용`);
   return d;
 }
+// 가족 사인: 나이가 많을수록 노환·폐렴·치매 비중이 커지도록
+function familyCause(age){
+  const sudden = ['급성 심근경색', '뇌졸중', '불의의 사고'];
+  const ill = age < 70 ? ['폐암', '위암', '대장암', '간암', '췌장암', '유방암', '뇌졸중 후유증']
+                       : ['폐암', '대장암', '폐렴', '심부전', '치매 합병증', '노환', '뇌졸중 후유증'];
+  if (R() < (age < 70 ? .3 : .18)){ const c = pick(sudden); return { name: c === '불의의 사고' && age >= 75 ? '낙상 사고' : c, sudden:true }; }
+  return { name: pick(ill), sudden:false };
+}
+const PARENT_JOBS = {
+  low:  ['건설 노동자', '식당 운영', '택시 기사', '농업', '공장 생산직', '청소 노동자', '시장 상인'],
+  mid:  ['회사원', '공무원', '교사', '자영업', '간호사', '은행원', '버스 기사'],
+  high: ['의사', '대기업 회사원', '변호사', '대학 교수', '중견기업 대표', '약사'],
+};
+function parentJob(isMother){
+  if (isMother && R() < .35) return '전업주부';
+  return pick(PARENT_JOBS[S.hhInc <= 3 ? 'low' : S.hhInc <= 7 ? 'mid' : 'high']);
+}
+function randomJobName(){ return pick(Object.values(JOBS)).name.replace(/ \(.+\)$/, ''); }
+// 나이에 따른 가족 구성원의 현재 하는 일
+function workLabel(age, job, retireAge = 62){
+  if (job === '전업주부') return '전업주부';
+  return age >= retireAge ? `은퇴 (전 ${job})` : job;
+}
+function childLabel(age, i){
+  const c = S.childJobs[i];
+  if (age < 1) return '영아';
+  if (age < 4) return '어린이집';
+  if (age < 7) return '유치원생';
+  if (age < 13) return '초등학생';
+  if (age < 16) return '중학생';
+  if (age < 19) return '고등학생';
+  if (age < c.startAge) return c.college ? '대학생' : '취업 준비';
+  return workLabel(age, c.job);
+}
 function familyText(){
   if (S.age < 0) return '';
   const a = S.age, f = [];
-  if (S.spouse) f.push(S.spouse.alive ? `배우자 ${a + S.spouse.gap}세` : '배우자 사별');
-  S.childBirths.forEach((cb, i) => f.push(`${['첫째','둘째','셋째'][i]} ${a - cb}세`));
-  if (a < S.father) f.push(`아버지 ${a + S.fGap}세`);
-  if (a < S.mother) f.push(`어머니 ${a + S.mGap}세`);
+  if (S.spouse) f.push(S.spouse.alive ? `배우자 ${a + S.spouse.gap}세 ${workLabel(a + S.spouse.gap, S.spouse.job)}` : `배우자 사별 (${S.spouse.cause.name})`);
+  S.childBirths.forEach((cb, i) => f.push(`${['첫째','둘째','셋째'][i]} ${a - cb}세 ${childLabel(a - cb, i)}`));
+  if (a < S.father) f.push(`아버지 ${a + S.fGap}세 ${workLabel(a + S.fGap, S.fJob, 65)}`);
+  if (a < S.mother) f.push(`어머니 ${a + S.mGap}세 ${workLabel(a + S.mGap, S.mJob, 65)}`);
   return f.length ? f.join(' · ') : '가족 없음 (혼자)';
 }
 function workLife(){
@@ -758,23 +860,27 @@ function familyEvents(){
     if (a === cb + 32 && i === 0) lifeEvent('fa-baby', '손주가 태어났습니다', '자녀의 국민행복카드로 산전 진료비를, 분만비는 공단이 부담했습니다. 이제 할머니·할아버지입니다.', [['g', addStress(-5)]]);
   });
   // 부모님
-  for (const [nm, age] of [['아버지', S.father], ['어머니', S.mother]]){
-    if (a === age - 1) line('fa-hospital-user', `${nm}가 투병을 시작했습니다. 주말마다 병원에 갑니다 · ${addStress(10, `${nm}의 투병과 간병`)}`);
+  for (const [nm, age, key, gap] of [['아버지', S.father, 'fCause', S.fGap], ['어머니', S.mother, 'mCause', S.mGap]]){
+    if (!S[key]) S[key] = familyCause(age + gap);
+    const cz = S[key];
+    if (a === age - 1 && !cz.sudden) line('fa-hospital-user', `${nm}가 ${cz.name} 진단을 받고 투병을 시작했습니다. 주말마다 병원에 갑니다 · ${addStress(10, `${nm}의 투병과 간병`)}`);
     if (a === age){
       const inh = S.hhWealth*S.hhWealth*rint(60, 160)*1e4/2; // 부모 두 분이 각각 절반
       S.wealth += inh; S.wdecile = wealthDecile(S.wealth);
-      lifeEvent('fa-dove', `${nm}가 돌아가셨습니다`,
-      `장례를 치르는 동안 슬픔과 피로가 한꺼번에 몰려왔습니다. 그나마 ${nm}의 마지막 투병비는 산정특례와 본인부담상한제 덕분에 가계를 무너뜨리지 않았습니다.`,
+      lifeEvent('fa-dove', `${nm}가 ${ro(cz.name)} 돌아가셨습니다`,
+      `향년 ${age + gap}세. ${cz.sudden ? `갑작스러운 ${cz.name}${josa(cz.name,'이라','라')} 작별 인사도 하지 못했습니다.` : `1년 남짓 ${cz.name}${josa(cz.name,'과','와')} 싸우셨습니다. 투병비는 산정특례와 본인부담상한제 덕분에 가계를 무너뜨리지 않았습니다.`} 장례를 치르는 동안 슬픔과 피로가 한꺼번에 몰려왔습니다.`,
       [['r', addStress(28, `${nm}의 별세`)], ['', `상속 ${won(inh)}`]]);
     }
   }
   // 배우자
   if (S.married && S.spouse && S.spouse.alive){
-    if (a === S.spouse.deathAge - 1) line('fa-hospital-user', `배우자가 큰 병을 진단받아 간병을 시작했습니다 · ${addStress(12, '배우자 간병')}`);
-    if (a === S.spouse.deathAge){
-      S.spouse.alive = false; S.married = false; S.widowed = true;
-      lifeEvent('fa-heart-crack','배우자를 먼저 떠나보냈습니다',
-        '평생을 함께한 사람이 곁에 없습니다. 배우자를 잃은 직후 1~2년은 심혈관질환 위험이 눈에 띄게 높아집니다.',
+    const sp = S.spouse, spAge = a + sp.gap;
+    if (!sp.cause) sp.cause = familyCause(sp.deathAge + sp.gap);
+    if (a === sp.deathAge - 1 && !sp.cause.sudden) line('fa-hospital-user', `배우자가 ${sp.cause.name} 진단을 받아 간병을 시작했습니다 · ${addStress(12, '배우자 간병')}`);
+    if (a === sp.deathAge){
+      sp.alive = false; S.married = false; S.widowed = true;
+      lifeEvent('fa-heart-crack',`배우자가 ${ro(sp.cause.name)} 세상을 떠났습니다`,
+        `향년 ${spAge}세. ${sp.cause.sudden ? `아침까지 함께였던 사람이 ${ro(sp.cause.name)} 갑자기 떠났습니다.` : `1년 가까이 ${sp.cause.name}${josa(sp.cause.name,'과','와')} 싸우는 배우자를 곁에서 간병했습니다.`} 평생을 함께한 사람이 곁에 없습니다. 배우자를 잃은 직후 1~2년은 심혈관질환 위험이 눈에 띄게 높아집니다.`,
         [['r', addStress(35, '배우자와 사별')]]);
     }
   }
@@ -784,7 +890,7 @@ function marryChoice(){
     desc:'결혼하면 배우자에게 소득이 없을 때 내 건강보험의 피부양자로 등록할 수 있고, 맞벌이라면 각자 직장가입자로 보험료를 냅니다. 든든한 내 편은 스트레스도 덜어 줍니다.',
     options:[
       { label:'결혼한다', sub:'둘이서 함께', cls:'primary', run:()=>{
-        S.married = true; S.marryAt = S.age; S.spouse = { alive:true, deathAge: S.age + rint(36, 62), gap: rint(-3, 4) };
+        S.married = true; S.marryAt = S.age; S.spouse = { alive:true, deathAge: S.age + rint(36, 62), gap: rint(-3, 4), job: R() < .15 ? '전업주부' : randomJobName() };
         S.wealth += rint(1000, 5000)*1e4; S.wdecile = wealthDecile(S.wealth);
         lifeEvent('fa-ring','결혼했습니다','결혼 준비로 정신없었지만 든든한 내 편이 생겼습니다. 이제 건강검진 결과도 함께 챙깁니다.',[['g', addStress(-6)],['','배우자 피부양자 가능']]); } },
       { label:'혼자의 삶을 택한다', sub:'비혼', cls:'ghost', run:()=>{ S.marryDeclined = true; line2('fa-user', '나 자신에게 집중하는 삶을 택했습니다.'); } },
@@ -796,7 +902,7 @@ function babyChoice(second){
     desc:'임신이 확인되면 국민행복카드로 임신·출산 진료비 100만원(다태아 140만원)을 지원받고, 자연분만 입원비는 본인부담 0원입니다. 육아는 기쁘지만 고되기도 합니다.',
     options:[
       { label: second ? '둘째를 맞이한다' : '새 가족을 맞이한다', sub:'임신·출산 진료비 지원', cls:'primary', run:()=>{
-        S.hasChild = true; S.children++; S.childBirths.push(S.age);
+        S.hasChild = true; S.children++; S.childBirths.push(S.age); S.childJobs.push({ job: randomJobName(), college: R() < .7, startAge: rint(20, 27) });
         charge(1000000, 0); charge(2600000, 0); if (F) S.visits += 14;
         badge('parent', true);
         lifeEvent('fa-baby-carriage', second ? '둘째가 태어났습니다' : (F ? '엄마가 되었습니다' : '아빠가 되었습니다'),
@@ -807,6 +913,7 @@ function babyChoice(second){
 }
 function advance(){
   if (!S.alive || S.queue.length || S.dying) return;
+  unfresh();
   settleYear(false);
   S.age++;
   const a = S.age;
@@ -879,13 +986,13 @@ function lifestyleHealth(){
   const a = S.age;
   let d = 0;
   const loss = (k, v) => { d -= v; S.hloss[k] = (S.hloss[k] || 0) + v; };
-  if (a >= 20 && a < 40) loss('aging', .25); else if (a >= 40 && a < 60) loss('aging', .5); else if (a >= 60 && a < 75) loss('aging', .85); else if (a >= 75) loss('aging', 1.5);
-  if (S.smoke && a >= 20) loss('smoke', .45);
-  if (S.drink && a >= 20) loss('drink', .3);
+  if (a >= 20 && a < 40) loss('aging', .25); else if (a >= 40 && a < 60) loss('aging', .5); else if (a >= 60 && a < 75) loss('aging', .65); else if (a >= 75) loss('aging', .9);
+  if (S.smoke && a >= 20) loss('smoke', .65);
+  if (S.drink && a >= 20) loss('drink', .55);
   if (S.upf && a >= 12) loss('upf', .15);
   if (S.exercise){ d += .3; S.hgain += .3; }
-  if (S.htn && !S.htn.detected) loss('chronic', .8);
-  if (S.dm && !S.dm.detected) loss('chronic', .8);
+  if (S.htn && !S.htn.detected) loss('chronic', 1.1);
+  if (S.dm && !S.dm.detected) loss('chronic', 1.1);
   if (S.cancers.some(c => c.status === 'treating')) d += 3;
   if (a < 20) d += 1;
   S.health = clamp(S.health + d, 0, maxHealth(a));
@@ -894,9 +1001,9 @@ function lifestyleHealth(){
 function riskMult(kind){
   let m = 1;
   const quitYears = S.quitAge != null ? S.age - S.quitAge : null;
-  const smokeF = kind === 'cardio' ? 2 : 1.7;
-  if (S.smoke) m *= smokeF; else if (quitYears != null) m *= quitYears < 10 ? 1 + (smokeF-1)*.45 : 1.1;
-  if (S.drink) m *= kind === 'cardio' ? 1.4 : 1.3;
+  const smokeF = kind === 'cardio' ? 2.5 : 2;
+  if (S.smoke) m *= smokeF; else if (quitYears != null) m *= quitYears < 10 ? 1 + (smokeF-1)*.5 : 1.15;
+  if (S.drink) m *= kind === 'cardio' ? 1.5 : 1.4;
   if (S.upf) m *= kind === 'cardio' ? 1.3 : 1.2;
   if (S.exercise) m *= kind === 'cardio' ? .75 : .85;
   m *= kind === 'cardio' ? 1 + S.stress/110 : 1 + S.stress/300; // 만성 스트레스
@@ -947,7 +1054,15 @@ function diseases(){
     if (R() < p){
       const types = Object.entries(CANCERS).filter(([,v]) => !v.sex || v.sex === S.gender);
       let tot = 0;
-      const ws = types.map(([k,v]) => { let w = v.w; if (k==='lung' && S.smokeEver) w *= 5; if (k==='liver' && S.drinkEver) w *= 2.5; if (k==='colon' && S.upf) w *= 1.3; tot += w; return [k,w]; });
+      const ws = types.map(([k,v]) => {
+        let w = v.w;
+        if (v.smk && S.smokeEver) w *= S.smoke ? v.smk : 1 + (v.smk - 1)*.5;
+        if (v.alc && S.drinkEver) w *= S.drink ? v.alc : 1 + (v.alc - 1)*.5;
+        if (v.upf && S.upf) w *= v.upf;
+        if (k === 'liver'){ if (hasC('cirrhosis')) w *= 8; else if (hasC('fatty')) w *= 1.5; }
+        if (k === 'lung' && hasC('copd')) w *= 2;
+        if (k === 'colon' && S.polypAt != null && a - S.polypAt < 10) w *= .4; // 용종 제거 효과
+        tot += w; return [k,w]; });
       let r = R()*tot, type = ws[0][0];
       for (const [k,w] of ws){ if ((r -= w) <= 0){ type = k; break; } }
       S.cancers.push({ type, stage:1, status:'hidden', onset:a });
@@ -955,14 +1070,185 @@ function diseases(){
   }
   // 심뇌혈관
   if (a >= 35 && !S.dying){
-    let p = .00045*Math.exp(.075*(a-40))*riskMult('cardio');
+    const p0 = .00045*Math.exp(.075*(a-40));
+    let p = p0*riskMult('cardio');
     if (S.htn) p *= S.htn.detected ? 1.3 : 2.2;
     if (S.dm) p *= S.dm.detected ? 1.3 : 1.9;
     if (S.cardio) p *= 1.6;
+    if (hasC('lipid')) p *= S.cond.lipid.detected ? 1.2 : 1.7;
+    if (hasC('ckd')) p *= 1.5;
+    if (hasC('afib')) p *= S.cond.afib.detected ? 1.3 : 2;
+    p = p0*softCap(p/p0, 4);
     if (R() < p) cardioEvent();
   }
+  if (a >= 20) chronicYear();
 }
 
+/* ---------- 만성질환 엔진 ---------- */
+const hasC = k => !!S.cond[k];
+const hiddenC = k => !!(S.cond[k] && !S.cond[k].detected);
+function factorOn(k){
+  switch (k){
+    case 'smoke': return S.smoke;
+    case 'quit': return !S.smoke && S.smokeEver;
+    case 'drink': return S.drink;
+    case 'upf': return S.upf;
+    case 'exercise': return S.exercise;
+    case 'htn': return !!(S.htn && S.htn.detected);
+    case 'htnH': return !!(S.htn && !S.htn.detected);
+    case 'dm': return !!(S.dm && S.dm.detected);
+    case 'dmH': return !!(S.dm && !S.dm.detected);
+    default: return hasC(k);
+  }
+}
+function detectCond(k, how, quiet){
+  const st = S.cond[k], c = CHRONIC[k];
+  if (!st || st.detected) return;
+  st.detected = true; st.detAge = S.age; st.how = how;
+  if (quiet) return;
+  const late = S.age - st.onset;
+  if (c.severe){
+    addStress(15, `${c.name} 진단`);
+    S.milestones.push({ age:S.age, ic:'fa-notes-medical', title:`${c.name} 진단` });
+    evCard('t-red','fa-notes-medical', `${c.name} 진단`,
+      `${how}에서 ${c.name}을 발견했습니다.${late >= 2 ? ` 몸속에서는 이미 <b>${late}년</b> 전부터 진행되고 있었습니다.` : ''} 이제부터 ${c.med}을 받습니다.`
+      + (k === 'copd' && S.smokeEver ? ' 원인의 대부분은 <b>흡연</b>입니다. 망가진 폐는 되돌릴 수 없습니다.' : '')
+      + (k === 'cirrhosis' && S.drinkEver ? ' 오랜 <b>음주</b>로 간이 굳었습니다. 간암 위험이 크게 높아집니다.' : ''),
+      [['r', late >= 2 ? `${late}년 방치` : '조기 발견'], ['', c.med]]);
+  } else {
+    line('fa-triangle-exclamation', `${how}에서 ${c.name}을 발견했습니다${late >= 2 ? ` (약 ${late}년 방치)` : ''}. ${c.med}을 시작합니다.`);
+  }
+}
+function addCond(k, how){
+  if (S.cond[k]) return;
+  S.cond[k] = { onset:S.age, detected:true, detAge:S.age, how, why:riskFactors() };
+}
+function chronicYear(){
+  const a = S.age;
+  let careCost = 0, careOwn = 0; const careNames = [];
+  for (const [k, c] of Object.entries(CHRONIC)){
+    const st = S.cond[k];
+    if (!st){
+      if (!c.base || a < c.from) continue;
+      let p = (S.gender === 'F' && c.fbase ? c.fbase : c.base)*Math.exp(c.grow*(a - c.from));
+      for (const [fk, fv] of Object.entries(c.f || {})) if (factorOn(fk)) p *= fv;
+      p *= 1 + S.stress/200;
+      if (R() < p) S.cond[k] = { onset:a, detected:false, why:riskFactors() };
+      continue;
+    }
+    const det = st.detected, dr = c.drain[det ? 1 : 0];
+    if (dr) hurt('c_' + k, dr);
+    if (det && c.cost){
+      const f = charge(c.cost*(.8 + R()*.4), c.rate ?? .3, c.rate ? { special:true, normal:.3 } : {});
+      careCost += f.pub + f.own; careOwn += f.own; careNames.push(c.name.replace(/\(.+\)/, ''));
+    }
+    if (!det && c.sympt && R() < c.sympt*(1 + (a - st.onset)*.1)) detectCond(k, '숨이 차고 몸이 붓는 등 증상이 나타나 찾은 병원');
+  }
+  if (careNames.length) line('fa-pills', `만성질환 관리 (${careNames.join('·')}) · 진료비 ${won(careCost)} 중 본인부담 ${won(careOwn)}`);
+  // 만성콩팥병 → 말기신부전
+  if (hasC('ckd') && !hasC('esrd') && !S.dying){
+    const ck = S.cond.ckd;
+    let p = ck.detected ? .012 : .06 + (a - ck.onset)*.004;
+    if (hiddenC('dm') || (S.dm && !S.dm.detected)) p *= 1.6;
+    if (S.htn && !S.htn.detected) p *= 1.4;
+    if (R() < p){
+      const wasHidden = !ck.detected;
+      detectCond('ckd', '응급실', true);
+      addCond('esrd', '만성콩팥병 악화');
+      badge('special');
+      addStress(25, '혈액투석 시작');
+      hurt('c_esrd', 8, 1);
+      S.milestones.push({ age:a, ic:'fa-droplet', title:'말기신부전, 혈액투석 시작' });
+      evCard('t-red','fa-droplet','말기신부전, 평생 혈액투석을 시작합니다',
+        `${wasHidden ? '검진을 받지 않아 콩팥이 망가지는 줄 몰랐습니다. 숨이 차고 온몸이 부어 응급실에 실려 갔을 땐 이미 늦었습니다. ' : '관리했지만 콩팥 기능이 끝내 바닥났습니다. '}이제 일주일에 세 번, 한 번에 4시간씩 투석을 받아야 합니다. 연간 약 <b>${won(26000000)}</b>의 진료비는 희귀난치 산정특례(10%)가 덜어 줍니다.`,
+        [['r','혈액투석'],['g','산정특례 10%']]);
+    }
+  }
+  // 고관절 골절 (골다공증)
+  if (a >= 65 && !S.hipFx && !S.dying){
+    let p = hasC('osteo') ? (S.cond.osteo.detected ? .012 : .035) : .004;
+    if (hasC('parkinson')) p *= 2.5;
+    if (hasC('stseq')) p *= 2;
+    if (S.dementia) p *= 1.8;
+    if (R() < p){
+      S.hipFx = a;
+      const f = charge(11000000, .2);
+      hurt('other', 14, 1);
+      if (hiddenC('osteo')) detectCond('osteo', '고관절 골절 후 검사', true);
+      addStress(15, '고관절 골절');
+      S.milestones.push({ age:a, ic:'fa-bone', title:'고관절 골절' });
+      evCard('t-red','fa-bone','욕실에서 넘어져 고관절이 부러졌습니다',
+        `인공관절 수술을 받았습니다. 진료비 <b>${won(11000000)}</b> 중 본인부담 ${won(f.own)}. ${S.cond.osteo && S.cond.osteo.how === '고관절 골절 후 검사' ? '검사해 보니 <b>골다공증</b>이 심했습니다. 미리 알았다면 약으로 뼈를 지킬 수 있었습니다. ' : ''}노년의 고관절 골절은 1년 안에 다섯 명 중 한 명꼴로 목숨을 잃는 위험한 부상입니다.`,
+        [['r','고관절 골절'],['g',`공단 ${won(f.pub)}`]]);
+      if (R() < .18*(a > 80 ? 1.5 : 1)) endOfLife('고관절 골절 합병증');
+    }
+  }
+  // 폐렴
+  if ((a >= 60 || hasC('copd')) && !S.dying){
+    let p = .004*Math.exp(.08*(a - 65));
+    if (hasC('copd')) p *= 3;
+    if (S.smoke) p *= 1.8;
+    if (S.dementia) p *= 2;
+    if (hasC('parkinson') || hasC('stseq')) p *= 2;
+    if (R() < p){
+      const f = charge(4500000, .2);
+      hurt('other', 6, 1);
+      let fatal = .035*Math.exp(.05*(a - 65));
+      if (hasC('copd')) fatal *= 1.6;
+      if (R() < fatal && a >= 60){ line('fa-lungs-virus', `폐렴으로 입원했지만 상태가 계속 나빠졌습니다 · 본인부담 ${won(f.own)}`); endOfLife('폐렴'); }
+      else line('fa-lungs-virus', `폐렴으로 열흘간 입원했습니다${hasC('copd') ? ' (COPD로 폐가 약해져 있었습니다)' : ''} · 본인부담 ${won(f.own)}`);
+    }
+  }
+}
+// 위험 배수가 상한(c)을 넘으면 초과분을 1/3만 반영
+function softCap(m, c){ return m > c ? c + (m - c)/3 : m; }
+function weightedPick(list){
+  let t = list.reduce((x, [, w]) => x + w, 0), r = R()*t;
+  for (const [v, w] of list){ if ((r -= w) <= 0) return v; }
+  return list[0][0];
+}
+function naturalCause(){
+  const c = [];
+  for (const [k, v] of Object.entries(CHRONIC)) if (S.cond[k] && v.cause) c.push([v.cause, 3]);
+  if (S.dementia) c.push(['치매 합병증', 3]);
+  if (S.htn || S.dm) c.push(['뇌혈관질환', 1.5], ['허혈성 심장질환', 1.5]);
+  c.push(['폐렴', 2.5], ['패혈증', 1], ['노환', S.age >= 85 ? 3 : .5], ['심부전', 1], ['신부전', .5]);
+  return weightedPick(c);
+}
+function suddenCause(){
+  const a = S.age;
+  if (a < 45) return weightedPick([['교통사고', 4], ['추락 사고', 1.5], ['익사 사고', 1], ['급성 심장사', S.smoke || S.drink ? 3 : 1], ['뇌출혈', S.htn ? 2 : .5]]);
+  if (a < 70) return weightedPick([['급성 심장사', S.smoke ? 4 : 2], ['교통사고', 1.5], ['대동맥 박리', S.htn && !S.htn.detected ? 2 : .5], ['추락 사고', .8], ['뇌출혈', S.htn && !S.htn.detected ? 2.5 : .8]]);
+  return weightedPick([['급성 심장사', 2], ['노환 (잠든 채 영면)', 2.5], ['낙상 사고', 1], ['뇌출혈', .8]]);
+}
+// 상단 위험요인 줄
+function riskText(){
+  const r = [];
+  if (S.smoke) r.push(`흡연 ${S.age - (S.hist.smokeAt ?? S.age)}년째`);
+  else if (S.quitAge != null) r.push(`금연 ${S.age - S.quitAge}년차`);
+  if (S.drink) r.push('고위험 음주');
+  if (S.upf) r.push('초가공식품');
+  if (!S.exercise && S.age >= 30) r.push('운동 부족');
+  if (S.stress >= 60) r.push('스트레스 높음');
+  if (S.checkSkips) r.push(`검진 건너뜀 ${S.checkSkips}회`);
+  return r;
+}
+// 10년마다 받는 건강 경고장
+function riskReport(){
+  const a = S.age, L = [];
+  if (S.smoke){
+    const y = a - (S.hist.smokeAt ?? a);
+    L.push(`흡연 ${y}년: 같은 나이 비흡연자보다 <b>사망 위험 약 2.6배</b>, 폐암 약 10배, 만성폐쇄성폐질환 약 12배, 심근경색·뇌졸중 약 2.5배`);
+    L.push(`평생 피우면 기대수명이 약 <b>10년</b> 줄어듭니다. ${a < 40 ? '<b>40세 전에 끊으면 그 손실의 약 90%를 되찾습니다.</b>' : a < 55 ? '지금 끊어도 잃을 수명의 절반 이상을 되찾습니다.' : '지금 끊어도 폐와 혈관은 회복을 시작합니다.'}`);
+  }
+  if (S.drink){
+    L.push('고위험 음주: <b>사망 위험 약 1.7배</b>, 간경변 약 12배, 식도암 약 4배, 구강·후두암 약 3배, 심방세동 1.6배');
+    L.push('주 350g(소주 약 5병) 넘게 마시는 사람은 기대수명이 약 <b>4~5년</b> 줄어듭니다.');
+  }
+  if (!L.length) return;
+  evCard('t-red','fa-triangle-exclamation', `${a}세 건강 경고장`, L.map(x => `· ${x}`).join('<br>'),
+    [['r','통계로 본 위험'], ['', '근거: 출처 화면']]);
+}
 function queueDiagnosis(c, via){
   if (c.queued) return;
   c.queued = true;
@@ -1010,15 +1296,17 @@ function treatCancer(c, via, palliative){
 }
 
 function cardioEvent(){
-  const kind = R() < .5 ? '급성 심근경색' : '뇌졸중';
-  let fatal = .13;
+  const af = hasC('afib'), htnH = !!(S.htn && !S.htn.detected);
+  const kind = weightedPick([['급성 심근경색', 45], ['뇌경색', 40*(af ? (S.cond.afib.detected ? 1.5 : 4) : 1)], ['뇌출혈', 15*(htnH ? 2.5 : 1)]]);
+  let fatal = { '급성 심근경색':.12, '뇌경색':.1, '뇌출혈':.3 }[kind];
+  if (S.smoke) fatal *= 1.2;
   if ((S.htn && !S.htn.detected) || (S.dm && !S.dm.detected)) fatal *= 1.5;
   if (S.exercise) fatal *= .8;
   if (S.age > 75) fatal *= 1.4;
   if (R() < fatal){
     S.cause = kind;
     S.cardioLog.push({ age:S.age, kind, fatal:true, why:riskFactors(), htnHidden: !!(S.htn && !S.htn.detected) });
-    evCard('t-red','fa-heart-crack', `${kind}으로 쓰러졌습니다`,
+    evCard('t-red','fa-heart-crack', `${ro(kind)} 쓰러졌습니다`,
       `골든타임 안에 병원에 도착하지 못했습니다. ${(S.htn&&!S.htn.detected)?'검진을 받지 않아 고혈압이 있는 줄 몰랐습니다.':''}`, [['r','돌연사']]);
     return;
   }
@@ -1026,13 +1314,17 @@ function cardioEvent(){
   S.cardioLog.push({ age:S.age, kind, fatal:false, why:riskFactors() });
   addStress(18, `${kind} 발병`);
   S.milestones.push({ age:S.age, ic:'fa-heart-pulse', title:`${kind} 생존` });
+  if (S.htn && !S.htn.detected) S.htnFoundByEvent = kind;
   const total = rint(18, 30)*1e6;
   const f = charge(total, .05, { special:true, normal:.2, nonCov:1500000 });
   hurt('cardio', rint(15,22), 1);
-  if (S.htn && !S.htn.detected){ S.htn.detected = true; S.htn.detAge = S.age; S.htn.how = `${kind}으로 쓰러진 뒤 응급실`; }
+  if (S.htn && !S.htn.detected){ S.htn.detected = true; S.htn.detAge = S.age; S.htn.how = `${ro(kind)} 쓰러진 뒤 응급실`; }
   badge('heart', true);
   evCard('t-red','fa-heart-pulse', `${kind}, 골든타임 안에 살아났습니다`,
-    `119로 이송돼 ${kind==='뇌졸중'?'혈전제거술':'스텐트 시술'}을 받았습니다. 심뇌혈관질환 산정특례로 진료비 <b>${won(total)}</b> 중 본인부담은 <b>${won(f.own)}</b>입니다.`,
+    `119로 이송돼 ${kind==='뇌경색'?'혈전제거술':kind==='뇌출혈'?'개두술':'스텐트 시술'}을 받았습니다. 심뇌혈관질환 산정특례로 진료비 <b>${won(total)}</b> 중 본인부담은 <b>${won(f.own)}</b>입니다.`
+    + (kind === '급성 심근경색' && R() < .4 ? (addCond('hf', '심근경색 후'), ' 하지만 심장 근육이 크게 상해 <b>심부전</b>이 남았습니다.') : '')
+    + (kind !== '급성 심근경색' && R() < .5 ? (addCond('stseq', `${kind} 후`), ' 한쪽 팔다리에 <b>마비</b>가 남아 재활 치료를 시작합니다.') : '')
+    + (af && !S.cond.afib.detected ? (detectCond('afib', '뇌경색 후 검사', true), ' 원인은 모르고 지낸 <b>심방세동</b>이었습니다.') : ''),
     [['g',`공단 ${won(f.pub)}`],['','산정특례 5%']]);
   if (S.smoke) queueQuit(true);
 }
@@ -1149,6 +1441,7 @@ function scheduled(){
   if (a === 24 && S.path === 'college') Q.push(jobChoice('college'));
   if (a === 26) Q.push(exerciseChoice());
   if (a === 50 && !S.exercise) Q.push(exerciseChoice());
+  if ([30,40,50,60,70].includes(a) && (S.smoke || S.drink)) riskReport();
   if ([30,40,50,60].includes(a) && S.smoke) queueQuit(false);
   if (a === 45 && S.drink) Q.push({ tone:'amber', icon:'fa-wine-bottle', title:'간 수치가 경계선입니다',
     desc:'검진 결과 간 수치(GGT)가 높습니다. 이대로 마시면 간경변과 간암으로 이어질 수 있습니다.',
@@ -1219,7 +1512,7 @@ function payPremiumDelta(){
 function youthCheck(){
   const F = S.gender === 'F';
   return { tone:'cyan', icon:'fa-user-check', title:'2030 청년 일반건강검진 대상입니다',
-    desc:`만 20~34세는 직장·학생·취준생 상관없이 2년마다 무료로 일반건강검진을 받을 수 있습니다.${F?' 자궁경부암 검진도 함께 받습니다.':''}`,
+    desc:`만 20~34세는 직장·학생·취준생 상관없이 2년마다 무료로 일반건강검진(혈압·혈당·콜레스테롤·간 수치)을 받을 수 있습니다.${F?' 자궁경부암 검진도 함께 받습니다.':''}`,
     options:[
       { label:'건강검진 받기', sub:'본인부담 0원', cls:'primary', run:()=>{ charge(120000, 0); S.youth++; S.checkups++; S.visits++; screenDetect(); if (S.youth >= 3) badge('youth'); } },
       { label:'바쁘니 건너뛰기', sub:'젊은데 뭐…', cls:'ghost', run:()=>{ S.checkSkips++; skipHint(); } },
@@ -1227,8 +1520,10 @@ function youthCheck(){
 }
 function nationalCheck(){
   const a = S.age, F = S.gender === 'F';
-  const list = ['일반검진'];
-  if (a === 40 || a === 66) list[0] = '생애전환기 검진';
+  const list = ['일반검진(혈압·혈당·콜레스테롤·간·신장 수치)'];
+  if (a === 40 || a === 66) list[0] = '생애전환기 검진(혈압·혈당·콜레스테롤·간·신장 수치)';
+  if (F && (a === 54 || a === 66)) list.push('골밀도');
+  if (a >= 66) list.push('인지기능');
   if (a <= 74){
     list.push('위암');
     if (a >= 50) list.push('대장암');
@@ -1253,9 +1548,15 @@ function screenDetect(){
   for (const [k, nm, med] of [['htn','고혈압','혈압약'],['dm','당뇨병','혈당약']]){
     if (S[k] && !S[k].detected && R() < .95){ S[k].detected = true; S[k].detAge = a; S[k].how = '건강검진'; found.push(`${nm} (${med} 처방, 꾸준히 관리 시작)`); }
   }
+  for (const [k, c] of Object.entries(CHRONIC)){
+    if (!c.screen || !c.screen(a) || !hiddenC(k) || R() > (c.sens ?? .9)) continue;
+    detectCond(k, '건강검진', true);
+    found.push(`${c.name} (${c.med} 시작${a - S.cond[k].onset >= 2 ? `, 약 ${a - S.cond[k].onset}년 전부터 진행 중이었음` : ''})`);
+  }
+  if (a >= 50 && a <= 74 && R() < .25){ S.polypAt = a; charge(400000, .2); found.push('대장 용종 (내시경으로 바로 떼어냄 → 대장암 예방)'); }
   let cancerFound = false;
   for (const c of S.cancers){
-    if (c.status === 'hidden' && !c.queued && CANCERS[c.type].screen(a) && R() < .85){ queueDiagnosis(c, 'screen'); cancerFound = true; }
+    if (c.status === 'hidden' && !c.queued && CANCERS[c.type].screen(a) && R() < (CANCERS[c.type].sens ?? .85)){ queueDiagnosis(c, 'screen'); cancerFound = true; }
   }
   if (cancerFound) found.push('추가 정밀검사 필요 소견');
   if (!found.length){
@@ -1265,8 +1566,9 @@ function screenDetect(){
   }
 }
 function skipHint(){
-  const hidden = S.cancers.some(c => c.status === 'hidden') || (S.htn && !S.htn.detected) || (S.dm && !S.dm.detected);
-  line2(hidden ? 'fa-triangle-exclamation' : 'fa-clock', hidden ? '검진을 건너뛰었습니다. 그런데 요즘 이유 없이 쉽게 피곤합니다…' : '검진을 건너뛰었습니다. 별일 없겠죠.', hidden ? 't-amber' : 't-gray');
+  const hidden = S.cancers.some(c => c.status === 'hidden') || (S.htn && !S.htn.detected) || (S.dm && !S.dm.detected) || Object.keys(S.cond).some(k => hiddenC(k) && CHRONIC[k].screen);
+  if (hidden) S.skipHidden = (S.skipHidden || 0) + 1;
+  line2(hidden ? 'fa-triangle-exclamation' : 'fa-clock', hidden ? '검진을 건너뛰었습니다. 그런데 요즘 이유 없이 쉽게 피곤합니다… <b>몸속에서 모르는 병이 자라고 있을지도 모릅니다.</b>' : '검진을 건너뛰었습니다. 별일 없겠죠.', hidden ? 't-amber' : 't-gray');
 }
 function exerciseChoice(){
   return { tone:'green', icon:'fa-person-running', title: S.age >= 50 ? '의사가 운동을 권합니다' : '헬스장 3개월 할인 전단지를 받았습니다',
@@ -1279,7 +1581,7 @@ function exerciseChoice(){
 function queueQuit(urgent){
   if (S.queue.some(q => q.id === 'quit')) return;
   const item = { id:'quit', tone:'red', icon:'fa-ban-smoking', title: urgent ? '의사가 당장 담배를 끊으라고 합니다' : `${S.age}세, 금연을 결심해 볼까요?`,
-    desc:'건강보험 금연치료 지원사업은 12주 프로그램을 이수하면 상담료와 금연약 본인부담을 전액 지원합니다. 금연 10년이 지나면 폐암 위험이 절반으로 줄어듭니다.',
+    desc:`평생 흡연하면 기대수명이 약 10년 줄고, ${S.age < 40 ? '40세 전에 끊으면 그 손실의 약 90%를 되찾습니다' : '지금 끊어도 남은 수명을 크게 되찾습니다'}. 건강보험 금연치료 지원사업은 12주 프로그램을 이수하면 상담료와 금연약 본인부담을 전액 지원합니다.`,
     options:[
       { label:'금연치료 프로그램 참여', sub:'이수 시 본인부담 0원', cls:'primary', run:()=>{
         charge(250000, 0);
@@ -1324,20 +1626,24 @@ function retire(){
    ========================================================= */
 function mortality(){
   const a = S.age;
-  if (S.health <= 0){ endOfLife('다발성 장기부전'); return; }
-  let q = .72e-5*Math.exp(.1*a);
-  q *= S.gender === 'M' ? 1.15 : .55;
+  const q0 = .4e-5*Math.exp(.1*a)*(S.gender === 'M' ? 1 : .38);
+  let q = q0;
   if (S.health < 50) q *= 1 + (50 - S.health)/12;
-  if (S.smoke) q *= 2; else if (S.quitAge != null) q *= 1.25;
-  if (S.drink) q *= 1.4;
+  if (S.health <= 0) q *= 3; // 체력이 바닥나면 작은 병도 치명적
+  if (S.smoke) q *= 2.6; else if (S.quitAge != null) q *= (a - S.quitAge < 10 ? 1.6 : S.quitAge < 40 ? 1.05 : 1.2);
+  if (S.drink) q *= 1.55; else if (S.hist.drinkStop != null) q *= 1.12;
+  for (const [k, c] of Object.entries(CHRONIC)) if (S.cond[k] && c.q) q *= c.q[S.cond[k].detected ? 1 : 0];
   if (S.upf) q *= 1.15;
   if (S.exercise) q *= .8;
-  if ((S.htn && !S.htn.detected) || (S.dm && !S.dm.detected)) q *= 1.3;
+  if (S.htn && !S.htn.detected) q *= 1.4;
+  if (S.dm && !S.dm.detected) q *= 1.4;
   if (S.stress > 60) q *= 1 + (S.stress - 60)/80;
+  q = q0*softCap(q/q0, 4); // 위험요인이 겹쳐도 끝없이 곱해지지 않게
   if (a < 1) q = .0025;
   if (R() < q){
-    if (a >= 65 && R() < .6) endOfLife(pick(['노환','폐렴','심부전']));
-    else S.cause = a < 45 ? '불의의 사고' : a < 70 ? pick(['심장마비','불의의 사고']) : pick(['심장마비','노환 (잠든 채 영면)']);
+    const chronicDeath = Object.keys(S.cond).some(k => CHRONIC[k].cause);
+    if (a >= 60 && (chronicDeath || R() < .6)) endOfLife(naturalCause());
+    else S.cause = suddenCause();
   }
 }
 function endOfLife(cause){
@@ -1374,8 +1680,12 @@ function die(cause){
 const feed = $('#feed');
 function prepend(html){
   feed.insertAdjacentHTML('afterbegin', html);
+  const el = feed.firstElementChild;
+  if (el && el.classList.contains('card')) el.classList.add('fresh');
   feed.scrollTop = 0;
 }
+// 새 해가 시작되면 지난 카드의 강조를 끔
+function unfresh(){ feed.querySelectorAll('.card.fresh').forEach(c => c.classList.remove('fresh')); }
 function chipsHtml(chips){ return chips && chips.length ? `<div class="chips">${chips.map(([c,t]) => `<span class="chip ${c}">${t}</span>`).join('')}</div>` : ''; }
 function evCard(tone, ic, title, body, chips){
   prepend(`<article class="card ev ${tone}"><div class="ic">${icon(ic)}</div><div style="min-width:0"><h3>${title}</h3>${body?`<p>${body}</p>`:''}${chipsHtml(chips)}</div></article>`);
@@ -1388,7 +1698,7 @@ function renderYear(b, prem){
   const a = S.age;
   const lines = year.lines.map(([ic,t]) => `<li>${icon(ic)}<span>${t}</span></li>`).join('');
   prepend(`<article class="card">
-    <div class="yr-head"><span class="a">${a}세</span><span class="y">${START_YEAR + a}년</span><span class="stage">${b.stage}</span></div>
+    <div class="yr-head"><span class="a">${a}세</span><span class="y">${START_YEAR + a}년</span><span class="new-tag">NEW</span><span class="stage">${b.stage}</span></div>
     <p class="flavor">${b.flavor}</p>
     <div class="use"><span>${icon('fa-hospital')} 병의원 <b class="num">${b.visits}</b>일</span><span>${icon('fa-prescription-bottle-medical')} 약국 <b class="num">${b.ph}</b>일</span></div>
     ${b.mil ? '' : `<dl class="ledger">
@@ -1435,7 +1745,7 @@ function insLabel(){
 function renderHUD(){
   const h = clamp(Math.round(S.health), 0, 100);
   $('#hAge').textContent = S.age < 0 ? '태아' : `${S.age}세`;
-  $('#hYear').textContent = S.age < 0 ? `${START_YEAR}년 · 임신 중` : `${START_YEAR + S.age}년 · ${S.age}년째`;
+  $('#hYear').textContent = S.age < 0 ? `${START_YEAR}년 · 임신 중` : `${START_YEAR + S.age}년`;
   $('#hName').textContent = `${S.name} (${S.gender === 'F' ? '여' : '남'})`;
   $('#hJob').textContent = insLabel();
   $('#hInc').textContent = S.age < 0 ? '엄마 뱃속' : incomeText();
@@ -1443,7 +1753,10 @@ function renderHUD(){
   const dz = S.age < 0 ? [] : diseaseText();
   $('#hDis').textContent = dz.length ? dz.join(' · ') : '진단받은 질병 없음';
   $('#hDisRow').classList.toggle('sick', dz.length > 0);
-  $('#hFam').textContent = S.age < 0 ? `아버지 ${S.fGap}세 · 어머니 ${S.mGap}세` : familyText();
+  const rk = S.age < 0 ? [] : riskText();
+  $('#hRisk').textContent = rk.length ? `위험 요인: ${rk.join(' · ')}` : '뚜렷한 위험 요인 없음';
+  $('#hRiskRow').classList.toggle('warn', rk.length > 0);
+  $('#hFam').textContent = S.age < 0 ? `아버지 ${S.fGap}세 ${S.fJob} · 어머니 ${S.mGap}세 ${S.mJob}` : familyText();
   $('#hHealth').textContent = h;
   $('#hVital').textContent = S.alive ? vitality(h) : '영면';
   const bar = $('#hBar');
@@ -1460,6 +1773,21 @@ function renderHUD(){
   $('#hVisits').textContent = S.visits.toLocaleString('ko-KR');
   $('#hPharm').textContent = S.pharmacy.toLocaleString('ko-KR');
   $('#hRatio').textContent = S.paid > 0 ? `${Math.round(S.benefit / S.paid * 100).toLocaleString('ko-KR')}%` : '-';
+  flashChanged();
+}
+// 지난번과 값이 달라진 상단 항목만 반짝이게
+const HL_IDS = ['hJob','hInc','hWealth','hFam','hDis','hRisk','hHealth','hVital','hStress','hMood','hVisits','hPharm','hRatio'];
+let hudPrev = null;
+function flash(el){ if (!el) return; el.classList.remove('hl'); void el.offsetWidth; el.classList.add('hl'); }
+function flashChanged(){
+  const now = {}; HL_IDS.forEach(id => now[id] = $('#'+id).textContent);
+  now.paid = Math.round(S.paid); now.ben = Math.round(S.benefit);
+  if (hudPrev){
+    HL_IDS.forEach(id => { if (now[id] !== hudPrev[id]) flash($('#'+id)); });
+    if (now.paid !== hudPrev.paid) flash($('#hPaid').closest('.mbox'));
+    if (now.ben !== hudPrev.ben) flash($('#hBen').closest('.mbox'));
+  }
+  hudPrev = now;
 }
 
 const dock = $('#dock');
@@ -1519,6 +1847,7 @@ function toast(msg){
    ========================================================= */
 function josa(w, a, b){ const c = w.charCodeAt(w.length-1) - 0xAC00; return (c >= 0 && c <= 11171 && c % 28) ? a : b; }
 function ro(w){ const c = w.replace(/[)\s]+$/,'').charCodeAt(w.replace(/[)\s]+$/,'').length-1) - 0xAC00; return w + ((c >= 0 && c <= 11171 && c % 28 && c % 28 !== 8) ? '으로' : '로'); }
+const lossName = k => LOSS_NAMES[k] || (k.startsWith('c_') && CHRONIC[k.slice(2)] ? CHRONIC[k.slice(2)].name.replace(/\(.+\)/, '') : k);
 const LOSS_NAMES = { aging:'노화', smoke:'흡연', drink:'음주', upf:'초가공식품', chronic:'방치한 만성질환', stress:'스트레스', cancer:'암', cardio:'심뇌혈관질환', dementia:'치매', other:'기타 질환' };
 function lifeStory(){
   const n = S.name, A = Math.max(0, S.age), eun = josa(n,'은','는');
@@ -1535,7 +1864,9 @@ function lifeStory(){
   if (fatalCancer && fatalCancer.via !== 'screen' && S.checkSkips > 0) verdict = '너무 늦게 찾아낸 병';
   if (fatalCardio && fatalCardio.htnHidden) verdict = '모르고 지나친 고혈압';
   if (fatalCardio && S.stressPeak >= 70) verdict = '스트레스에 무너진 심장';
-  if (S.smokeEver && S.quitAge == null && ((fatalCancer && fatalCancer.type === 'lung') || fatalCardio)) verdict = '담배가 앗아간 삶';
+  if (S.checkSkips >= 3 && /콩팥|신부전|대동맥|뇌출혈/.test(S.cause || '')) verdict = '검진을 건너뛴 대가';
+  if (S.drinkEver && /간경변|간암|식도암/.test(S.cause || '')) verdict = '술이 앗아간 삶';
+  if (S.smokeEver && S.quitAge == null && ((fatalCancer && ['lung','headneck','esoph','bladder'].includes(fatalCancer.type)) || fatalCardio || /COPD/.test(S.cause || ''))) verdict = '담배가 앗아간 삶';
 
   const sec = [];
   // 1. 인생 궤적
@@ -1552,7 +1883,7 @@ function lifeStory(){
     if (laid) ev.push([laid.age, `${laid.age}세에는 구조조정으로 직장을 잃기도 했습니다.`]);
     if (S.marryAt != null) ev.push([S.marryAt, `${S.marryAt}세에 결혼해 ${S.children ? `자녀 ${S.children}명을 키웠습니다` : '아이 없이 둘이서 살았습니다'}.`]);
     else if (A >= 35) ev.push([999, '평생 혼자의 삶을 살았습니다.']);
-    if (S.widowed) ev.push([S.spouse.deathAge, `${S.spouse.deathAge}세에 배우자를 먼저 떠나보냈습니다.`]);
+    if (S.widowed) ev.push([S.spouse.deathAge, `${S.spouse.deathAge}세에 배우자를 ${ro(S.spouse.cause.name)} 먼저 떠나보냈습니다.`]);
     if (S.retired) ev.push([60, '60세에 은퇴했습니다.']);
     t += ev.sort((x, y) => x[0] - y[0]).map(x => ' ' + x[1]).join('');
     if (S.peakIncome) t += ` 가장 많이 벌던 해의 연소득은 <b>${won(S.peakIncome)}(${incLvl(S.peakIncome)})</b>, 마지막 재산은 <b>${won(S.wealth)} (${S.wealth < 0 ? '하, 빚' : wealthLvl(S.wealth)})</b>이었습니다.`;
@@ -1561,7 +1892,7 @@ function lifeStory(){
 
   // 2. 건강과 생활습관
   const losses = Object.entries(S.hloss).filter(([,v]) => v >= .5).sort((a,b) => b[1]-a[1]);
-  const top = losses.slice(0,3).map(([k,v]) => `${LOSS_NAMES[k]}(-${Math.round(v)})`);
+  const top = losses.slice(0,3).map(([k,v]) => `${lossName(k)}(-${Math.round(v)})`);
   let h = `체력은 태어날 때 <b>${Math.round(S.health0)}</b>에서 ${A}세에 <b>${Math.round(clamp(S.health,0,100))}</b>까지 내려왔습니다.`;
   if (top.length) h += ` 체력을 가장 많이 깎은 것은 ${top.join(', ')} 순이었습니다.`;
   const habits = [];
@@ -1574,6 +1905,14 @@ function lifeStory(){
   if (S.upf) habits.push('10대에 길든 짜고 단 초가공식품 입맛이 평생 따라다녔습니다.');
   if (hs.exAt != null) habits.push(`${hs.exAt}세부터 꾸준히 운동해 체력을 <b>+${Math.round(S.hgain)}</b>만큼 지켜냈습니다.`);
   else if (A >= 30) habits.push('운동은 평생 멀리했습니다.');
+  const lost = [];
+  if (hs.smokeAt != null){
+    const q = S.quitAge != null && !S.smoke ? S.quitAge : null;
+    const yl = q == null ? 10 : q < 35 ? 1 : q < 45 ? 3 : q < 55 ? 6 : q < 65 ? 8 : 9;
+    lost.push(`흡연 약 ${yl}년`);
+  }
+  if (hs.drinkAt != null){ const yd = hs.drinkStop ? Math.max(1, Math.min(5, Math.round((hs.drinkStop - hs.drinkAt)/6))) : 5; lost.push(`고위험 음주 약 ${yd}년`); }
+  if (lost.length) habits.push(`<b>통계로 보면</b> 이런 습관은 기대수명을 ${lost.join(', ')} 줄입니다.`);
   sec.push({ ic:'fa-heart-pulse', h:'무엇이 건강을 좌우했나', p:h, list:habits, losses });
 
   // 3. 스트레스
@@ -1609,18 +1948,28 @@ function lifeStory(){
   }
   for (const h2 of hidden) dx.push(`<b>${CANCERS[h2.type].name}</b>: ${h2.onset}세 무렵 몸속에 생겨 ${h2.stage}기까지 자랐지만 끝내 발견되지 않았습니다.`);
   for (const c of S.cardioLog) dx.push(`<b>${c.kind}</b> (${c.age}세): ${c.fatal ? '골든타임을 놓쳐 돌연사했습니다' : '119 덕분에 살아났습니다'}.${fx(c.why)}${c.htnHidden ? ' 고혈압이 있는 줄 몰랐습니다.' : ''}`);
+  for (const [k, cc] of Object.entries(CHRONIC)){
+    const c = S[k] || S.cond[k]; if (!c || !S.cond[k]) continue;
+    if (!c.detected) dx.push(`<b>${cc.name}</b>: ${c.onset}세 무렵부터 있었지만 끝내 몰랐습니다.${fx(c.why)}`);
+    else if (c.onset === c.detAge && c.how !== '건강검진') dx.push(`<b>${cc.name}</b> (${c.onset}세): ${c.how}.`);
+    else dx.push(`<b>${cc.name}</b>: ${c.onset}세 무렵 생겨 ${c.detAge}세에 ${c.how}에서 발견${c.detAge - c.onset >= 3 && c.how !== '건강검진' ? `, <b>${c.detAge - c.onset}년이나 방치</b>됐습니다` : ''}.${fx(c.why)}`);
+  }
+  if (S.hipFx != null) dx.push(`<b>고관절 골절</b> (${S.hipFx}세): ${hasC('osteo') ? '골다공증으로 약해진 뼈가' : '넘어지면서 뼈가'} 부러졌습니다.`);
   if (S.dementia) dx.push('<b>치매</b>: 노년에 기억이 흐려지기 시작했습니다.');
   if (S.rare) dx.push('<b>희귀질환</b>: 원인을 몰라 헤매다 진단받고 산정특례로 치료했습니다.');
   let dp = `건강검진은 <b>${S.checkups}번</b> 받고 <b>${S.checkSkips}번</b> 건너뛰었습니다.`;
   if (screenSaved) dp += ' 증상 없을 때 받은 검진이 생명을 지켰습니다.';
   else if (cancers.some(c => c.via !== 'screen' && c.stage >= 3) && S.checkSkips) dp += ' 건너뛴 검진이 늦은 발견으로 이어졌습니다.';
+  const missed = Object.keys(S.cond).filter(k => CHRONIC[k].screen && (!S.cond[k].detected || S.cond[k].how !== '건강검진')).map(k => CHRONIC[k].name)
+    .concat(['htn','dm'].filter(k => S[k] && (!S[k].detected || S[k].how !== '건강검진')).map(k => k === 'htn' ? '고혈압' : '당뇨병'));
+  if (S.checkSkips && missed.length) dp += ` 검진으로 일찍 찾을 수 있었던 <b>${missed.join(', ')}</b>을 늦게 알았거나 끝내 몰랐습니다.`;
   if (!dx.length) dp += ' 큰 병 없이 살았습니다.';
   sec.push({ ic:'fa-stethoscope', h:'병은 어떻게 찾아왔나', p:dp, list:dx });
 
   // 5. 마지막
   let e = `${A}세, <b>${ro(S.cause)}</b> 생을 마쳤습니다.`;
   if (fatalCancer) e += ` ${fatalCancer.dxAge}세 진단 후 ${A - fatalCancer.dxAge}년을 투병했습니다.`;
-  if (S.cause === '다발성 장기부전') e += ` 노화와 ${top.slice(1).join(', ') || '병'}이 겹치며 체력이 바닥났습니다.`;
+  if (S.health < 15) e += ` 마지막 몇 해는 노화와 ${top.slice(1).join(', ') || '병'}이 겹쳐 체력이 바닥난 상태였습니다.`;
   if (S.ltc) e += ` 마지막 ${Math.max(1, S.age - S.ltcAt)}년은 장기요양 ${S.ltc === 'home' ? '방문요양' : '요양원'}의 돌봄을 받았습니다.`;
   if (S.hospice) e += ' 호스피스 병동에서 가족과 작별 인사를 나눴습니다.';
   if (S.directive) e += ' 미리 써 둔 사전연명의료의향서 덕분에 가족이 어려운 결정을 대신하지 않아도 됐습니다.';
@@ -1637,9 +1986,80 @@ function storyHtml(){
     <h2>${L.verdict}</h2>
     <div class="who">${S.gender==='F'?'여성':'남성'} · 향년 ${Math.max(0,S.age)}세 · ${S.job ? JOBS[S.job].name : '직업 없음'}</div>
     ${L.sec.map(x => `<section><h3>${icon(x.ic)}${x.h}</h3><p>${x.p}</p>
-      ${x.losses && (x.losses.length || S.hgain) ? `<div class="loss">${x.losses.map(([k,v]) => `<span>${LOSS_NAMES[k]}</span><span class="t"><i style="width:${v/max*100}%"></i></span><span class="v">-${Math.round(v)}</span>`).join('')}${S.hgain >= .5 ? `<span>운동</span><span class="t"><i class="up" style="width:${S.hgain/max*100}%"></i></span><span class="v">+${Math.round(S.hgain)}</span>` : ''}</div>` : ''}
+      ${x.losses && (x.losses.length || S.hgain) ? `<div class="loss">${x.losses.map(([k,v]) => `<span>${lossName(k)}</span><span class="t"><i style="width:${v/max*100}%"></i></span><span class="v">-${Math.round(v)}</span>`).join('')}${S.hgain >= .5 ? `<span>운동</span><span class="t"><i class="up" style="width:${S.hgain/max*100}%"></i></span><span class="v">+${Math.round(S.hgain)}</span>` : ''}</div>` : ''}
       ${x.list && x.list.length ? `<ul>${x.list.map(li => `<li>${li}</li>`).join('')}</ul>` : ''}</section>`).join('')}
   </article>`;
+}
+// 정부지원(국고+건강증진기금): 최근 실제 지원액은 보험료 수입의 약 14% 수준
+const GOV_SHARE = 0.14;
+function showFinance(){
+  const m = $('#srcModal');
+  const L = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+  const seg = (v, max, c) => `<i style="width:${Math.max(0, v)/max*100}%;background:${c}"></i>`;
+  // 1. 내 인생 장부
+  let mine = '';
+  if (S && S.age >= 0 && S.paid > 0){
+    const me = S.paid, co = S.employerPaid, gov = (me + co)*GOV_SHARE, ben = S.benefit;
+    const inSum = me + co + gov, gap = ben - inSum, max = Math.max(ben, inSum);
+    mine = `<section><h3>${icon('fa-user')}${S.name}의 건강보험 장부${S.alive ? ` (${S.age}세 현재)` : ''}</h3>
+      <p>영수증의 수혜율은 <b>내가 낸 돈</b>만 센 값입니다. 실제로 내 몫으로 건강보험에 들어간 돈을 모두 더하면 이렇습니다.</p>
+      <div class="frow"><span>들어간 돈</span><span class="fbar" style="height:14px;margin:0">${seg(me,max,'var(--paid)')}${seg(co,max,'var(--accent)')}${seg(gov,max,'var(--violet)')}</span><span class="v">${won(inSum)}</span></div>
+      <div class="frow"><span>받은 혜택</span><span class="fbar" style="height:14px;margin:0">${seg(ben,max,'var(--benefit)')}</span><span class="v">${won(ben)}</span></div>
+      <div class="fleg"><span style="--c:var(--paid)">내 보험료 ${won(me)}</span><span style="--c:var(--accent)">회사 부담 ${won(co)}</span><span style="--c:var(--violet)">정부 지원 몫(추정) ${won(gov)}</span></div>
+      <p style="margin-top:8px">${gap > 0
+        ? `그래도 <b>${won(gap)}</b>이 남습니다. 이 차액은 건강하거나 소득이 많아 <b>낸 만큼 쓰지 않은 다른 가입자들</b>, 그리고 앞으로 보험료를 낼 <b>다음 세대</b>가 채웁니다.`
+        : `받은 것보다 <b>${won(-gap)}</b> 더 들어갔습니다. 이 돈은 지금 큰 병과 싸우는 다른 누군가의 치료비가 되었습니다. 이것이 사회보험입니다.`}</p>
+    </section>`;
+  } else {
+    mine = `<section><h3>${icon('fa-user')}내 건강보험 장부</h3><p>게임을 진행하면 여기에 내가 낸 보험료, 회사와 정부가 보탠 몫, 받은 혜택이 비교되어 나옵니다.</p></section>`;
+  }
+  m.innerHTML = `<article class="bio" aria-label="건강보험 재정 이야기">
+    <div class="eb">5천만분의 1 · 건강보험 재정 이야기</div>
+    <h2>어떻게 낸 돈보다 더 받을 수 있을까</h2>
+    <div class="who">게임 속 대부분의 인생이 "남는 장사"로 끝나는 이유와, 그 돈이 어디서 오는지.</div>
+    ${mine}
+    <section><h3>${icon('fa-coins')}건강보험의 돈은 세 군데서 옵니다</h3>
+      <ul>
+        <li><b>① 내 보험료</b>: 직장가입자는 월급의 3.595%, 지역가입자는 소득·재산 기준 전액</li>
+        <li><b>② 회사 부담분</b>: 직장가입자 보험료와 똑같은 금액을 회사가 한 번 더 냅니다</li>
+        <li><b>③ 정부 지원</b>: 세금(일반회계)과 담배 부담금(건강증진기금). 2024년 <b>12조 2천억원</b>. 법은 예상 보험료 수입의 20%를 정해 두었지만 실제로는 14% 안팎이었습니다</li>
+      </ul></section>
+    <section><h3>${icon('fa-people-arrows')}그래도 남는 차액은 누가 낼까</h3>
+      <p>보험료는 <b>소득</b>에 비례하고, 병원비는 <b>아픈 만큼</b> 나갑니다. 고소득자·건강한 사람·일찍 떠난 사람은 낸 것보다 덜 쓰고, 저소득자·큰 병을 앓은 사람·오래 산 사람은 더 씁니다. 이렇게 서로 위험을 나누는 것이 사회보험입니다.</p>
+      <p style="margin-top:6px">또 건강보험은 해마다 <b>그해 걷은 돈으로 그해 진료비를 내는</b> 방식입니다. 지금 일하는 세대가 지금 아픈 노인 세대를 받치고, 지금의 청년은 나중에 다음 세대의 보험료로 보장받습니다.</p></section>
+    <section><h3>${icon('fa-person-cane')}고령화: 내는 사람은 줄고 쓰는 사람은 늘고</h3>
+      <div class="frow"><span>인구 비중</span><span class="t"><i style="width:18.9%;background:var(--warn)"></i></span><span class="v">65세+ 18.9%</span></div>
+      <div class="frow"><span>진료비 비중</span><span class="t"><i style="width:45%;background:var(--danger)"></i></span><span class="v">65세+ 45%</span></div>
+      <p style="margin-top:8px">2024년 65세 이상 진료비는 <b>52조 1,935억원</b>으로 전체의 약 45%입니다. 노인 1인당 진료비는 전체 평균의 두 배가 넘습니다. 게임에서도 70대부터 혜택이 급격히 쌓이는 것을 볼 수 있습니다.</p></section>
+    <section><h3>${icon('fa-chart-line')}재정은 지금 어떤가</h3>
+      <div class="fyears">
+        <div class="pos">2024 당기수지<b>+1.7조</b></div>
+        <div class="pos">2025 당기수지<b>+0.5조</b></div>
+        <div class="neg">2026 전망<b>적자</b></div>
+        <div>누적 준비금<b>30.2조</b></div>
+      </div>
+      <p style="margin-top:8px">2025년 총수입 <b>102.9조원</b>, 총지출 <b>102.4조원</b>으로 5년 연속 흑자였지만, 흑자 폭이 1년 새 71% 줄었습니다. 국회예산정책처는 준비금이 <b>2028년</b>(의료개혁 영향 반영)에서 <b>2031년</b> 사이에 바닥날 수 있다고 전망했습니다.</p></section>
+    <section><h3>${icon('fa-screwdriver-wrench')}유지하려면</h3>
+      <ul>
+        <li><b>보험료율 조정</b>: 현재 7.19%, 법정 상한 8%. 2027년도 보험료율은 동결됐습니다</li>
+        <li><b>정부 지원 확대</b>: 법에 정한 20%를 실제로 채우기</li>
+        <li><b>의료 이용 관리</b>: 1인당 외래진료 연 17.9회로 OECD 평균의 약 3배</li>
+        <li><b>부과 기반 확대</b>: 금융·임대 등 다른 소득과 피부양자 기준 정비</li>
+      </ul>
+      <p style="margin-top:6px">게임 속 "남는 장사"는 지금의 제도와 지금의 젊은 세대 덕분입니다. 건강보험을 지키는 가장 쉬운 방법은 검진을 챙기고 생활습관을 관리해 크게 아프지 않는 것입니다.</p></section>
+    <section><h3>${icon('fa-book')}출처</h3>
+      <p>${L('https://www.fnnews.com/news/202601281027338966','2025년 건강보험 재정 결과 (파이낸셜뉴스)')}<br>
+      ${L('https://www.segye.com/newsView/20260128516583','흑자 규모 1년 새 71% 감소 (세계일보)')}<br>
+      ${L('https://mobile.newsis.com/view/NISX20250107_0003023333','2024년도 현금수지 (뉴시스)')}<br>
+      ${L('https://dailypharm.com/user/news/9843','국회예산정책처 재정 전망 (데일리팜)')}<br>
+      ${L('https://www.metroseoul.co.kr/article/20260909500198','2027년도 보험료율 동결 (메트로신문)')}<br>
+      ${L('https://medigatenews.com/news/1685979552','국고지원 20% 기준과 실제 비율 (메디게이트뉴스)')}<br>
+      ${L('https://www.medipana.com/news/articleView.html?idxno=402890','2024 건강보험통계연보: 노인 진료비 (메디파나뉴스)')}</p>
+      <p style="margin-top:6px">정부 지원 몫은 보험료 수입의 14%로 단순 추정한 값입니다.</p></section>
+    <div class="rc-actions" style="grid-template-columns:1fr"><button class="btn primary" id="btnSrcClose">닫기</button></div>
+  </article>`;
+  m.hidden = false; m.scrollTop = 0;
+  $('#btnSrcClose').onclick = () => { m.hidden = true; };
 }
 function showSources(){
   const m = $('#srcModal');
@@ -1671,6 +2091,13 @@ function showSources(){
         <li>게임의 1기=국한, 3기=국소, 4기=원격, 2기=국한과 국소의 중간으로 대응시켰습니다. 유방암·자궁경부암의 국소·원격 값은 찾지 못해 추정했습니다. ${EST}</li>
       </ul>
       <p style="margin-top:6px">${L('https://www.cancer.go.kr/download.do?uuid=48ec0d0b-2eb1-4dd8-bd8e-dd9dc629473a.pdf','2022년 국가암등록통계 주요 결과 (PDF)')}<br>${L('https://www.mohw.go.kr/board.es?mid=a10503010100&bid=0027&act=view&list_no=1484074','보건복지부 보도자료 (2024.12.26)')}<br>${L('https://cancer.go.kr/lay1/S1T648C652/contents.do','국가암정보센터 · 요약병기별 생존율')}</p></section>
+    <section><h3>${icon('fa-smoking')}생활습관과 기대수명</h3>
+      <ul>
+        <li>평생 흡연자는 비흡연자보다 기대수명이 약 10년 짧고, 40세 전에 끊으면 그 손실의 약 90%를 되찾습니다. ${OK} ${L('https://www.nejm.org/doi/full/10.1056/NEJMsa1211128','Jha 외, NEJM 2013')}</li>
+        <li>주 350g(소주 약 5병) 넘게 마시면 40세 기준 기대수명이 약 4~5년 줄어듭니다. ${OK} ${L('https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(18)30134-X/fulltext','Wood 외, Lancet 2018')}</li>
+        <li>게임은 이 차이가 나오도록 흡연(사망위험 약 2.6배)·음주(약 1.7배) 가중치와 질병 발생률을 맞췄습니다. ${EST}</li>
+        <li>추가한 질병(이상지질혈증, 지방간, 간경변, 만성폐쇄성폐질환, 만성콩팥병·투석, 심방세동, 골다공증·고관절 골절, 파킨슨병, 심부전, 뇌졸중 후유증, 폐렴, 식도·방광·신장·구강·혈액·담도암)의 발생률과 위험 배수는 국내외 유병률 범위에 맞춘 추정치입니다. ${EST}</li>
+      </ul></section>
     <section><h3>${icon('fa-hourglass-half')}기대수명 ${OK}</h3>
       <p>2024년 생명표: 전체 83.7세, 남성 80.8세, 여성 86.6세. 사망률 곡선은 이 값에 맞춰 조정했고, 흡연·음주·스트레스에 따른 가중치는 역학 연구의 일반적 범위로 정했습니다. ${EST}</p>
       <p style="margin-top:6px">${L('https://v.daum.net/v/20251203140047593','2024년 생명표 보도 (국가데이터처)')}</p></section>
@@ -1751,6 +2178,7 @@ function showEnding(){
     <div class="rc-actions">
       <button class="btn" id="btnShare">${icon('fa-share-nodes')}공유하기</button>
       <button class="btn primary" id="btnReplay">${icon('fa-rotate-right')}다시 태어나기</button>
+      <button class="btn blue" id="btnFinEnd" style="grid-column:1/-1">${icon('fa-scale-balanced')}어떻게 낸 돈보다 더 받을까? · 재정 이야기</button>
       <button class="btn ghost" id="btnSrcEnd" style="font-size:13px">통계 출처</button>
       <button class="btn ghost" id="btnClose" style="font-size:13px">타임라인 다시 보기</button>
     </div>`;
@@ -1759,6 +2187,7 @@ function showEnding(){
   $('#btnClose').onclick = () => { m.hidden = true; };
   $('#btnShare').onclick = share;
   $('#btnSrcEnd').onclick = showSources;
+  $('#btnFinEnd').onclick = showFinance;
   if (S.age >= 83 || S.badges.has('survivor')) fire();
 }
 async function share(){
@@ -1783,9 +2212,11 @@ $('#btnStart').onclick = () => {
   S.health0 = S.health;
   S.hhInc = rint(1,10); S.hhWealth = clamp(S.hhInc + rint(-2,2), 1, 10); S.decile = S.hhInc;
   S.fGap = rint(28,36); S.mGap = rint(26,34);
+  S.fJob = parentJob(false); S.mJob = parentJob(true); S.childJobs = [];
   S.father = rint(70,88) - S.fGap; S.mother = rint(74,93) - S.mGap; // 내 나이 기준 부모님 별세 시점
   shown.paid = 0; shown.ben = 0;
   feed.innerHTML = '';
+  hudPrev = null;
   $('#startScreen').hidden = true;
   // 임신 단계
   charge(1000000, 0); S.visits += 12;
@@ -1816,7 +2247,7 @@ function renderStd(){
   const man = v => Math.round(v/1e4).toLocaleString('ko-KR') + '만원';
   const old = HIRA_AGE.find(r => r.min === 75);
   const g = (title, rows) => `<h4>${title}</h4><dl>${rows.map(([k, y, v, sub]) => `<dt>${k}${y ? `<small>${y}</small>` : ''}</dt><dd>${v}${sub ? `<small>${sub}</small>` : ''}</dd>`).join('')}</dl>`;
-  $('#stdPanel').innerHTML = `<div class="std-head"><b>이 게임에 적용된 기준</b><button class="srclink" id="btnSrcStart">자세한 출처</button></div>`
+  $('#stdPanel').innerHTML = `<div class="std-head"><b>이 게임에 적용된 기준</b><span><button class="srclink" id="btnFinStart">재정 이야기</button> · <button class="srclink" id="btnSrcStart">출처</button></span></div>`
     + g('보험료', [
         ['건강보험료율', '2026', pct(RATE), `직장가입자 본인 ${pct(RATE/2)} · 회사 ${pct(RATE/2)}`],
         ['장기요양보험료율', '2026', `건보료의 ${pct(LTC_RATE)}`, `소득 대비 ${pct(RATE*LTC_RATE)}`],
@@ -1840,9 +2271,26 @@ function renderStd(){
         ['암 5년 상대생존율', '2018~22', '국한 92.1%', '국소 75.1% · 원격 27.1%'],
       ]);
   $('#btnSrcStart').onclick = showSources;
+  $('#btnFinStart').onclick = showFinance;
 }
 renderStd();
 $('#btnSrcHud').onclick = showSources;
+$('#btnFinHud').onclick = showFinance;
+// 상단 상세 정보 접기: 화면이 짧으면 처음부터 접어 둠, 선택은 이 브라우저에만 기억
+function setFold(f){
+  $('#app').classList.toggle('fold', f);
+  const b = $('#btnFold');
+  b.setAttribute('aria-expanded', String(!f));
+  b.innerHTML = f ? `${icon('fa-chevron-down')} 상세` : `${icon('fa-chevron-up')} 접기`;
+}
+let foldPref = null;
+try { foldPref = localStorage.getItem('o50m-fold2'); } catch(e){}
+setFold(foldPref === '1'); // 기본은 상세 펼침
+$('#btnFold').onclick = () => {
+  const f = !$('#app').classList.contains('fold');
+  setFold(f);
+  try { localStorage.setItem('o50m-fold2', f ? '1' : '0'); } catch(e){}
+};
 addEventListener('resize', () => { if (!$('#startScreen').hidden) drawDots(); });
 drawDots();
 dock.innerHTML = '';
