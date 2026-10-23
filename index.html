@@ -1899,7 +1899,7 @@ function lifeStory(){
   const hs = S.hist;
   if (hs.smokeAt != null){
     if (S.quitAge != null && !S.smoke) habits.push(`${hs.smokeAt}세에 시작한 담배를 ${S.quitAge}세에 금연치료로 끊었습니다(${S.quitAge - hs.smokeAt}년 흡연).`);
-    else habits.push(`${hs.smokeAt}세에 ${hs.smokeVice === hs.smokeAt ? '스트레스를 못 이겨 ' : ''}시작한 담배를 끝내 끊지 못했습니다(${A - hs.smokeAt}년 흡연). 흡연은 폐암 위험을 크게, 심근경색·뇌졸중 위험을 2배로 올렸습니다.`);
+    else habits.push(`${hs.smokeAt}세에 ${hs.smokeVice === hs.smokeAt ? '스트레스를 못 이겨 ' : ''}시작한 담배를 끝내 끊지 못했습니다(${A - hs.smokeAt}년 흡연). 흡연은 폐암 위험을 약 10배, 심근경색·뇌졸중 위험을 약 2.5배로 올렸습니다.`);
   } else if (A >= 20) habits.push('담배는 평생 입에 대지 않았습니다.');
   if (hs.drinkAt != null) habits.push(hs.drinkStop ? `${hs.drinkAt}세부터 이어진 잦은 술자리를 ${hs.drinkStop}세에 줄였습니다.` : `${hs.drinkVice ? `${hs.drinkVice}세부터 스트레스를 술로 풀었고` : `${hs.drinkAt}세부터 고위험 음주가 이어졌고`}, 간과 혈관이 그 대가를 치렀습니다.`);
   if (S.upf) habits.push('10대에 길든 짜고 단 초가공식품 입맛이 평생 따라다녔습니다.');
