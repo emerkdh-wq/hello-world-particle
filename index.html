@@ -1200,8 +1200,8 @@ function chronicYear(){
     }
   }
 }
-// 위험 배수가 상한(c)을 넘으면 초과분을 1/3만 반영
-function softCap(m, c){ return m > c ? c + (m - c)/3 : m; }
+// 위험 배수가 상한(c)을 넘으면 초과분을 1/5만 반영
+function softCap(m, c){ return m > c ? c + (m - c)/5 : m; }
 function weightedPick(list){
   let t = list.reduce((x, [, w]) => x + w, 0), r = R()*t;
   for (const [v, w] of list){ if ((r -= w) <= 0) return v; }
