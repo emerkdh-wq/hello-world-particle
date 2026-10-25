@@ -171,6 +171,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .dock::-webkit-scrollbar-track{background:transparent}
 .more-hint{position:sticky;bottom:-12px;display:flex;justify-content:center;gap:6px;align-items:center;margin:6px -16px -12px;padding:10px 0 8px;font-size:11.5px;color:var(--muted);background:linear-gradient(to bottom, transparent, var(--surface) 45%);pointer-events:none}
 .more-hint svg{width:10px}
+#btnMore .cnt{font-size:12px;font-weight:500;opacity:.85;margin-left:4px}
 .opts .btn{flex-direction:column;align-items:stretch;text-align:left;padding:11px 14px;font-size:14px}
 /* 짧은 화면: 상단 상세를 접고 선택지를 촘촘하게 */
 #app.fold .hud-info{display:none}
@@ -861,8 +862,7 @@ function workLife(){
    ========================================================= */
 function lifeEvent(ic, title, body, chips){
   S.milestones.push({ age:S.age, ic, title });
-  prepend(`<article class="card ev t-pink"><div class="ic">${icon(ic)}</div><div style="min-width:0"><span class="eb">인생 이벤트 · ${S.age}세</span><h3>${title}</h3>${body?`<p>${body}</p>`:''}${chipsHtml(chips)}</div></article>`);
-  toast(title);
+  prepend(`<article class="card ev t-pink"><div class="ic">${icon(ic)}</div><div style="min-width:0"><span class="eb">인생 이벤트 · ${S.age}세</span><h3>${title}</h3>${body?`<p>${body}</p>`:''}${chipsHtml(chips)}</div></article>`, title);
 }
 function familyEvents(){
   const a = S.age, Q = S.queue;
@@ -962,7 +962,8 @@ function advance(){
 
   renderYear(base, prem);
   renderHUD();
-  if (S.cause && !S.queue.length) return die(S.cause);
+  if (S.cause && !S.queue.length) die(S.cause);
+  revealNext();
   renderDock();
 }
 
@@ -1752,22 +1753,30 @@ function endOfLife(cause){
     options: opts });
 }
 function die(cause){
-  S.alive = false; stopAuto(true);
+  S.alive = false; S.autoWanted = false;
   settleYear(true);
   evCard('t-gray','fa-dove', `${S.name}, 향년 ${Math.max(0,S.age)}세 · ${lifeStory().verdict}`, `${START_YEAR + S.age}년, ${ro(cause)} 생을 마쳤습니다. 영수증 화면에서 일생 정리를 볼 수 있습니다.`, [['', cause]]);
-  renderHUD(); renderDock();
-  setTimeout(showEnding, 900);
+  renderHUD();
+  S.endPending = true;
 }
 
 /* =========================================================
    렌더링
    ========================================================= */
 const feed = $('#feed');
-function prepend(html){
-  feed.insertAdjacentHTML('afterbegin', html);
-  const el = feed.firstElementChild;
-  if (el && el.classList.contains('card')) el.classList.add('fresh');
-  feed.scrollTop = 0;
+// 새 카드는 바로 붙이지 않고 대기열에 쌓았다가 「계속하기」로 하나씩 보여 줌
+const reveal = [];
+function prepend(html, toastMsg){ reveal.push({ html, toastMsg }); }
+function revealNext(){
+  const it = reveal.shift();
+  if (it){
+    feed.insertAdjacentHTML('afterbegin', it.html);
+    const el = feed.firstElementChild;
+    if (el && el.classList.contains('card')) el.classList.add('fresh');
+    feed.scrollTop = 0;
+    if (it.toastMsg) toast(it.toastMsg);
+  }
+  if (!reveal.length && S && S.endPending){ S.endPending = false; setTimeout(showEnding, 900); }
 }
 // 새 해가 시작되면 지난 카드의 강조를 끔
 function unfresh(){ feed.querySelectorAll('.card.fresh').forEach(c => c.classList.remove('fresh')); }
@@ -1782,7 +1791,7 @@ function line2(ic, text, tone='t-gray'){
 function renderYear(b, prem){
   const a = S.age;
   const lines = year.lines.map(([ic,t]) => `<li>${icon(ic)}<span>${t}</span></li>`).join('');
-  prepend(`<article class="card">
+  reveal.unshift({ html:`<article class="card">
     <div class="yr-head"><span class="a">${a}세</span><span class="y">${START_YEAR + a}년</span><span class="new-tag">NEW</span><span class="stage">${b.stage}</span></div>
     <p class="flavor">${b.flavor}</p>
     <div class="use"><span>${icon('fa-hospital')} 병의원 <b class="num">${b.visits}</b>일</span><span>${icon('fa-prescription-bottle-medical')} 약국 <b class="num">${b.ph}</b>일</span></div>
@@ -1794,7 +1803,7 @@ function renderYear(b, prem){
       <dt>낸 건강보험료</dt><dd class="num b">${prem.mine ? won(prem.mine) : '0원'}</dd>
     </dl>`}
     <ul class="mini"><li>${icon('fa-receipt')}<span>${prem.note}</span></li>${lines}</ul>
-  </article>`);
+  </article>` });
 }
 
 const shown = { paid:0, ben:0 }, tweenId = { paid:0, ben:0 };
@@ -1880,6 +1889,15 @@ function flashChanged(){
 const dock = $('#dock');
 let autoTimer = null;
 function renderDock(){
+  if (reveal.length){
+    const n = reveal.length;
+    dock.innerHTML = `<div class="row">
+      <button class="btn ghost ${S.auto?'on':''}" id="btnAuto" aria-pressed="${S.auto}" title="자동 진행">${icon(S.auto?'fa-pause':'fa-forward')}<span>${S.auto?'멈춤':'자동'}</span></button>
+      <button class="btn blue" id="btnMore" style="flex:1">${icon('fa-angles-down')}계속하기 <span class="cnt">새 소식 ${n}개 더</span></button></div>`;
+    $('#btnMore').onclick = () => { revealNext(); renderDock(); };
+    $('#btnAuto').onclick = () => { S.auto ? stopAuto(true) : startAuto(); renderDock(); };
+    return;
+  }
   if (!S.alive){
     dock.innerHTML = `<div class="row"><button class="btn blue" style="flex:1" id="btnReceipt">${icon('fa-receipt')}인생 영수증 보기</button></div>`;
     $('#btnReceipt').onclick = showEnding;
@@ -1899,7 +1917,8 @@ function renderDock(){
       S.queue.shift();
       o.run();
       renderHUD();
-      if (S.cause && (!S.dying || !S.queue.some(x => x.id === 'eol'))){ S.queue = []; return die(S.cause); }
+      if (S.cause && (!S.dying || !S.queue.some(x => x.id === 'eol'))){ S.queue = []; die(S.cause); }
+      revealNext();
       renderDock();
       if (S.autoWanted && !S.queue.length) startAuto();
     });
@@ -1916,7 +1935,9 @@ function startAuto(){
   S.auto = true; S.autoWanted = true;
   clearInterval(autoTimer);
   autoTimer = setInterval(() => {
-    if (!S.alive || S.queue.length){ return; }
+    if (reveal.length){ revealNext(); renderDock(); return; }
+    if (!S.alive){ stopAuto(true); renderDock(); return; }
+    if (S.queue.length){ return; }
     advance();
   }, 650);
 }
@@ -2309,6 +2330,7 @@ $('#btnStart').onclick = () => {
   S.father = rint(70,88) - S.fGap; S.mother = rint(74,93) - S.mGap; // 내 나이 기준 부모님 별세 시점
   shown.paid = 0; shown.ben = 0;
   feed.innerHTML = '';
+  reveal.length = 0;
   hudPrev = null;
   $('#startScreen').hidden = true;
   // 임신 단계
@@ -2318,6 +2340,7 @@ $('#btnStart').onclick = () => {
     `임신이 확인되자 엄마는 <b>국민행복카드</b>로 임신·출산 진료비 <b>100만원</b>을 지원받았습니다. 초음파와 산전검사에도 건강보험이 적용됩니다. 건강보험은 태어나기 전부터 당신을 지키고 있습니다. 태어나면 ${hhIns() === 'employee' ? '직장가입자인 부모님의 <b>피부양자</b>로 등록되고' : '부모님이 지역가입자라 같은 세대의 <b>지역가입자 세대원</b>이 되고'}, 미성년자인 동안에는 <b>본인 몫의 보험료가 없습니다</b>.`,
     [['g','국민행복카드 100만원'],['','산전검사 12회'],['b','미성년자 보험료 0원'],['', g === 'F' ? '여아' : '남아']]);
   toast(`${nm} (${g === 'F' ? '여' : '남'})로 태어날 운명입니다`);
+  revealNext();
   renderHUD(); renderDock();
 };
 
