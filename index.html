@@ -94,6 +94,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .money{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .mbox{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
 .mbox .k{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.mbox .msub{font-size:10.5px;color:var(--muted);margin-top:1px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mbox .v{font-size:16px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mbox.paid .v{color:var(--paid)} .mbox.ben .v{color:var(--benefit)}
 .ratio{margin-top:6px;font-size:11px;color:var(--faint);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px}
@@ -304,7 +305,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <span class="vital"><span class="num" id="hStress">12</span> · <span id="hMood">평온</span></span>
     </div>
     <div class="money">
-      <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료</div><div class="v num" id="hPaid">0원</div></div>
+      <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료</div><div class="v num" id="hPaid">0원</div><div class="msub" id="hPaidM">이번 달 0원</div></div>
       <div class="mbox ben"><div class="k"><i class="fa-solid fa-shield-heart"></i>누적 공단부담 혜택</div><div class="v num" id="hBen">0원</div></div>
     </div>
     <div class="ratio"><button class="fold-btn" id="btnFold" aria-expanded="true" title="가족·소득·질병 정보 접기"><i class="fa-solid fa-chevron-up"></i> 접기</button><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnFinHud">재정</button> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
@@ -616,6 +617,8 @@ function payPremium(){
    ========================================================= */
 function settleYear(final){
   if (S.age < 0) return;
+  if (S.yearPrem > 0) S.premYears = (S.premYears || 0) + 1;
+  if (final) S.premClosed = true;
   const cap = CAPS[S.decile-1];
   let refund = 0;
   if (S.yearOOP > cap){
@@ -743,6 +746,12 @@ function wealthText(w){
   if (w == null) w = ownEconomy() ? S.wealth : HH_WEALTH[S.hhWealth-1];
   const pre = ownEconomy() ? '' : '가구 ';
   return w < 0 ? `${pre}재산 ${won(w)} (하, 빚)` : `${pre}재산 ${won(w)} (${wealthLvl(w)})`;
+}
+// 월 보험료: 이번 해 월액, 보험료를 낸 기간의 월평균
+function premMonthly(){ return S.yearPrem > 0 && !S.premClosed ? S.yearPrem/12 : 0; }
+function premAvgMonthly(){
+  const months = ((S.premYears || 0) + (!S.premClosed && S.yearPrem > 0 ? 1 : 0))*12;
+  return months ? S.paid/months : 0;
 }
 function econLabel(){ return `${incomeText()} · ${wealthText()}`; }
 // 진단받은(본인이 알고 있는) 질병만 표시
@@ -1846,6 +1855,7 @@ function renderHUD(){
   sb.style.backgroundColor = st < 40 ? 'var(--accent)' : st < 65 ? 'var(--warn)' : 'var(--danger)';
   $('#sBarWrap').setAttribute('aria-valuenow', st);
   tween('paid', $('#hPaid'), S.paid);
+  $('#hPaidM').textContent = S.age < 0 ? '태아: 보험료 없음' : `이번 달 ${won(premMonthly())} · 월평균 ${won(premAvgMonthly())}`;
   tween('ben', $('#hBen'), S.benefit);
   $('#hVisits').textContent = S.visits.toLocaleString('ko-KR');
   $('#hPharm').textContent = S.pharmacy.toLocaleString('ko-KR');
@@ -1853,7 +1863,7 @@ function renderHUD(){
   flashChanged();
 }
 // 지난번과 값이 달라진 상단 항목만 반짝이게
-const HL_IDS = ['hJob','hInc','hWealth','hFam','hDis','hRisk','hHealth','hVital','hStress','hMood','hVisits','hPharm','hRatio'];
+const HL_IDS = ['hPaidM','hJob','hInc','hWealth','hFam','hDis','hRisk','hHealth','hVital','hStress','hMood','hVisits','hPharm','hRatio'];
 let hudPrev = null;
 function flash(el){ if (!el) return; el.classList.remove('hl'); void el.offsetWidth; el.classList.add('hl'); }
 function flashChanged(){
@@ -2233,6 +2243,8 @@ function showEnding(){
       <hr class="rc-hr">
       <div class="rc-big"><span>내가 낸 건보료</span><span class="num">${fullWon(S.paid)}</span></div>
       <div class="rc-row"><span>  (회사 부담분 별도)</span><span class="num">${fullWon(S.employerPaid)}</span></div>
+      <div class="rc-row"><span>  월평균 보험료 (낸 기간 ${S.premYears || 0}년)</span><span class="num">${fullWon(premAvgMonthly())}</span></div>
+      <div class="rc-row"><span>  평생 월평균 받은 혜택</span><span class="num">${fullWon(S.benefit/Math.max(1, (S.age + 1)*12))}</span></div>
       <div class="rc-big"><span>받은 공단 혜택</span><span class="num">${fullWon(S.benefit)}</span></div>
       <div class="rc-bars">
         <div><span>낸 돈</span><i style="width:${S.paid/max*100}%;background:var(--rc-blue)"></i></div>
