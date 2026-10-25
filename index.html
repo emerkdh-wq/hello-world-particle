@@ -86,7 +86,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hud-info li.sick{color:var(--danger)} .hud-info li.sick svg{color:var(--danger)}
 .hud-info li.warn{color:var(--warn)} .hud-info li.warn svg{color:var(--warn)}
 .gauge{margin-top:10px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px}
-.gauge .lbl{color:var(--muted);letter-spacing:.04em;width:4.4em}
+.gauge .lbl{color:var(--muted);letter-spacing:.04em;width:5.6em;white-space:nowrap}
 .gauge+.gauge{margin-top:6px}
 .bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
 .bar>i{display:block;height:100%;border-radius:99px;transition:width .6s ease,background-color .6s}
@@ -267,6 +267,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .fyears div{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:11px;color:var(--muted)}
 .fyears b{display:block;font-size:14px;color:var(--fg);font-variant-numeric:tabular-nums}
 .fyears .neg b{color:var(--danger)} .fyears .pos b{color:var(--benefit)}
+.ibtn{display:inline-grid;place-items:center;width:15px;height:15px;margin-left:5px;border-radius:50%;border:1px solid var(--faint);color:var(--muted);font:600 9.5px/1 Georgia,'Times New Roman',serif;font-style:italic;vertical-align:1px;flex:none;cursor:pointer;background:transparent;padding:0}
+.ibtn:hover{color:var(--accent);border-color:var(--accent)}
+.ibtn::after{content:"";position:absolute;inset:-8px}
+.ibtn{position:relative}
+.info-kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;font-size:12.5px;margin-top:8px}
+.info-kv span:nth-child(odd){color:var(--muted)} .info-kv span:nth-child(even){text-align:right;font-variant-numeric:tabular-nums;color:var(--fg);font-weight:600}
 .srclink{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
 .src-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;font-variant-numeric:tabular-nums}
 .src-table th,.src-table td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right}
@@ -286,30 +292,30 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   <header class="hud" id="hud">
     <div class="hud-top">
       <div class="hud-age"><span id="hAge">태아</span><small id="hYear">2026년</small></div>
-      <div class="hud-who"><b id="hName">-</b><br><span id="hJob">피부양자</span></div>
+      <div class="hud-who"><b id="hName">-</b><br><span id="hJob">피부양자</span><button class="ibtn" data-info="job" aria-label="가입 자격 자세히 보기">i</button></div>
     </div>
     <ul class="hud-info">
-      <li><i class="fa-solid fa-coins"></i><span id="hInc">-</span></li>
-      <li><i class="fa-solid fa-house"></i><span id="hWealth">-</span></li>
-      <li><i class="fa-solid fa-people-group"></i><span id="hFam">-</span></li>
-      <li id="hDisRow"><i class="fa-solid fa-notes-medical"></i><span id="hDis">-</span></li>
-      <li id="hRiskRow"><i class="fa-solid fa-triangle-exclamation"></i><span id="hRisk">-</span></li>
+      <li><i class="fa-solid fa-coins"></i><span id="hInc">-</span><button class="ibtn" data-info="inc" aria-label="소득 자세히 보기">i</button></li>
+      <li><i class="fa-solid fa-house"></i><span id="hWealth">-</span><button class="ibtn" data-info="wealth" aria-label="재산 자세히 보기">i</button></li>
+      <li><i class="fa-solid fa-people-group"></i><span id="hFam">-</span><button class="ibtn" data-info="fam" aria-label="가족 자세히 보기">i</button></li>
+      <li id="hDisRow"><i class="fa-solid fa-notes-medical"></i><span id="hDis">-</span><button class="ibtn" data-info="dis" aria-label="질병 자세히 보기">i</button></li>
+      <li id="hRiskRow"><i class="fa-solid fa-triangle-exclamation"></i><span id="hRisk">-</span><button class="ibtn" data-info="risk" aria-label="위험 요인 자세히 보기">i</button></li>
     </ul>
     <div class="gauge">
-      <span class="lbl">체력</span>
+      <span class="lbl">체력<button class="ibtn" data-info="health" aria-label="체력 자세히 보기">i</button></span>
       <div class="bar" role="progressbar" aria-label="체력" aria-valuemin="0" aria-valuemax="100" id="hBarWrap"><i id="hBar" style="width:90%"></i></div>
       <span class="vital"><span class="num" id="hHealth">90</span> · <span id="hVital">활력 넘침</span></span>
     </div>
     <div class="gauge">
-      <span class="lbl">스트레스</span>
+      <span class="lbl">스트레스<button class="ibtn" data-info="stress" aria-label="스트레스 자세히 보기">i</button></span>
       <div class="bar" role="progressbar" aria-label="스트레스" aria-valuemin="0" aria-valuemax="100" id="sBarWrap"><i id="sBar" style="width:12%"></i></div>
       <span class="vital"><span class="num" id="hStress">12</span> · <span id="hMood">평온</span></span>
     </div>
     <div class="money">
-      <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료</div><div class="v num" id="hPaid">0원</div><div class="msub" id="hPaidM">이번 달 0원</div></div>
-      <div class="mbox ben"><div class="k"><i class="fa-solid fa-shield-heart"></i>누적 공단부담 혜택</div><div class="v num" id="hBen">0원</div></div>
+      <div class="mbox paid"><div class="k"><i class="fa-solid fa-arrow-up-from-bracket"></i>누적 납부 건보료<button class="ibtn" data-info="paid" aria-label="납부 건보료 자세히 보기">i</button></div><div class="v num" id="hPaid">0원</div><div class="msub" id="hPaidM">이번 달 0원</div></div>
+      <div class="mbox ben"><div class="k"><i class="fa-solid fa-shield-heart"></i>누적 공단부담 혜택<button class="ibtn" data-info="ben" aria-label="공단부담 혜택 자세히 보기">i</button></div><div class="v num" id="hBen">0원</div></div>
     </div>
-    <div class="ratio"><button class="fold-btn" id="btnFold" aria-expanded="true" title="가족·소득·질병 정보 접기"><i class="fa-solid fa-chevron-up"></i> 접기</button><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일</span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b> · <button class="srclink" id="btnFinHud">재정</button> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
+    <div class="ratio"><button class="fold-btn" id="btnFold" aria-expanded="true" title="가족·소득·질병 정보 접기"><i class="fa-solid fa-chevron-up"></i> 접기</button><span>병의원 <b class="num" id="hVisits">0</b>일 · 약국 <b class="num" id="hPharm">0</b>일<button class="ibtn" data-info="visits" aria-label="의료 이용 자세히 보기">i</button></span><span>낸 돈 대비 혜택 <b class="num" id="hRatio">-</b><button class="ibtn" data-info="ratio" aria-label="수혜율 자세히 보기">i</button> · <button class="srclink" id="btnFinHud">재정</button> · <button class="srclink" id="btnSrcHud">출처</button></span></div>
   </header>
 
   <main class="feed" id="feed" aria-live="polite"></main>
@@ -331,6 +337,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
   <section class="modal" id="endModal" hidden></section>
   <section class="modal" id="srcModal" hidden></section>
+  <section class="modal" id="infoModal" hidden></section>
 </div>
 
 <script>
@@ -1864,7 +1871,7 @@ function renderHUD(){
   sb.style.backgroundColor = st < 40 ? 'var(--accent)' : st < 65 ? 'var(--warn)' : 'var(--danger)';
   $('#sBarWrap').setAttribute('aria-valuenow', st);
   tween('paid', $('#hPaid'), S.paid);
-  $('#hPaidM').textContent = S.age < 0 ? '태아: 보험료 없음' : `이번 달 ${won(premMonthly())} · 월평균 ${won(premAvgMonthly())}`;
+  $('#hPaidM').textContent = S.age < 0 ? '태아: 보험료 없음' : `이번 달 ${won(premMonthly())}`;
   tween('ben', $('#hBen'), S.benefit);
   $('#hVisits').textContent = S.visits.toLocaleString('ko-KR');
   $('#hPharm').textContent = S.pharmacy.toLocaleString('ko-KR');
@@ -2173,6 +2180,113 @@ function showFinance(){
   m.hidden = false; m.scrollTop = 0;
   $('#btnSrcClose').onclick = () => { m.hidden = true; };
 }
+/* ---------- 상태창 ⓘ 자세히 보기 ---------- */
+function kv(rows){ return `<div class="info-kv">${rows.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join('')}</div>`; }
+function infoContent(key){
+  const on = S && S.age >= 0, a = on ? S.age : 0;
+  const P = S && S.incomeParts || {};
+  switch (key){
+  case 'health': {
+    const top = on ? Object.entries(S.hloss).sort((x, y) => y[1] - x[1]).slice(0, 4) : [];
+    return { t:'체력', h:`<p>0~100으로 나타낸 전반적인 몸 상태입니다. 나이가 들수록 올라갈 수 있는 최대치가 낮아지고(지금 ${on ? Math.round(maxHealth(a)) : 100}), 흡연·음주·방치한 병·스트레스·큰 병이 해마다 깎습니다. 운동은 매년 조금씩 되돌려 줍니다.</p>
+      <ul><li><b>50 미만</b>이면 사망 위험이 커지고, 낮을수록 병원비도 늘어납니다.</li><li>활력 단계: 85↑ 활력 넘침 · 70↑ 건강함 · 55↑ 무난함 · 40↑ 자주 피곤함 · 25↑ 쇠약함 · 그 아래 위중</li><li>65세 이상이 되어 체력이 많이 떨어지면 장기요양 등급을 신청할 수 있습니다.</li></ul>
+      ${top.length ? `<p style="margin-top:8px"><b>지금까지 체력을 가장 많이 깎은 것</b></p>${kv(top.map(([k, v]) => [lossName(k), `-${Math.round(v)}`]))}` : ''}` };
+  }
+  case 'stress': {
+    const groups = {}; if (on) for (const e of S.stressLog){ groups[e.why] = (groups[e.why] || 0) + e.n; }
+    const top = Object.entries(groups).sort((x, y) => y[1] - x[1]).slice(0, 4);
+    return { t:'스트레스 지수', h:`<p>0~100. 일과 가족, 병 때문에 올라가고 해마다 원래 수준 쪽으로 25%씩 돌아옵니다. 운동하고 결혼해 의지할 사람이 있으면 기준이 낮아지고, 직업마다 기준이 다릅니다.</p>
+      <ul><li><b>지금 영향</b>: 심근경색·뇌졸중 위험 약 ${on ? (1 + S.stress/110).toFixed(2) : '1.00'}배, 암 위험 약 ${on ? (1 + S.stress/300).toFixed(2) : '1.00'}배, 고혈압이 생길 위험도 커집니다.</li><li>50을 넘으면 체력이 깎이고, 60을 넘으면 사망 위험이 커집니다.</li><li>65 이상이면 상담·술담배·혼자 참기 중 하나를 고르는 선택지가 나옵니다.</li></ul>
+      ${top.length ? `<p style="margin-top:8px"><b>지금까지 큰 스트레스</b></p>${kv(top.map(([k, v]) => [k, `+${v}`]))}` : ''}` };
+  }
+  case 'paid': {
+    let how = '아직 보험료를 내지 않습니다.';
+    if (on && S.ins === 'employee') how = `직장가입자: 월급 × ${(RATE/2*100).toFixed(3)}%(본인 몫) + 장기요양보험료(건보료의 ${(LTC_RATE*100).toFixed(2)}%). 회사도 같은 금액을 냅니다.`;
+    else if (on && S.ins === 'regional') how = `지역가입자: 소득분 + 재산분(${wealthText()})을 합쳐 전액 직접 냅니다. 자동차는 2024년 2월부터 빠졌습니다.`;
+    else if (on && S.ins === 'dependent') how = S.retired ? '자녀의 피부양자라 보험료가 없습니다.' : '부모님의 피부양자 또는 지역가입자 세대원이라 본인 몫이 없습니다.';
+    else if (on && S.ins === 'military') how = '군 복무 중에는 보험료가 면제됩니다.';
+    return { t:'누적 납부 건보료', h:`<p>지금까지 <b>내 몫으로</b> 낸 건강보험료(장기요양보험료 포함)의 합계입니다. ${how}</p>
+      ${on ? kv([['이번 달 보험료', won(premMonthly())], ['올해 연간 보험료', won(S.yearPrem || 0)], ['보험료 낸 기간의 월평균', won(premAvgMonthly())], ['보험료 낸 햇수', `${(S.premYears || 0) + (!S.premClosed && S.yearPrem > 0 ? 1 : 0)}년`], ['누적 (내 몫)', won(S.paid)], ['회사가 함께 낸 돈 (별도)', won(S.employerPaid)]]) : ''}` };
+  }
+  case 'ben': {
+    const base = on ? S.benefit - S.capRefund - S.catastrophic - S.ltcBenefit : 0;
+    return { t:'누적 공단부담 혜택', h:`<p>병원·약국 진료비 가운데 <b>건강보험공단이 대신 낸 돈</b>과 각종 환급·지원의 합계입니다. 내가 낸 본인부담금은 빠져 있습니다.</p>
+      ${on ? kv([['진료비 공단부담', won(base)], ['└ 그중 산정특례로 아낀 돈', won(S.specialSaved)], ['본인부담상한제 환급', won(S.capRefund)], ['재난적의료비 지원', won(S.catastrophic)], ['장기요양 급여', won(S.ltcBenefit)], ['합계', won(S.benefit)], ['참고: 내가 낸 본인부담', won(S.oop)]]) : ''}` };
+  }
+  case 'job': {
+    const rows = [['직장가입자', '월급의 3.595%를 내고 회사가 같은 금액을 냅니다.'], ['지역가입자', '자영업자·프리랜서·은퇴자. 소득과 재산으로 매긴 보험료 전액을 냅니다.'], ['피부양자', '직장가입자 가족 중 소득·재산 기준 이하인 사람. 보험료가 없습니다.'], ['지역가입자 세대원', '지역가입자 가구의 가족. 보험료는 세대주가 세대 단위로 냅니다.']];
+    return { t:'건강보험 자격', h:`<p>지금 자격: <b>${on ? insLabel() : '엄마 뱃속'}</b></p><ul>${rows.map(([k, v]) => `<li><b>${k}</b>: ${v}</li>`).join('')}</ul>
+      <p style="margin-top:6px">실직하면 지역가입자가 되거나, 퇴직 후 36개월간 직장 시절 보험료를 유지하는 임의계속가입을 고를 수 있습니다.</p>` };
+  }
+  case 'inc': {
+    const parts = Object.entries(P).filter(([, v]) => v > 0);
+    return { t:'소득', h:`<p>${on && ownEconomy() ? '올해 내 연소득과 그 구성입니다.' : '아직 내 소득이 없어 부모님 가구 소득을 보여 줍니다.'} 상·중·하 기준: 연 2,500만원 미만 <b>하</b>, 6,000만원 미만 <b>중</b>, 그 이상 <b>상</b>.</p>
+      ${parts.length ? kv(parts.map(([k, v]) => [k, won(v)]).concat([['합계', won(S.yearIncome)]])) : ''}
+      <ul style="margin-top:8px"><li>근로·사업소득은 직업과 나이, 그해 운에 따라 달라집니다.</li><li>재산이 있으면 이자·배당(금융소득), 5억원이 넘으면 임대소득이 생깁니다.</li><li>은퇴 뒤에는 연금소득이 중심이 됩니다.</li><li>소득 분위는 본인부담상한제 상한액과 재난적의료비 지원 여부를 정합니다.</li></ul>` };
+  }
+  case 'wealth':
+    return { t:'재산', h:`<p>${on && ownEconomy() ? `지금 재산은 <b>${won(S.wealth)}</b>(${S.wdecile}분위)입니다.` : '아직 독립하지 않아 부모님 가구 재산을 보여 줍니다.'}</p>
+      <ul><li>상·중·하는 순자산 10분위 기준입니다: 1~3분위 하, 4~7분위 중, 8~10분위 상.</li><li>일해서 번 돈의 일부를 저축하고, 결혼·상속으로 늘며, 폐업·실직·큰 병원비·은퇴 후 생활비로 줄어듭니다.</li><li><b>지역가입자 보험료</b>에는 재산분이 붙습니다(기본공제 1억원 근사).</li><li>은퇴 때 재산이 9분위 이상이면 자녀의 피부양자가 될 수 없습니다.</li></ul>` };
+  case 'fam': {
+    const L = [];
+    if (on){
+      L.push(`<li><b>부모님</b>: 아버지 ${S.fJob}, 어머니 ${S.mJob}. ${hhIns() === 'employee' ? '직장가입자 가구' : '지역가입자 가구'}라 어릴 때 나는 ${hhLabel()}${josa(hhLabel(),'이었','였')}습니다.${S.fCause && a >= S.father ? ` 아버지는 ${ro(S.fCause.name)} 별세.` : ''}${S.mCause && a >= S.mother ? ` 어머니는 ${ro(S.mCause.name)} 별세.` : ''}</li>`);
+      if (S.spouse) L.push(`<li><b>배우자</b>: ${S.spouse.job}. ${S.spouse.alive ? '소득이 없으면 내 피부양자로 등록할 수 있고, 맞벌이면 각자 직장가입자입니다.' : `${ro(S.spouse.cause.name)} 먼저 떠났습니다.`}</li>`);
+      S.childBirths.forEach((cb, i) => L.push(`<li><b>${['첫째','둘째','셋째'][i]}</b>: ${a - cb}세, ${childLabel(a - cb, i)}. 미성년인 동안 내 피부양자(또는 세대원)로 보험료가 없습니다.</li>`));
+    }
+    return { t:'가족', h:`<ul>${L.join('') || '<li>게임을 시작하면 가족이 표시됩니다.</li>'}</ul><p style="margin-top:6px">가족의 투병과 별세는 스트레스를 크게 올리고, 결혼은 스트레스 기준을 낮춥니다. 은퇴 후 자녀가 있으면 자녀의 피부양자가 될 수 있습니다.</p>` };
+  }
+  case 'dis': {
+    const L = [];
+    if (on){
+      for (const c of S.cancers) if (c.dxAge != null && c.status !== 'cured' && c.status !== 'hidden') L.push(`<li><b>${CANCERS[c.type].name} ${c.stage}기</b>: ${c.dxAge}세 진단(${c.via === 'screen' ? '검진' : '증상'}). 산정특례로 5년간 본인부담 5%.</li>`);
+      for (const [k, c] of Object.entries(CHRONIC)) if (S.cond[k] && S.cond[k].detected) L.push(`<li><b>${c.name}</b>: ${S.cond[k].detAge}세에 ${/(후|악화)$/.test(S.cond[k].how) ? `${S.cond[k].how}에 생김` : `${S.cond[k].how}에서 발견`} · ${c.med} · 연 진료비 약 ${won(c.cost)}${c.rate ? ' (산정특례 10%)' : ''}</li>`);
+      if (S.htn && S.htn.detected) L.push(`<li><b>고혈압</b>: ${S.htn.detAge}세 발견 · 혈압약 복용. 방치하면 뇌출혈·콩팥병 위험이 커집니다.</li>`);
+      if (S.dm && S.dm.detected) L.push(`<li><b>당뇨병</b>: ${S.dm.detAge}세 발견 · 혈당약 복용. 방치하면 콩팥병·심근경색 위험이 커집니다.</li>`);
+      if (S.dementia) L.push('<li><b>치매</b>: 중증치매 산정특례(본인부담 10%).</li>');
+      if (S.ltc) L.push(`<li><b>장기요양 ${LTC_GRADES[S.ltcGrade].name}</b>: ${LTC_GRADES[S.ltcGrade].desc}. ${S.ltc === 'home' ? `재가급여 월 한도 ${won(LTC_GRADES[S.ltcGrade].home)}, 본인부담 15%` : '요양원 시설급여, 본인부담 20% + 식비'}.</li>`);
+    }
+    return { t:'현재 질병', h:`<ul>${L.join('') || '<li>진단받은 질병이 없습니다.</li>'}</ul><p style="margin-top:6px"><b>진단받은 병만</b> 표시합니다. 몸속에 생겼지만 아직 모르는 병은 건강검진을 받거나 증상이 나타나야 보입니다.</p>` };
+  }
+  case 'risk': {
+    const L = [];
+    if (on){
+      if (S.smoke) L.push('<li><b>흡연</b>: 사망 위험 약 2.6배, 폐암 약 10배, 만성폐쇄성폐질환 약 12배, 심근경색·뇌졸중 약 2.5배. 평생 피우면 기대수명 약 10년 감소.</li>');
+      else if (S.quitAge != null) L.push(`<li><b>금연 ${a - S.quitAge}년차</b>: 10년이 지나면 위험 대부분이 줄어듭니다. 40세 전에 끊으면 흡연 손실의 약 90%를 되찾습니다.</li>`);
+      if (S.drink) L.push('<li><b>고위험 음주</b>: 사망 위험 약 1.6배, 간경변 약 12배, 식도암 약 4배. 기대수명 약 4~5년 감소.</li>');
+      if (S.upf) L.push('<li><b>초가공식품</b>: 이상지질혈증·지방간·당뇨·대장암·위암 위험 증가.</li>');
+      if (!S.exercise && a >= 30) L.push('<li><b>운동 부족</b>: 운동하는 사람보다 심뇌혈관질환 위험 약 1.3배, 치매·골다공증 위험 증가.</li>');
+      if (S.stress >= 60) L.push('<li><b>높은 스트레스</b>: 혈관질환 위험 증가, 체력 감소.</li>');
+      if (S.checkSkips) L.push(`<li><b>검진 ${S.checkSkips}회 건너뜀</b>: 고혈압·당뇨·콩팥병·암을 늦게 알아 뇌출혈·투석·말기 암으로 이어질 수 있습니다.</li>`);
+    }
+    return { t:'위험 요인', h:`<ul>${L.join('') || '<li>뚜렷한 위험 요인이 없습니다. 지금처럼 검진과 운동을 이어 가세요.</li>'}</ul><p style="margin-top:6px">수치는 출처 화면의 연구(Jha 2013, Wood 2018)와 게임 설정값입니다.</p>` };
+  }
+  case 'visits': {
+    const h = on ? (HIRA_AGE.find(r => a >= r.min && a <= r.max) || HIRA_AGE[HIRA_AGE.length - 1]) : null;
+    return { t:'병의원·약국 이용', h:`<p>태어나서 지금까지 병의원(입원·외래)과 약국을 이용한 날의 합계입니다.</p>
+      ${on ? kv([['병의원 누적', `${S.visits.toLocaleString('ko-KR')}일`], ['약국 누적', `${S.pharmacy.toLocaleString('ko-KR')}일`], [`같은 나이대 평균 (${h.max >= 120 ? '85세 이상' : h.min + '~' + h.max + '세'})`, `연 ${h.days}일 · ${won(h.cost)}`]]) : ''}
+      <p style="margin-top:8px">평균값은 심평원 「연령별 1인당 진료현황」(2025)입니다. 한국인은 1년에 외래진료를 평균 17.9회 받아 OECD 평균의 약 3배입니다.</p>` };
+  }
+  case 'ratio': {
+    const r = on && S.paid ? Math.round(S.benefit/S.paid*100) : null, t = on ? S.paid + S.employerPaid : 0;
+    return { t:'낸 돈 대비 혜택', h:`<p>받은 공단부담 혜택 ÷ 내 몫으로 낸 보험료입니다. 100%가 넘으면 낸 것보다 많이 받은 것입니다.</p>
+      ${on ? kv([['내 몫 기준', r == null ? '-' : r + '%'], ['회사 부담분까지 넣으면', t ? Math.round(S.benefit/t*100) + '%' : '-']]) : ''}
+      <p style="margin-top:8px">대부분 100%를 넘는 이유는 회사 부담분, 정부 지원, 그리고 건강한 사람과 아픈 사람이 위험을 나누는 구조 때문입니다. 자세한 내용은 「재정」 화면에 있습니다.</p>` };
+  }
+  }
+  return { t:'', h:'' };
+}
+function showInfo(key){
+  const c = infoContent(key), m = $('#infoModal');
+  m.innerHTML = `<article class="bio" aria-label="${c.t} 설명"><div class="eb">상태창 설명</div><h2>${c.t}</h2><section style="margin-top:10px;padding-top:10px">${c.h}</section>
+    <div class="rc-actions" style="grid-template-columns:1fr"><button class="btn primary" id="btnInfoClose">닫기</button></div></article>`;
+  m.hidden = false; m.scrollTop = 0;
+  $('#btnInfoClose').onclick = () => { m.hidden = true; };
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('.ibtn'); if (b){ e.preventDefault(); showInfo(b.dataset.info); return; }
+  const m = $('#infoModal'); if (!m.hidden && e.target === m) m.hidden = true;
+});
 function showSources(){
   const m = $('#srcModal');
   const OK = '<span class="tag ok">공식 통계</span>', EST = '<span class="tag est">추정</span>';
